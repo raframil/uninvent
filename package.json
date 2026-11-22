@@ -1,6 +1,6 @@
 {
   "name": "uninvent",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Check that coding agents reuse the design system instead of reinventing it.",
   "keywords": [
     "design-system",

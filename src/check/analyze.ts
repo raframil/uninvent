@@ -1,10 +1,9 @@
-import { parse } from "@babel/parser";
 import { importStatement, suggestionLabel } from "../catalog.js";
 import { applyRecipeHits, findRecipeHits } from "../recipes/match.js";
-import { describeFinding } from "./format.js";
-import { findStateFindings } from "./states.js";
 import { matchesIgnore } from "../ignore.js";
 import { isInsideDir } from "../config.js";
+import { parseUiSource } from "../parse/file.js";
+import type { ImportRef } from "../parse/types.js";
 import { posixDir, resolveSpecifier, stripExt } from "../paths.js";
 import {
   RAW_ELEMENTS,
@@ -14,17 +13,13 @@ import {
   type Finding,
   type Reuse,
 } from "../types.js";
+import { describeFinding } from "./format.js";
+import { findStateFindings } from "./states.js";
 
 export interface AnalyzeResult {
   findings: Finding[];
   reuses: Reuse[];
   parseError?: string;
-}
-
-interface BabelNode {
-  type: string;
-  loc?: { start: { line: number } };
-  [key: string]: unknown;
 }
 
 /**
@@ -45,7 +40,7 @@ export function analyzeSource(options: {
     return { findings: [], reuses: [] };
   }
 
-  const parsed = parseUi(options.source, file, Boolean(options.snippet));
+  const parsed = parseUiSource(options.source, file, Boolean(options.snippet));
   if (!parsed) {
     return {
       findings: [],
@@ -54,41 +49,30 @@ export function analyzeSource(options: {
     };
   }
 
-  const imported = new Map<string, CatalogComponent>();
-  const defined = new Map<string, number>();
-  const exported = new Set<string>();
-  collectModules(parsed, file, options.catalog, imported, defined, exported);
-
+  const imported = importedComponents(parsed.imports, file, options.catalog);
+  const defined = new Map(parsed.defined.map((entry) => [entry.name, entry.line]));
   const findings: Finding[] = [];
   const reuses: Reuse[] = [];
 
   if (!options.snippet) {
-    for (const name of exported) {
-      const component = options.catalog.components.find((entry) => entry.name === name);
-      const line = defined.get(name);
-      if (!component || line === undefined) continue;
-      if (!keepLine(line, options.lines)) continue;
-      findings.push(collisionFinding(file, line, name, component, options.catalog, !options.snippet));
+    for (const entry of parsed.exported) {
+      const component = options.catalog.components.find((item) => item.name === entry.name);
+      if (!component || !keepLine(entry.line, options.lines)) continue;
+      findings.push(collisionFinding(file, entry.line, entry.name, component, options.catalog, !options.snippet));
     }
   }
 
-  walk(parsed, (node) => {
-    if (node.type !== "JSXOpeningElement" && node.type !== "JSXSelfClosingElement") return;
-    const line = node.loc?.start.line ?? 1;
-    if (!keepLine(line, options.lines)) return;
-    const tag = jsxTag(node.name);
-    if (!tag) return;
-    if (tag.kind === "intrinsic") {
-      const finding = rawFinding(file, line, tag.name, rawElementRole(node), options.catalog, !options.snippet);
+  for (const opening of parsed.openings) {
+    if (!keepLine(opening.line, options.lines)) continue;
+    if (opening.kind === "intrinsic") {
+      const finding = rawFinding(file, opening.line, opening.name, opening.role, options.catalog, !options.snippet);
       if (finding) findings.push(finding);
-      return;
+      continue;
     }
-    const local = tag.kind === "member" ? tag.object : tag.name;
-    const component = imported.get(local);
-    if (!component) return;
-    if (defined.has(local)) return;
-    reuses.push({ name: component.name, file, line });
-  });
+    const component = imported.get(opening.name);
+    if (!component || defined.has(opening.name)) continue;
+    reuses.push({ name: component.name, file, line: opening.line });
+  }
 
   findings.push(...findStateFindings({
     source: options.source,
@@ -173,203 +157,17 @@ function keepLine(line: number, lines: Set<number> | undefined): boolean {
   return !lines || lines.has(line);
 }
 
-function collectModules(
-  ast: BabelNode,
-  file: string,
-  catalog: Catalog,
-  imported: Map<string, CatalogComponent>,
-  defined: Map<string, number>,
-  exported: Set<string>,
-): void {
-  const body = programBody(ast);
-  for (const statement of body) {
-    if (statement.type === "ImportDeclaration") {
-      if (statement.importKind === "type") continue;
-      const specifier = asString(statement.source);
-      if (!specifier) continue;
-      const resolved = resolveSpecifier(file, specifier, catalog.paths);
-      if (!resolved) continue;
-      const specifiers = asNodes(statement.specifiers);
-      for (const spec of specifiers) {
-        if (spec.type !== "ImportSpecifier" || spec.importKind === "type") continue;
-        const importedName = specifierName(spec.imported);
-        const local = specifierName(spec.local);
-        if (!importedName || !local) continue;
-        const component = catalog.components.find(
-          (entry) => stripExt(entry.file) === resolved && entry.name === importedName,
-        );
-        if (component) imported.set(local, component);
-      }
-      continue;
-    }
-
-    const declaration = statement.type === "ExportNamedDeclaration" || statement.type === "ExportDefaultDeclaration"
-      ? asNode(statement.declaration)
-      : statement;
-    const isExported = statement.type === "ExportNamedDeclaration" || statement.type === "ExportDefaultDeclaration";
-    rememberDeclaration(declaration, isExported, defined, exported);
-
-    if (statement.type === "ExportNamedDeclaration" && !statement.source) {
-      for (const spec of asNodes(statement.specifiers)) {
-        if (spec.type !== "ExportSpecifier") continue;
-        const local = specifierName(spec.local);
-        const publicName = specifierName(spec.exported);
-        if (!local || !publicName) continue;
-        if (defined.has(local)) {
-          exported.add(publicName);
-          if (publicName !== local) {
-            const line = defined.get(local);
-            if (line !== undefined) defined.set(publicName, line);
-          }
-        }
-      }
-    }
+function importedComponents(specs: ImportRef[], file: string, catalog: Catalog): Map<string, CatalogComponent> {
+  const imported = new Map<string, CatalogComponent>();
+  for (const spec of specs) {
+    const resolved = resolveSpecifier(file, spec.specifier, catalog.paths);
+    if (!resolved) continue;
+    const component = catalog.components.find(
+      (entry) => stripExt(entry.file) === resolved && entry.name === spec.imported,
+    );
+    if (component) imported.set(spec.local, component);
   }
-}
-
-function rememberDeclaration(
-  declaration: BabelNode | null,
-  isExported: boolean,
-  defined: Map<string, number>,
-  exported: Set<string>,
-): void {
-  if (!declaration) return;
-  if (declaration.type === "FunctionDeclaration") {
-    const name = identifierName(declaration.id);
-    if (!name || !/^[A-Z]/.test(name)) return;
-    defined.set(name, declaration.loc?.start.line ?? 1);
-    if (isExported) exported.add(name);
-    return;
-  }
-  if (declaration.type !== "VariableDeclaration") return;
-  for (const declarator of asNodes(declaration.declarations)) {
-    if (declarator.type !== "VariableDeclarator") continue;
-    const name = identifierName(declarator.id);
-    if (!name || !/^[A-Z]/.test(name)) continue;
-    defined.set(name, declarator.loc?.start.line ?? declaration.loc?.start.line ?? 1);
-    if (isExported) exported.add(name);
-  }
-}
-
-function parseUi(source: string, filename: string, snippet: boolean): BabelNode | null {
-  const direct = tryParse(source, filename);
-  if (direct) return direct;
-  if (!snippet) return null;
-  const wrapped = `export function __Snippet() {\nreturn (\n${source}\n);\n}\n`;
-  return tryParse(wrapped, filename);
-}
-
-function tryParse(source: string, filename: string): BabelNode | null {
-  try {
-    return parse(source, {
-      sourceType: "module",
-      sourceFilename: filename,
-      plugins: ["typescript", "jsx"],
-      errorRecovery: true,
-    }) as unknown as BabelNode;
-  } catch {
-    return null;
-  }
-}
-
-function rawElementRole(node: BabelNode): string | null {
-  for (const attribute of asNodes(node.attributes)) {
-    if (attribute.type !== "JSXAttribute") continue;
-    if (identifierName(attribute.name) !== "role") continue;
-    return attributeValue(attribute.value);
-  }
-  return null;
-}
-
-function jsxTag(name: unknown): { kind: "intrinsic"; name: string } | { kind: "name"; name: string } | { kind: "member"; object: string } | null {
-  const node = asNode(name);
-  if (!node) return null;
-  if (node.type === "JSXIdentifier") {
-    const value = identifierName(node);
-    if (!value) return null;
-    if (value[0] === value[0]?.toLowerCase()) return { kind: "intrinsic", name: value };
-    return { kind: "name", name: value };
-  }
-  if (node.type === "JSXMemberExpression") {
-    const object = asNode(node.object);
-    const objectName = object ? identifierName(object) : null;
-    if (!objectName) return null;
-    return { kind: "member", object: objectName };
-  }
-  return null;
-}
-
-function walk(node: BabelNode, visit: (node: BabelNode) => void): void {
-  visit(node);
-  for (const child of children(node)) walk(child, visit);
-}
-
-function children(node: BabelNode): BabelNode[] {
-  const found: BabelNode[] = [];
-  for (const [key, value] of Object.entries(node)) {
-    if (key === "loc" || key === "start" || key === "end" || key === "range") continue;
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const child = asNode(item);
-        if (child) found.push(child);
-      }
-    } else {
-      const child = asNode(value);
-      if (child) found.push(child);
-    }
-  }
-  return found;
-}
-
-function programBody(ast: BabelNode): BabelNode[] {
-  const program = asNode(ast.program);
-  if (!program) return [];
-  return asNodes(program.body);
-}
-
-function asNode(value: unknown): BabelNode | null {
-  if (!value || typeof value !== "object") return null;
-  if (!("type" in value) || typeof value.type !== "string") return null;
-  return value as BabelNode;
-}
-
-function asNodes(value: unknown): BabelNode[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((item) => {
-    const node = asNode(item);
-    return node ? [node] : [];
-  });
-}
-
-function asString(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node) return null;
-  return typeof node.value === "string" ? node.value : null;
-}
-
-function identifierName(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node) return null;
-  return typeof node.name === "string" ? node.name : null;
-}
-
-function specifierName(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node) return null;
-  if (typeof node.name === "string") return node.name;
-  if (typeof node.value === "string") return node.value;
-  return null;
-}
-
-function attributeValue(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node) return null;
-  if (node.type === "StringLiteral" && typeof node.value === "string") return node.value;
-  if (node.type === "JSXExpressionContainer") {
-    const expression = asNode(node.expression);
-    if (expression?.type === "StringLiteral" && typeof expression.value === "string") return expression.value;
-  }
-  return null;
+  return imported;
 }
 
 function dedupe(findings: Finding[]): Finding[] {

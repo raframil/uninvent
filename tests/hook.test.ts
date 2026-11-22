@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -148,6 +149,28 @@ test("resolveHookCommand finds a local bin, then this package's built CLI", () =
     resolveHookCommand(path.join(repo, "examples", "demo-app")),
     "node ../../dist/cli.js hook",
   );
+});
+
+test("the hook command stays silent on a clean edit and does not block a miss", () => {
+  const { root, clean, login } = projectWithButton();
+  const cli = [process.execPath, "--import", "tsx", path.join(import.meta.dirname, "../src/cli.ts")];
+  const run = (file: string) => spawnSync(cli[0] ?? "node", [...cli.slice(1), "hook", "--cwd", root], {
+    input: JSON.stringify({
+      session_id: "s",
+      hook_event_name: "PostToolUse",
+      cwd: root,
+      tool_name: "Write",
+      tool_input: { file_path: file },
+    }),
+    encoding: "utf8",
+  });
+  const silent = run(clean);
+  assert.equal(silent.status, 0, silent.stderr);
+  assert.equal(silent.stdout, "");
+  const hit = run(login);
+  assert.equal(hit.status, 0, hit.stderr);
+  const payload = JSON.parse(hit.stdout) as { hookSpecificOutput: { additionalContext: string } };
+  assert.match(payload.hookSpecificOutput.additionalContext, /raw <button> in src\/pages\/Login.tsx:\d+, use ui\/Button/);
 });
 
 test("install merges hooks without dropping existing config", () => {

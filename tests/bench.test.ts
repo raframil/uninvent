@@ -80,6 +80,8 @@ test("the report says when the agent trial did not run", () => {
   const markdown = renderReport([result]);
   assert.match(markdown, /What this does and does not show/);
   assert.match(markdown, /No result file includes a paired trial/);
+  assert.match(markdown, /Hook process/);
+  assert.match(markdown, /\| 0\.0\.0 \| — \| — \| — \| — \| — \|/);
   assert.equal(markdown.includes("wrong-component count is 0"), false);
 });
 

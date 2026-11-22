@@ -80,7 +80,7 @@ npx uninvent install
 
 The skill names the components that were actually scanned, the declared recipes, and the states stories document. It tells the agent to run `uninvent exists <Component>` before creating UI. `scan` refreshes that skill when it is already there.
 
-`install` adds a **PostToolUse** hook for Claude Code (`.claude/settings.json`) and Cursor (`.cursor/hooks.json`). It merges into the files you already have. The hook runs after an edit, reads the catalog, and:
+`install` adds a **PostToolUse** hook for Claude Code (`.claude/settings.json`) and Cursor (`.cursor/hooks.json`). It merges into the files you already have. The hook runs after an edit, reads the catalog, and parses that file with a small scanner (Babel is only the fallback). It:
 
 - prints nothing when the edit is clean
 - on a miss, adds one line per finding and nothing else, for example `raw <button> in src/Form.tsx:42, use ui/Button`
@@ -169,7 +169,7 @@ Another headless library is one entry on that list. `check` does not read it. Th
 
 Recipes live on the same catalog, under `recipes`. A v0.1 catalog has no such field and still loads. `scan` fills it from [`uninvent.recipes.md`](examples/demo-app/uninvent.recipes.md) and from repeated compositions it is willing to name. See [Recipes](#recipes).
 
-Scanning uses the TypeScript compiler API and does not typecheck the app, so it works on the fixture without installing React. `check` and the hook parse JSX with Babel and only read the JSON catalog, so they stay small enough to run on every edit.
+Scanning uses the TypeScript compiler API and does not typecheck the app, so it works on the fixture without installing React. `check` and the hook only read the JSON catalog. They parse JSX with a small scanner, so a normal edit does not load the TypeScript compiler or Babel. Babel parses a file only when the scanner will not guess at its syntax.
 
 Discovery looks at `uninvent.json` `"ui"`, then `components.json` `aliases.ui`, then `src/components/ui` and `components/ui`.
 
@@ -286,7 +286,7 @@ Publishing: `package.json` is set up for a public npm package (`prepublishOnly` 
 
 ## Status
 
-v0.3. The catalog, recipes, documented states, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. Coverage lists missing stories. It does not write them.
+v0.3.1. The catalog, recipes, documented states, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. Coverage lists missing stories. It does not write them.
 
 ## License
 
