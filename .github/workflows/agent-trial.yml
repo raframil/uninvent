@@ -1,0 +1,78 @@
+name: agent-trial
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Replay canned files. Does not call a model and does not need the API key.
+        type: boolean
+        default: false
+      runs:
+        description: Runs per arm for a live trial. Ignored when dry_run is true.
+        type: string
+        default: "2"
+      models:
+        description: >-
+          Comma-separated model ids. Overrides UNINVENT_BENCH_MODEL for this run.
+          Example: anthropic/claude-sonnet-4.5, openai/gpt-4o-mini
+        type: string
+        default: ""
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Run the paired trial
+        env:
+          UNINVENT_BENCH_API_KEY: ${{ secrets.UNINVENT_BENCH_API_KEY }}
+          UNINVENT_BENCH_BASE_URL: ${{ secrets.UNINVENT_BENCH_BASE_URL || vars.UNINVENT_BENCH_BASE_URL }}
+          UNINVENT_BENCH_MODEL: ${{ (github.event_name == 'workflow_dispatch' && inputs.models) || secrets.UNINVENT_BENCH_MODEL || vars.UNINVENT_BENCH_MODEL }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm run trial -- --dry-run
+            exit 0
+          fi
+          if [ -z "${UNINVENT_BENCH_API_KEY:-}" ]; then
+            if [ "${{ github.event_name }}" = "release" ]; then
+              echo "UNINVENT_BENCH_API_KEY is not set. Skipping the trial on release."
+              exit 0
+            fi
+            echo "Add repository secret UNINVENT_BENCH_API_KEY (an OpenRouter key). Set UNINVENT_BENCH_BASE_URL and UNINVENT_BENCH_MODEL as secrets or variables, or pass models on this dispatch."
+            exit 1
+          fi
+          echo "Base URL: ${UNINVENT_BENCH_BASE_URL:-https://openrouter.ai/api/v1 (config default)}"
+          echo "Models: ${UNINVENT_BENCH_MODEL:-openai/gpt-4o-mini (config default)}"
+          runs="${{ github.event_name == 'workflow_dispatch' && inputs.runs || '2' }}"
+          if ! [[ "$runs" =~ ^[0-9]+$ ]]; then
+            echo "runs must be a positive integer."
+            exit 1
+          fi
+          args=(--runs "$runs" --write-case-study)
+          if [ -n "${UNINVENT_BENCH_MODEL:-}" ]; then
+            args+=(--models "$UNINVENT_BENCH_MODEL")
+          fi
+          npm run trial -- "${args[@]}"
+      - name: Upload results and diffs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uninvent-agent-trial
+          if-no-files-found: ignore
+          path: |
+            bench/trial/results
+            bench/trial/artifacts
+            CASE_STUDY.md

@@ -2,8 +2,8 @@
   "schema": 1,
   "version": "0.4.1",
   "source": "local",
-  "git": "e12405c4d2696dd373f53ea638ab996856fc92ba",
-  "generatedAt": "2026-11-22T22:02:39.788Z",
+  "git": "5684a4772b70c2fa263c29ebb3b6bb0119dd5d58",
+  "generatedAt": "2026-11-22T23:04:06.863Z",
   "tokenizer": "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)",
   "detection": {
     "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,package:3/3,clean-fp:0/13",
@@ -583,38 +583,38 @@
   "latencyMs": {
     "samples": 5,
     "scan": {
-      "median": 328.4,
-      "min": 326.9,
-      "max": 347.3
+      "median": 330.5,
+      "min": 315.3,
+      "max": 335.5
     },
     "hookClean": {
-      "median": 37.2,
-      "min": 35.6,
-      "max": 39.9
+      "median": 37.8,
+      "min": 37.5,
+      "max": 41.1
     },
     "hookDirty": {
-      "median": 37.3,
-      "min": 36.5,
-      "max": 38.7
+      "median": 38.5,
+      "min": 36.8,
+      "max": 41
     },
     "hookRun": {
       "samples": 21,
       "cold": {
-        "p50": 35.3,
-        "p95": 37.6,
-        "min": 33.6,
-        "max": 39.7
+        "p50": 36.2,
+        "p95": 38.8,
+        "min": 34,
+        "max": 44.2
       },
       "warm": {
-        "p50": 34.3,
-        "p95": 37.1,
-        "min": 32.9,
-        "max": 38.4
+        "p50": 33.3,
+        "p95": 34.9,
+        "min": 32.1,
+        "max": 36.6
       },
       "warmDirty": {
-        "p50": 33.6,
-        "p95": 35.4,
-        "min": 31.7,
+        "p50": 34.1,
+        "p95": 35.8,
+        "min": 32,
         "max": 36.1
       },
       "note": "uninvent hook with a PostToolUse event, wall time in milliseconds. Cold sets NODE_DISABLE_COMPILE_CACHE. Warm shares one V8 compile cache after a single warmup. p50 and p95 are within that set."

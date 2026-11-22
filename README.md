@@ -17,6 +17,8 @@ raw <button> in src/pages/Login.tsx:10, use ui/Button
 
 A clean file prints nothing.
 
+The fixed-corpus numbers are in [BENCHMARK.md](BENCHMARK.md). The real-repository trial, which has not been run, is [CASE_STUDY.md](CASE_STUDY.md).
+
 ## Demo
 
 [`examples/demo-app`](examples/demo-app) is a small Radix, Tailwind, and CVA app in the shadcn shape: `Button`, `Input`, `Dialog`, `PageHeader`, and `Table`. `src/pages/Customers.tsx` uses them. `src/pages/Login.tsx` and `src/components/Modal.tsx` do not. `src/components/Confirm.tsx` rebuilds the confirm-dialog recipe from a raw `<dialog>` and two buttons. `src/components/SaveButton.tsx` puts a spinner inside `Button`, which already has a `loading` state in its stories.
@@ -156,15 +158,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: raframil/uninvent@v0.3.0
+      - uses: raframil/uninvent@v0.4.1
         with:
-          version: 0.3.0
+          version: 0.4.1
           # working-directory: apps/web
 ```
 
 `fetch-depth: 0` gives git the history for `check --base`. The action fetches the base commit when the checkout does not have it. Node 20 or newer has to be on `PATH`. `setup-node` is the straightforward way.
 
-The action is not on the Marketplace. `uses` points at a tag or commit of this repository. `version` is what `npm install` installs. v0.3 is not on npm yet, so pin both once a release exists. This repository runs the action on every pull request against [`examples/demo-app`](examples/demo-app), from [`.github/workflows/uninvent.yml`](.github/workflows/uninvent.yml). That workflow builds first and passes `version: local`, which runs `dist/cli.js` from the checkout.
+The action is not on the Marketplace. `uses` points at a tag or commit of this repository. `version` is what `npm install` installs. Nothing in the 0.4 line is on npm yet, so pin both once a release exists. This repository runs the action on every pull request against [`examples/demo-app`](examples/demo-app), from [`.github/workflows/uninvent.yml`](.github/workflows/uninvent.yml). That workflow builds first and passes `version: local`, which runs `dist/cli.js` from the checkout.
 
 | Input | Default | What it does |
 |---|---|---|
@@ -340,7 +342,9 @@ Not in this version: Vue, CSS-in-JS, an MCP server, autofix, and token linting. 
 
 ## Benchmark
 
-[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus. 0.4.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, 2/2 name collisions, and 3/3 package sources, with 0 false positives on 13 clean files. 0.1.0 catches the raw controls and the name collisions. 0.2.0 adds recipes. 0.3.0 adds documented states. `npm run bench` reproduces the numbers. A live agent trial runs only if you set `UNINVENT_BENCH_API_KEY`.
+[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus, including a side-by-side of 0.3.0 and 0.4.1. 0.3.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, and 2/2 name collisions, and 0/3 package sources, with 0 false positives on 13 clean files. 0.4.1 catches the same controls, recipes, states, and name collisions, and 3/3 package sources, still with 0 false positives. The skill grows from 630 tokens to 728. Hook latency (cold and warm, p50 and p95) and the clean-file check time are in that file. 0.4.1 is the faster hook. `npm run bench` reproduces the numbers.
+
+[CASE_STUDY.md](CASE_STUDY.md) is the real-repository trial. It stays pending until that trial runs. The primary host is OpenRouter. See [bench/trial/README.md](bench/trial/README.md).
 
 ## Development
 
@@ -348,6 +352,7 @@ Not in this version: Vue, CSS-in-JS, an MCP server, autofix, and token linting. 
 npm install
 npm test
 npm run build
+npm run trial -- --dry-run
 ```
 
 `npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check. `tests/fixtures/workspace` is a pnpm-style workspace with `packages/ui` and an app. `tests/fixtures/installed` is a package that exists only as `.d.ts` and compiled JavaScript under `node_modules`. `tests/action.test.ts` covers the sticky pull request comment: create, update, a clean report, and a fork pull request where the token cannot write.

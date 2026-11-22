@@ -17,7 +17,7 @@ inputs:
     default: "."
   version:
     description: >-
-      uninvent version to install from npm (0.3.0, latest, or next).
+      uninvent version to install from npm (0.4.1, latest, or next).
       local uses dist/cli.js from this action checkout.
       Empty uses that build when it exists, otherwise the version in this action's package.json.
     required: false

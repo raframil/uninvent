@@ -5,6 +5,7 @@ import type { AgentTrial } from "./agent-trial.js";
 import { resultsDir, repoRoot } from "./corpus.js";
 import type { CaseResult, CategoryScore } from "./score.js";
 import { categoryNames } from "./score.js";
+import { syncCaseStudy } from "./trial/report.js";
 
 export interface BenchResult {
   schema: 1;
@@ -93,9 +94,11 @@ export function renderReport(results: BenchResult[]): string {
     "",
     "### Hook process",
     "",
-    "Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turns the V8 compile cache off. Warm reuses it. Older result files did not record this, so those cells are empty. The check column above is still `uninvent check` on one clean file.",
+    "Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turns the V8 compile cache off. Warm reuses it. Result files recorded before the hook was timed on its own leave those cells empty. The check column above is still `uninvent check` on one clean file.",
     "",
     hookTable(results),
+    "",
+    releaseComparison(results),
     "",
     "## Trend",
     "",
@@ -119,7 +122,7 @@ export function renderReport(results: BenchResult[]): string {
     "",
     "The paired agent trial is off unless `UNINVENT_BENCH_API_KEY` is set. A skipped trial has no counts. This report does not invent them. When the trial does run, the wrong-component count is how many lines `uninvent check` prints on the file the model returned. That is the checker judging the model, not a person.",
     "",
-    "Nothing here shows that a live coding agent, with tools and a hook, makes fewer mistakes or spends fewer tokens on a real task. That needs the paired trial, or a run of your own.",
+    "Nothing here shows that a live coding agent, with tools and a hook, makes fewer mistakes or spends fewer tokens on a real task. That needs the real-repository trial in [bench/trial](bench/trial/README.md), written up in [CASE_STUDY.md](CASE_STUDY.md). Until that trial has run, the case study has no agent numbers.",
     "",
   ];
   return `${lines.join("\n").replace(/\n{3,}/g, "\n\n")}\n`;
@@ -128,6 +131,7 @@ export function renderReport(results: BenchResult[]): string {
 export function writeReport(results = loadResults()): string {
   const markdown = renderReport(results);
   writeFileSync(path.join(repoRoot(), "BENCHMARK.md"), markdown);
+  syncCaseStudy();
   return markdown;
 }
 
@@ -162,6 +166,53 @@ function originTable(result: BenchResult, names: string[]): string {
     return [label(name), formatOrigin(score.withRule, name), formatOrigin(score.heldOut, name)];
   });
   return table(headers, rows);
+}
+
+function releaseComparison(results: BenchResult[]): string {
+  const left = results.find((result) => result.version === "0.3.0");
+  const right = results.find((result) => result.version === "0.4.1");
+  const lines = [
+    "## 0.3.0 and 0.4.1",
+    "",
+    "The unpublished release is 0.4.1. 0.4.0, the package-source commit, stays in the trend table. Detection counts and token counts do not move between machines. Latency does.",
+    "",
+  ];
+  if (!left || !right) {
+    lines.push("Both `bench/results/0.3.0.json` and `bench/results/0.4.1.json` are required for this table.", "");
+    return lines.join("\n");
+  }
+  const names = categoryNames([
+    ...Object.keys(left.detection.categories),
+    ...Object.keys(right.detection.categories),
+  ]);
+  const rows = names.map((name) => [
+    label(name),
+    formatCategory(left.detection.categories[name], name),
+    formatCategory(right.detection.categories[name], name),
+  ]);
+  rows.push(
+    ["Skill tokens", String(left.tokens.skill), String(right.tokens.skill)],
+    ["exists tokens", String(left.tokens.exists.tokens), String(right.tokens.exists.tokens)],
+    [
+      "Hook line (mean tokens)",
+      left.tokens.hook.meanPerFinding === null ? "—" : String(left.tokens.hook.meanPerFinding),
+      right.tokens.hook.meanPerFinding === null ? "—" : String(right.tokens.hook.meanPerFinding),
+    ],
+    ["Scan (ms)", String(left.latencyMs.scan.median), String(right.latencyMs.scan.median)],
+    ["Clean-file check (ms)", String(left.latencyMs.hookClean.median), String(right.latencyMs.hookClean.median)],
+    ["Hook cold p50 (ms)", hookStat(left, "cold", "p50"), hookStat(right, "cold", "p50")],
+    ["Hook cold p95 (ms)", hookStat(left, "cold", "p95"), hookStat(right, "cold", "p95")],
+    ["Hook warm p50 (ms)", hookStat(left, "warm", "p50"), hookStat(right, "warm", "p50")],
+    ["Hook warm p95 (ms)", hookStat(left, "warm", "p95"), hookStat(right, "warm", "p95")],
+  );
+  lines.push(table(["", "0.3.0", "0.4.1"], rows), "");
+  return lines.join("\n");
+}
+
+function hookStat(result: BenchResult, phase: "cold" | "warm", stat: "p50" | "p95"): string {
+  const sample = result.latencyMs.hookRun?.[phase];
+  if (!sample) return "—";
+  return String(sample[stat]);
 }
 
 function hookTable(results: BenchResult[]): string {
@@ -220,7 +271,7 @@ function agentSection(results: BenchResult[]): string {
   if (ran.length === 0) {
     const errored = results.filter((result) => result.agentTrial.status === "error");
     if (errored.length === 0) {
-      return "Not run. No result file includes a paired trial, so there are no agent numbers. Set `UNINVENT_BENCH_API_KEY` and see [bench/README.md](bench/README.md).";
+      return "Not run. No result file includes a paired trial, so there are no agent numbers. Set `UNINVENT_BENCH_API_KEY` and see [bench/README.md](bench/README.md). That corpus trial is not the real-repository study. See [CASE_STUDY.md](CASE_STUDY.md).";
     }
     return errored.map((result) => `**${result.version}** failed before it could score: ${result.agentTrial.reason ?? "unknown error"}. Those rows are not treated as zero.`).join("\n\n");
   }

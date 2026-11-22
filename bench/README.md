@@ -19,7 +19,7 @@ npm run bench -- --all
 npm run bench -- --rounds 5
 ```
 
-`--ref` checks out that commit, runs `npm ci` and `npm run build` there, and benchmarks that CLI. `--npm` installs a published package. Nothing has been published yet, so a missing package is an error, not a guessed score. `--all` walks [versions.json](versions.json), the commits on main for 0.1.0, 0.2.0, and 0.3.0.
+`--ref` checks out that commit, runs `npm ci` and `npm run build` there, and benchmarks that CLI. `--npm` installs a published package. Nothing has been published yet, so a missing package is an error, not a guessed score. `--all` walks [versions.json](versions.json), the commits on main for 0.1.0, 0.2.0, 0.3.0, and 0.4.0. 0.4.1 is the local CLI.
 
 `npm run bench:report` rewrites `BENCHMARK.md` from the result files without running the CLIs.
 
@@ -48,15 +48,20 @@ npm run bench -- --all
 
 ## Paired agent trial
 
-Off unless you set a key. A skipped trial stores `{ "status": "skipped" }` and the report prints no scores.
+Two clients share one OpenAI-compatible setup. The primary one is the real-repository trial in [trial/README.md](trial/README.md). It clones pinned apps, installs uninvent on one arm, and scores `git diff` with `uninvent check --base`. OpenRouter is the host to use:
 
 ```bash
-export UNINVENT_BENCH_API_KEY=...
-export UNINVENT_BENCH_BASE_URL=https://api.openai.com/v1   # optional
-export UNINVENT_BENCH_MODEL=gpt-4o-mini                     # optional
-npm run bench
+export UNINVENT_BENCH_API_KEY=...                          # OpenRouter key
+export UNINVENT_BENCH_BASE_URL=https://openrouter.ai/api/v1
+export UNINVENT_BENCH_MODEL=openai/gpt-4o-mini
+# several models in one run:
+# export UNINVENT_BENCH_MODEL='anthropic/claude-sonnet-4.5, openai/gpt-4o-mini'
+npm run trial -- --dry-run          # no key, canned files, not a result
+npm run trial -- --write-case-study # live; fills CASE_STUDY.md only when status is ran
 ```
 
-The client is OpenAI-compatible (`POST /chat/completions`). For each task in [agent-tasks.json](agent-tasks.json) it asks once with no design-system context and once with the generated skill and the `exists` answer pasted in. It writes the fenced TSX into a copy of the corpus and runs `uninvent check`. `wrongComponents` is the number of finding lines. A reply with no TSX block, or an HTTP error, is `error` and `wrongComponents: null`. Those are not counted as zero.
+`UNINVENT_BENCH_MODEL` is one id or a comma-separated list. Model ids on OpenRouter include the vendor (`openai/gpt-4o-mini`, not `gpt-4o-mini`). When the base URL host is `openrouter.ai` (or a subdomain such as `eu.openrouter.ai`), both clients send `HTTP-Referer: https://github.com/raframil/uninvent` and `X-Title: uninvent`, and the request sets `usage.include` so OpenRouter can return a cost. Another host works if you change `UNINVENT_BENCH_BASE_URL`. The real-repo config defaults to OpenRouter. This corpus client still defaults to `https://api.openai.com/v1` and `gpt-4o-mini` when those two variables are unset, so set all three before `npm run bench` if the key is an OpenRouter key.
 
-The workflow never sets the key, so release results do not include a trial.
+GitHub Actions reads the same three names from repository secrets or variables. See [trial/README.md](trial/README.md).
+
+The corpus trial inside `npm run bench` is smaller. It is off unless the key is set. A skipped trial stores `{ "status": "skipped" }` and [BENCHMARK.md](../BENCHMARK.md) prints no scores. For each task in [agent-tasks.json](agent-tasks.json) it asks once with no design-system context and once with the generated skill and the `exists` answer pasted in. It writes the fenced TSX into a copy of the corpus and runs `uninvent check`. `wrongComponents` is the number of finding lines. A reply with no TSX block, or an HTTP error, is `error` and `wrongComponents: null`. Those are not counted as zero. The benchmark workflow does not set the key, so a release benchmark does not include that corpus trial. The real-repository workflow is separate and does not publish numbers into this file.

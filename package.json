@@ -43,6 +43,8 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "bench": "tsc -p bench/tsconfig.json --noEmit && node --import tsx bench/run.ts",
     "bench:report": "node --import tsx bench/report.ts",
+    "trial": "tsc -p bench/tsconfig.json --noEmit && node --import tsx bench/trial/run.ts",
+    "trial:report": "node --import tsx bench/trial/report.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
