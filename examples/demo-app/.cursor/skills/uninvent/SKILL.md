@@ -15,18 +15,20 @@ Before creating UI, ask the catalog:
 uninvent exists <Component>
 ```
 
-After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.
+After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.
 
 ## Catalog
 
 ### src/components/ui/button.tsx
 
 `import { Button } from "@/components/ui/button";`
+primitives: radix (@radix-ui/react-slot)
 - Button — props: asChild; variants: variant (default | destructive | outline | secondary | ghost | link), size (default | sm | lg | icon); renders <button>
 
 ### src/components/ui/dialog.tsx
 
 `import { Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";`
+primitives: radix (@radix-ui/react-dialog)
 - Dialog — props: open, onOpenChange, children
 - DialogTrigger
 - DialogClose

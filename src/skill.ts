@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { importStatement, siblingsOf } from "./catalog.js";
+import { formatPrimitives } from "./primitives.js";
 import type { Catalog, CatalogComponent } from "./types.js";
 
 export const SKILL_FILES = [
@@ -38,7 +39,7 @@ export function renderSkill(catalog: Catalog): string {
     "uninvent exists <Component>",
     "```",
     "",
-    "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
+    "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
     "",
     "## Catalog",
     "",
@@ -120,6 +121,7 @@ function renderGroup(group: CatalogComponent[], catalog: Catalog): string {
   const primary = group[0];
   if (!primary) return "";
   const lines = [`### ${primary.file}`, "", `\`${importStatement(primary, catalog)}\``];
+  if (primary.primitives.length > 0) lines.push(`primitives: ${formatPrimitives(primary.primitives)}`);
   for (const component of siblingsOf(primary, catalog)) {
     const details: string[] = [];
     if (component.props.length > 0) {

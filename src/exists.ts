@@ -1,5 +1,6 @@
 import { importStatement, siblingsOf } from "./catalog.js";
 import { UserError } from "./errors.js";
+import { formatPrimitives } from "./primitives.js";
 import type { Catalog, CatalogComponent } from "./types.js";
 
 export function normalizeQuery(input: string): string {
@@ -62,7 +63,7 @@ function renderComponent(component: CatalogComponent, catalog: Catalog): string 
   if (component.elements.length > 0) {
     lines.push(`  renders: ${component.elements.map((element) => `<${element}>`).join(", ")}`);
   }
-  if (component.radix.length > 0) lines.push(`  radix: ${component.radix.join(", ")}`);
+  if (component.primitives.length > 0) lines.push(`  primitives: ${formatPrimitives(component.primitives)}`);
   if (component.stories.length > 0) lines.push(`  stories: ${component.stories.join(", ")}`);
   const also = siblingsOf(component, catalog)
     .filter((entry) => entry.name !== component.name)

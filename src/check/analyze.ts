@@ -121,6 +121,10 @@ function collisionFinding(
   return finding;
 }
 
+/**
+ * Suggest the catalog component with the canonical name (`Button` for `<button>`).
+ * The headless library that component wraps is not part of the match.
+ */
 function rawFinding(
   file: string,
   line: number,

@@ -1,4 +1,5 @@
 import type { PathMapping } from "./paths.js";
+import type { PrimitiveUse } from "./primitives.js";
 
 export interface PropInfo {
   name: string;
@@ -21,8 +22,11 @@ export interface CatalogComponent {
   props: PropInfo[];
   extends: string[];
   variants: VariantGroup[];
-  /** `@radix-ui/*` packages imported by the file. */
-  radix: string[];
+  /**
+   * Headless primitives imported by the file.
+   * `library` is an adapter id (`radix`, `base-ui`, `react-aria`, `ark`).
+   */
+  primitives: PrimitiveUse[];
   /** Intrinsic elements this component renders, when the source says so. */
   elements: string[];
   stories: string[];

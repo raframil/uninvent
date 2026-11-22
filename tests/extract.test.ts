@@ -12,7 +12,7 @@ test("extracts CVA variants, own props, and the rendered element", () => {
   assert.ok(button);
   assert.equal(button.name, "Button");
   assert.equal(button.props.some((prop) => prop.name === "asChild"), true);
-  assert.equal(button.radix.includes("@radix-ui/react-slot"), true);
+  assert.deepEqual(button.primitives, [{ library: "radix", package: "@radix-ui/react-slot" }]);
   assert.deepEqual(
     button.variants.map((variant) => variant.name),
     ["variant", "size"],
@@ -55,5 +55,40 @@ test("keeps dialog siblings and does not treat a cva helper as a component", () 
     dialog?.props.map((prop) => prop.name),
     ["open", "onOpenChange", "children"],
   );
-  assert.equal(dialog?.radix.includes("@radix-ui/react-dialog"), true);
+  assert.deepEqual(dialog?.primitives, [{ library: "radix", package: "@radix-ui/react-dialog" }]);
+});
+
+test("records Base UI, React Aria, and Ark through the adapter map", () => {
+  const base = extractFile(
+    "dialog.tsx",
+    `import { Dialog as DialogPrimitive } from "@base-ui-components/react/dialog";
+     export function Dialog(props: DialogPrimitive.Root.Props) {
+       return <DialogPrimitive.Root {...props} />;
+     }`,
+  );
+  assert.deepEqual(base[0]?.primitives, [{ library: "base-ui", package: "@base-ui-components/react/dialog" }]);
+
+  const current = extractFile(
+    "button.tsx",
+    `import { Button as ButtonPrimitive } from "@base-ui/react/button";
+     export function Button(props: ButtonPrimitive.Props) {
+       return <ButtonPrimitive {...props} />;
+     }`,
+  );
+  assert.deepEqual(current[0]?.primitives, [{ library: "base-ui", package: "@base-ui/react/button" }]);
+  assert.equal(current[0]?.elements.includes("button"), false);
+
+  const aria = extractFile(
+    "button.tsx",
+    `import { Button } from "react-aria-components";
+     export function AriaButton(props: { children?: string }) { return <Button {...props} />; }`,
+  );
+  assert.deepEqual(aria[0]?.primitives, [{ library: "react-aria", package: "react-aria-components" }]);
+
+  const ark = extractFile(
+    "dialog.tsx",
+    `import { Dialog } from "@ark-ui/react/dialog";
+     export function DialogRoot() { return <Dialog.Root />; }`,
+  );
+  assert.deepEqual(ark[0]?.primitives, [{ library: "ark", package: "@ark-ui/react/dialog" }]);
 });

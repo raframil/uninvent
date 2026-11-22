@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { UserError } from "./errors.js";
+import type { PrimitiveUse } from "./primitives.js";
 import type { Catalog, CatalogComponent } from "./types.js";
 
 export function catalogPath(root: string, relative: string): string {
@@ -25,7 +26,27 @@ export function readCatalog(root: string, relative: string): Catalog {
   }
   parsed.paths ??= [];
   parsed.tokens ??= [];
+  for (const component of parsed.components) normalizePrimitives(component);
   return parsed;
+}
+
+/** Accept catalogs written before `primitives` replaced the Radix-only field. */
+function normalizePrimitives(component: CatalogComponent & { radix?: unknown }): void {
+  if (Array.isArray(component.primitives)) {
+    component.primitives = component.primitives.filter(isPrimitiveUse);
+    return;
+  }
+  const legacy = component.radix;
+  component.primitives = Array.isArray(legacy)
+    ? legacy.filter((pkg): pkg is string => typeof pkg === "string").map((pkg) => ({ library: "radix", package: pkg }))
+    : [];
+  delete component.radix;
+}
+
+function isPrimitiveUse(value: unknown): value is PrimitiveUse {
+  if (!value || typeof value !== "object") return false;
+  const entry = value as { library?: unknown; package?: unknown };
+  return typeof entry.library === "string" && typeof entry.package === "string";
 }
 
 export function writeCatalog(root: string, relative: string, catalog: Catalog): void {

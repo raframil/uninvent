@@ -31,7 +31,7 @@ test("scan, exists, and check on the demo app", () => {
   assert.match(dialog.text, /^Dialog  src\/components\/ui\/dialog\.tsx:\d+\n/);
   assert.equal(dialog.text.trim().split("\n\n").length, 1);
   assert.match(dialog.text, /import \{ Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription \} from "@\/components\/ui\/dialog";/);
-  assert.match(dialog.text, /radix: @radix-ui\/react-dialog/);
+  assert.match(dialog.text, /primitives: radix \(@radix-ui\/react-dialog\)/);
   assert.match(dialog.text, /props: open\?, onOpenChange\?, children\?/);
   assert.match(dialog.text, /also: DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription/);
 

@@ -21,7 +21,7 @@ export function buttonComponent(overrides: Partial<CatalogComponent> = {}): Cata
       { name: "variant", options: ["default", "ghost"], defaultValue: "default" },
       { name: "size", options: ["default", "sm"], defaultValue: "default" },
     ],
-    radix: ["@radix-ui/react-slot"],
+    primitives: [{ library: "radix", package: "@radix-ui/react-slot" }],
     elements: ["button"],
     stories: [],
     ...overrides,

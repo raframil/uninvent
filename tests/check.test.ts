@@ -16,7 +16,7 @@ const catalog = sampleCatalog([
     importPath: "@/components/ui/input",
     elements: ["input"],
     variants: [],
-    radix: [],
+    primitives: [],
     props: [],
   }),
   buttonComponent({
@@ -25,7 +25,7 @@ const catalog = sampleCatalog([
     importPath: "@/components/ui/dialog",
     elements: [],
     variants: [],
-    radix: ["@radix-ui/react-dialog"],
+    primitives: [{ library: "radix", package: "@radix-ui/react-dialog" }],
     props: [{ name: "open", optional: true }],
   }),
 ]);

@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { matchPrimitive, type PrimitiveUse } from "../primitives.js";
 import type { PropInfo, VariantGroup } from "../types.js";
 
 export interface ExtractedComponent {
@@ -7,7 +8,7 @@ export interface ExtractedComponent {
   props: PropInfo[];
   extends: string[];
   variants: VariantGroup[];
-  radix: string[];
+  primitives: PrimitiveUse[];
   elements: string[];
 }
 
@@ -43,13 +44,13 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
 
   const variants = new Map<string, VariantGroup[]>();
   const types = new Map<string, TypeInfo>();
-  const radix = new Set<string>();
+  const primitives = new Map<string, PrimitiveUse>();
   const declarations = new Map<string, { node: ts.Node; line: number; propsType?: ts.TypeNode; body?: ts.Node }>();
   const exported = new Set<string>();
   const exportAliases = new Map<string, string>();
 
   for (const statement of sourceFile.statements) {
-    collectImports(statement, radix);
+    collectImports(statement, primitives);
     collectTypes(statement, sourceFile, types);
     collectVariants(statement, variants);
     collectDeclaration(statement, sourceFile, declarations, exported);
@@ -69,7 +70,9 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
       props: resolved.props,
       extends: unique(resolved.extendNames),
       variants: groups,
-      radix: [...radix].sort(),
+      primitives: [...primitives.values()].sort(
+        (a, b) => a.library.localeCompare(b.library) || a.package.localeCompare(b.package),
+      ),
       elements: decl.body ? elementsIn(decl.body) : [],
     });
   }
@@ -82,11 +85,12 @@ function emptyType(): TypeInfo {
   return { props: [], extendNames: [], variantRefs: [] };
 }
 
-function collectImports(statement: ts.Statement, radix: Set<string>): void {
+function collectImports(statement: ts.Statement, found: Map<string, PrimitiveUse>): void {
   if (!ts.isImportDeclaration(statement)) return;
   if (!ts.isStringLiteral(statement.moduleSpecifier)) return;
-  const source = statement.moduleSpecifier.text;
-  if (source.startsWith("@radix-ui/")) radix.add(source);
+  const hit = matchPrimitive(statement.moduleSpecifier.text);
+  if (!hit) return;
+  found.set(`${hit.library}\0${hit.package}`, hit);
 }
 
 function collectTypes(statement: ts.Statement, sourceFile: ts.SourceFile, types: Map<string, TypeInfo>): void {

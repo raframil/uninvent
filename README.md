@@ -29,7 +29,7 @@ $ uninvent exists Dialog
 Dialog  src/components/ui/dialog.tsx:5
   import { Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
   props: open?, onOpenChange?, children?
-  radix: @radix-ui/react-dialog
+  primitives: radix (@radix-ui/react-dialog)
   stories: src/components/ui/dialog.stories.tsx
   also: DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription
 
@@ -107,7 +107,7 @@ Reused: Button, PageHeader, Table, TableBody, TableCell, TableHead, TableHeader,
 
 Two rules, both exact:
 
-1. A raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` in app code, when the catalog has `Button`, `Input`, `Textarea`, `Select`, or `Dialog`.
+1. A raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` in app code, when the catalog has `Button`, `Input`, `Textarea`, `Select`, or `Dialog`. The match is the component name. A Base UI wrapper and a Radix wrapper are the same miss.
 2. A new export whose name matches a catalog component (`export function Button` outside `components/ui`).
 
 A `<div>` is not a miss. A file named `Modal.tsx` is not a miss by itself — the native `<dialog>` inside it is, and the suggestion is `ui/Dialog`. Files inside the design-system folder, stories, and tests are skipped. uninvent does not guess that a custom card is "80% our Card".
@@ -134,7 +134,18 @@ That leaves `.uninvent/catalog.json` un-ignored. Remove the `.uninvent/` line fr
 
 ## Catalog
 
-`scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, `@radix-ui/*` imports, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, and CSS variables declared in the stylesheet from `components.json`.
+`scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, headless primitives, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, and CSS variables declared in the stylesheet from `components.json`.
+
+Primitives come from a small adapter map in `src/primitives.ts`. Each hit is `{ library, package }`. Built in today:
+
+| Library id | Import specifiers |
+|---|---|
+| `radix` | `@radix-ui/*` |
+| `base-ui` | `@base-ui/react` and `@base-ui/react/*`, plus the older `@base-ui-components/react` |
+| `react-aria` | `react-aria`, `react-aria-components`, `@react-aria/*` |
+| `ark` | `@ark-ui/react` |
+
+Another headless library is one entry on that list. `check` does not read it. The raw-element rule only cares that the catalog has a component with the matching name.
 
 Scanning uses the TypeScript compiler API and does not typecheck the app, so it works on the fixture without installing React. `check` and the hook parse JSX with Babel and only read the JSON catalog, so they stay small enough to run on every edit.
 
@@ -142,7 +153,7 @@ Discovery looks at `uninvent.json` `"ui"`, then `components.json` `aliases.ui`, 
 
 ## Supported stack
 
-v0.1 understands React + TypeScript files in a shadcn-style folder: Radix primitives, Tailwind (v3 `theme.extend` or v4 `@theme`), and variants from `class-variance-authority` or `tailwind-variants`. Story files are recorded, not generated.
+v0.1 understands React + TypeScript files in a shadcn-style folder: Radix or Base UI primitives (React Aria and Ark are on the same adapter map), Tailwind (v3 `theme.extend` or v4 `@theme`), and variants from `class-variance-authority` or `tailwind-variants`. Story files are recorded, not generated. The demo app wraps Radix. `tests/fixtures/base-ui` is the same check against shadcn's Base UI wrappers.
 
 Not in this version: Vue, CSS-in-JS, multi-package monorepos, composition recipes, Storybook state coverage, an MCP server, autofix, and token linting.
 
@@ -154,7 +165,7 @@ Not in this version: Vue, CSS-in-JS, multi-package monorepos, composition recipe
 | [shadcn MCP](https://ui.shadcn.com/docs/mcp) | Find and install registry items. | Watch the `ui` folder that is already in the repo, including components that were never published. |
 | [craft](https://github.com/diego3g/craft) | The design process: brief, states, sync with the tool. | The code the agent just wrote. |
 | [ds-canon](https://github.com/jtrainer357/ds-canon) | An authored canon over MCP, plus drift. | No MCP in v0.1. The check and the hook come first. |
-| [ReuseGate](https://github.com/SuperMarioYL/reusegate) | A generic gate on symbols. | UI only: CVA, Radix, raw controls, design-system names. |
+| [ReuseGate](https://github.com/SuperMarioYL/reusegate) | A generic gate on symbols. | UI only: CVA, Radix, Base UI, raw controls, design-system names. |
 | Buoy, design-lint, remediation | Loose tokens and one-off values. | Not this. uninvent records CSS variables and then leaves them alone. |
 
 ## Development
