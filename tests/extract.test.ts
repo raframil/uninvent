@@ -60,6 +60,32 @@ test("keeps dialog siblings and does not treat a cva helper as a component", () 
   assert.deepEqual(dialog?.primitives, [{ library: "radix", package: "@radix-ui/react-dialog" }]);
 });
 
+test("reads exports, props, and string-literal variants from a declaration file", () => {
+  const source = `
+    import * as React from "react";
+    export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+      variant?: "default" | "destructive" | "outline";
+      size?: "default" | "sm";
+      loading?: boolean;
+    }
+    export declare const Button: React.ForwardRefExoticComponent<
+      ButtonProps & React.RefAttributes<HTMLButtonElement>
+    >;
+  `;
+  const [button] = extractFile("button.d.ts", source);
+  assert.ok(button);
+  assert.equal(button.name, "Button");
+  assert.equal(button.props.some((prop) => prop.name === "loading" && prop.optional), true);
+  assert.equal(button.props.some((prop) => prop.name === "variant" && prop.optional), true);
+  assert.deepEqual(button.variants.find((variant) => variant.name === "variant")?.options, [
+    "default",
+    "destructive",
+    "outline",
+  ]);
+  assert.deepEqual(button.variants.find((variant) => variant.name === "size")?.options, ["default", "sm"]);
+  assert.equal(button.elements.includes("button"), true);
+});
+
 test("records Base UI, React Aria, and Ark through the adapter map", () => {
   const base = extractFile(
     "dialog.tsx",

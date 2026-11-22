@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "version": "0.3.1",
+  "version": "0.4.0",
   "source": "local",
-  "git": "926c82c8d21ae0197bbbc83b43e861cf97e458f8",
-  "generatedAt": "2026-11-22T21:28:44.362Z",
+  "git": "305ca05f3a8595a7da44045a17a23bb4e7a87154",
+  "generatedAt": "2026-11-22T21:22:46.331Z",
   "tokenizer": "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)",
   "detection": {
-    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,clean-fp:0/9",
+    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,package:3/3,clean-fp:0/13",
     "categories": {
       "raw-control": {
         "caught": 4,
@@ -68,18 +68,33 @@
           "falsePositives": 0
         }
       },
+      "package": {
+        "caught": 3,
+        "total": 3,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 2,
+          "total": 2,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 1,
+          "total": 1,
+          "falsePositives": 0
+        }
+      },
       "clean": {
         "caught": 0,
-        "total": 9,
+        "total": 13,
         "falsePositives": 0,
         "withRule": {
           "caught": 0,
-          "total": 6,
+          "total": 8,
           "falsePositives": 0
         },
         "heldOut": {
           "caught": 0,
-          "total": 3,
+          "total": 5,
           "falsePositives": 0
         }
       }
@@ -357,6 +372,89 @@
         "lines": []
       },
       {
+        "id": "package-badge-spinner",
+        "file": "src/pages/BadgeSpinner.tsx",
+        "category": "package",
+        "origin": "with-rule",
+        "catch": "reinvented",
+        "note": "A spinner inside Badge, imported from the workspace package @acme/ui. Badge's story sets loading.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented loading on Badge in src/pages/BadgeSpinner.tsx:6, use @acme/ui Badge loading"
+        ]
+      },
+      {
+        "id": "package-second-badge",
+        "file": "src/pages/SecondBadge.tsx",
+        "category": "package",
+        "origin": "with-rule",
+        "catch": "export",
+        "note": "A second export named Badge. Badge is exported from @acme/ui, not from components/ui.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "export Badge in src/pages/SecondBadge.tsx:1, use @acme/ui Badge"
+        ]
+      },
+      {
+        "id": "package-second-banner",
+        "file": "src/pages/SecondBanner.tsx",
+        "category": "package",
+        "origin": "held-out",
+        "catch": "export",
+        "note": "A second export named Banner. Banner exists only as a .d.ts in node_modules/@vendor/ui.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "export Banner in src/pages/SecondBanner.tsx:1, use @vendor/ui Banner"
+        ]
+      },
+      {
+        "id": "clean-uses-badge",
+        "file": "src/pages/UsesBadge.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "Imports Badge from the @acme/ui barrel. That import is reuse.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-uses-badge-subpath",
+        "file": "src/pages/UsesBadgeSubpath.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "The same Badge, imported from the @acme/ui/badge subpath.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-uses-banner",
+        "file": "src/pages/UsesBanner.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "Imports Banner from the installed package. Declarations only, no source.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-package-source",
+        "file": "packages/ui/src/badge.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "The workspace package source itself.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
         "id": "clean-chart",
         "file": "src/pages/UsageChart.tsx",
         "category": "clean",
@@ -370,8 +468,8 @@
     ]
   },
   "tokens": {
-    "skill": 630,
-    "agents": 131,
+    "skill": 728,
+    "agents": 150,
     "exists": {
       "query": "loading button",
       "tokens": 30,
@@ -462,6 +560,21 @@
           "file": "src/pages/AliasInput.tsx",
           "line": "export Input in src/pages/AliasInput.tsx:1, use ui/Input",
           "tokens": 16
+        },
+        {
+          "file": "src/pages/BadgeSpinner.tsx",
+          "line": "reinvented loading on Badge in src/pages/BadgeSpinner.tsx:6, use @acme/ui Badge loading",
+          "tokens": 24
+        },
+        {
+          "file": "src/pages/SecondBadge.tsx",
+          "line": "export Badge in src/pages/SecondBadge.tsx:1, use @acme/ui Badge",
+          "tokens": 19
+        },
+        {
+          "file": "src/pages/SecondBanner.tsx",
+          "line": "export Banner in src/pages/SecondBanner.tsx:1, use @vendor/ui Banner",
+          "tokens": 18
         }
       ],
       "meanPerFinding": 19.9
@@ -470,43 +583,21 @@
   "latencyMs": {
     "samples": 5,
     "scan": {
-      "median": 324.7,
-      "min": 314.7,
-      "max": 327.9
+      "median": 363.3,
+      "min": 361,
+      "max": 373.4
     },
     "hookClean": {
-      "median": 38.6,
-      "min": 37.7,
-      "max": 41.7
+      "median": 82.4,
+      "min": 80.7,
+      "max": 83.6
     },
     "hookDirty": {
-      "median": 38,
-      "min": 36.5,
-      "max": 38.6
+      "median": 82.5,
+      "min": 80.4,
+      "max": 83.8
     },
-    "hookRun": {
-      "samples": 21,
-      "cold": {
-        "p50": 35,
-        "p95": 36.9,
-        "min": 34,
-        "max": 38.2
-      },
-      "warm": {
-        "p50": 33.7,
-        "p95": 35.7,
-        "min": 31.7,
-        "max": 36.4
-      },
-      "warmDirty": {
-        "p50": 34.2,
-        "p95": 36.2,
-        "min": 31,
-        "max": 38.7
-      },
-      "note": "uninvent hook with a PostToolUse event, wall time in milliseconds. Cold sets NODE_DISABLE_COMPILE_CACHE. Warm shares one V8 compile cache after a single warmup. p50 and p95 are within that set."
-    },
-    "note": "Median CLI wall time in milliseconds, including Node startup. hookClean and hookDirty run uninvent check on one file. Detection counts do not depend on this."
+    "note": "Median CLI wall time in milliseconds, including Node startup. Detection counts do not depend on this."
   },
   "agentTrial": {
     "status": "skipped",

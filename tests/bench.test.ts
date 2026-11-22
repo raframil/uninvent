@@ -118,7 +118,7 @@ test("the current CLI agrees with itself on the benchmark corpus", () => {
     assert.deepEqual(first, second);
     const scored = scoreDetection(manifest.cases.map((spec, index) => scoreCase(spec, first[index]?.stdout ?? "")));
     assert.equal(scored.categories.clean?.falsePositives, 0);
-    for (const name of ["raw-control", "recipe", "documented-state", "name-collision"]) {
+    for (const name of ["raw-control", "recipe", "documented-state", "name-collision", "package"]) {
       const category = scored.categories[name];
       assert.ok(category);
       assert.equal(category.caught, category.total, `${name} ${category.caught}/${category.total}`);

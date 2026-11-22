@@ -41,6 +41,7 @@ export function sampleCatalog(components: CatalogComponent[] = [buttonComponent(
 export function sampleConfig(overrides: Partial<Config> = {}): Config {
   return {
     ui: ["src/components/ui"],
+    packages: [],
     ignore: ["**/*.stories.tsx", "**/*.test.tsx"],
     catalog: ".uninvent/catalog.json",
     commitCatalog: false,

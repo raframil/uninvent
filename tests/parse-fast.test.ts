@@ -29,12 +29,18 @@ test("a plain file does not load Babel", () => {
 
 test("the fast scanner matches Babel on the repo's TSX", () => {
   const files = [
-    ...walk(path.join(import.meta.dirname, "../examples")),
-    ...walk(path.join(import.meta.dirname, "../tests/fixtures")),
-    ...walk(path.join(import.meta.dirname, "../bench/corpus")),
+    ...walk(path.join(import.meta.dirname, "../examples"), /\.(tsx|jsx)$/),
+    ...walk(path.join(import.meta.dirname, "../tests/fixtures"), /\.(tsx|jsx)$/),
+    ...walk(path.join(import.meta.dirname, "../bench/corpus"), /\.(tsx|jsx)$/),
+    ...walk(path.join(import.meta.dirname, "../tests/fixtures/workspace"), /\.(tsx|ts|d\.ts)$/),
+    ...walk(path.join(import.meta.dirname, "../tests/fixtures/installed"), /\.(tsx|ts|d\.ts)$/),
   ];
-  assert.ok(files.length >= 60);
-  for (const file of files) {
+  const unique = [...new Set(files)];
+  assert.ok(unique.some((file) => file.includes("fixtures/workspace")));
+  assert.ok(unique.some((file) => file.includes("fixtures/installed")));
+  assert.ok(unique.some((file) => file.endsWith("index.ts")));
+  assert.ok(unique.some((file) => file.endsWith(".d.ts")));
+  for (const file of unique) {
     const source = readFileSync(file, "utf8");
     const fast = parseFast(source);
     const babel = parseWithBabel(source, file);
@@ -100,12 +106,14 @@ test("enabling the compile cache does not throw", () => {
   assert.doesNotThrow(() => enableCompileCache());
 });
 
-function walk(dir: string, acc: string[] = []): string[] {
+function walk(dir: string, pattern: RegExp, acc: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
-    if (name === "node_modules" || name === "dist") continue;
     const full = path.join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, acc);
-    else if (/\.(tsx|jsx)$/.test(name)) acc.push(full);
+    if (statSync(full).isDirectory()) {
+      if (name === "node_modules" && !dir.includes(`${path.sep}fixtures${path.sep}installed`) && !dir.endsWith(`${path.sep}installed`)) continue;
+      if (name === "dist" && !full.includes(`${path.sep}node_modules${path.sep}`)) continue;
+      walk(full, pattern, acc);
+    } else if (pattern.test(name)) acc.push(full);
   }
   return acc;
 }

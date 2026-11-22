@@ -42,8 +42,10 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
     fileName.endsWith(".tsx") || fileName.endsWith(".jsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
 
+  const declarationFile = fileName.endsWith(".d.ts");
   const variants = new Map<string, VariantGroup[]>();
   const types = new Map<string, TypeInfo>();
+  const typeNodes = new Map<string, ts.TypeNode | ts.InterfaceDeclaration>();
   const primitives = new Map<string, PrimitiveUse>();
   const declarations = new Map<string, { node: ts.Node; line: number; propsType?: ts.TypeNode; body?: ts.Node }>();
   const exported = new Set<string>();
@@ -51,7 +53,7 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
 
   for (const statement of sourceFile.statements) {
     collectImports(statement, primitives);
-    collectTypes(statement, sourceFile, types);
+    collectTypes(statement, sourceFile, types, typeNodes);
     collectVariants(statement, variants);
     collectDeclaration(statement, sourceFile, declarations, exported);
     collectExportNames(statement, exported, exportAliases);
@@ -64,16 +66,31 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
     if (variants.has(name) && !decl.propsType && !decl.body) continue;
     const resolved = decl.propsType ? resolveType(decl.propsType, types, new Set()) : emptyType();
     const groups = variantGroupsFor(resolved.variantRefs, variants, decl.body, [...variants.keys()]);
+    if (declarationFile && decl.propsType) {
+      for (const group of variantsFromType(decl.propsType, typeNodes)) {
+        if (groups.some((entry) => entry.name === group.name)) continue;
+        groups.push(group);
+      }
+    }
+    const elements = decl.body ? elementsIn(decl.body) : [];
+    if (declarationFile) {
+      for (const element of elementsFromTypeText(resolved.extendNames)) {
+        if (!elements.includes(element)) elements.push(element);
+      }
+    }
+    const extendNames = declarationFile
+      ? resolved.extendNames.filter((name) => !name.includes("RefAttributes"))
+      : resolved.extendNames;
     components.push({
       name,
       line: decl.line,
       props: resolved.props,
-      extends: unique(resolved.extendNames),
+      extends: unique(extendNames),
       variants: groups,
       primitives: [...primitives.values()].sort(
         (a, b) => a.library.localeCompare(b.library) || a.package.localeCompare(b.package),
       ),
-      elements: decl.body ? elementsIn(decl.body) : [],
+      elements,
     });
   }
 
@@ -93,13 +110,20 @@ function collectImports(statement: ts.Statement, found: Map<string, PrimitiveUse
   found.set(`${hit.library}\0${hit.package}`, hit);
 }
 
-function collectTypes(statement: ts.Statement, sourceFile: ts.SourceFile, types: Map<string, TypeInfo>): void {
+function collectTypes(
+  statement: ts.Statement,
+  sourceFile: ts.SourceFile,
+  types: Map<string, TypeInfo>,
+  typeNodes: Map<string, ts.TypeNode | ts.InterfaceDeclaration>,
+): void {
   if (ts.isInterfaceDeclaration(statement)) {
     types.set(statement.name.text, typeFromInterface(statement, sourceFile));
+    typeNodes.set(statement.name.text, statement);
     return;
   }
   if (ts.isTypeAliasDeclaration(statement)) {
     types.set(statement.name.text, resolveType(statement.type, types, new Set([statement.name.text])));
+    typeNodes.set(statement.name.text, statement.type);
   }
 }
 
@@ -126,8 +150,17 @@ function collectDeclaration(
     declarations.set(statement.name.text, {
       node: statement,
       line: lineOf(sourceFile, statement),
-      propsType: statement.parameters[0]?.type,
+      propsType: unwrapPropsType(statement.parameters[0]?.type),
       body: statement.body,
+    });
+    if (exportModifier) exported.add(statement.name.text);
+    return;
+  }
+  if (ts.isClassDeclaration(statement) && statement.name && isComponentName(statement.name.text)) {
+    declarations.set(statement.name.text, {
+      node: statement,
+      line: lineOf(sourceFile, statement),
+      propsType: unwrapPropsType(classPropsType(statement)),
     });
     if (exportModifier) exported.add(statement.name.text);
     return;
@@ -135,20 +168,30 @@ function collectDeclaration(
   if (!ts.isVariableStatement(statement)) return;
   for (const declaration of statement.declarationList.declarations) {
     if (!ts.isIdentifier(declaration.name) || !isComponentName(declaration.name.text)) continue;
-    if (!declaration.initializer) continue;
-    const call = unwrapCall(declaration.initializer);
-    const kind = call ? callName(call) : null;
-    if (kind === "cva" || kind === "tv") continue;
-    const forward = call && kind === "forwardRef" ? call : undefined;
-    const inner = forward ? functionArg(forward) : undefined;
-    const propsType = forward?.typeArguments?.[1] ?? inner?.parameters[0]?.type;
-    const body = inner?.body ?? (isFunctionLike(declaration.initializer) ? declaration.initializer.body : undefined);
-    declarations.set(declaration.name.text, {
-      node: declaration,
-      line: lineOf(sourceFile, declaration),
-      propsType,
-      body,
-    });
+    if (!declaration.initializer && !declaration.type) continue;
+    if (declaration.initializer) {
+      const call = unwrapCall(declaration.initializer);
+      const kind = call ? callName(call) : null;
+      if (kind === "cva" || kind === "tv") continue;
+      const forward = call && kind === "forwardRef" ? call : undefined;
+      const inner = forward ? functionArg(forward) : undefined;
+      const propsType = unwrapPropsType(
+        forward?.typeArguments?.[1] ?? inner?.parameters[0]?.type ?? declaration.type,
+      );
+      const body = inner?.body ?? (isFunctionLike(declaration.initializer) ? declaration.initializer.body : undefined);
+      declarations.set(declaration.name.text, {
+        node: declaration,
+        line: lineOf(sourceFile, declaration),
+        propsType,
+        body,
+      });
+    } else {
+      declarations.set(declaration.name.text, {
+        node: declaration,
+        line: lineOf(sourceFile, declaration),
+        propsType: unwrapPropsType(declaration.type),
+      });
+    }
     if (exportModifier) exported.add(declaration.name.text);
   }
 }
@@ -430,4 +473,138 @@ function shortText(node: ts.Node): string | undefined {
 
 function unique(values: string[]): string[] {
   return [...new Set(values)];
+}
+
+/**
+ * `React.FC<Props>` and `declare const Button: (props: Props) => ...` carry
+ * the props on a wrapper. A plain `Props` annotation is returned as itself.
+ */
+function unwrapPropsType(type: ts.TypeNode | undefined): ts.TypeNode | undefined {
+  if (!type) return undefined;
+  const componentType = componentPropsArgument(type, 0);
+  if (componentType) return componentType;
+  const parameter = parameterProps(type);
+  if (parameter) return parameter;
+  return type;
+}
+
+function componentPropsArgument(type: ts.TypeNode, depth: number): ts.TypeNode | undefined {
+  if (depth > 4) return undefined;
+  if (ts.isParenthesizedTypeNode(type)) return componentPropsArgument(type.type, depth);
+  if (ts.isIntersectionTypeNode(type)) return type;
+  if (!ts.isTypeReferenceNode(type)) return undefined;
+  const name = referenceName(type.typeName);
+  if (!/(?:^|\.)(FC|FunctionComponent|ForwardRefExoticComponent|ComponentType|Component)$/.test(name)) {
+    return undefined;
+  }
+  const argument = type.typeArguments?.[0];
+  if (!argument) return undefined;
+  return componentPropsArgument(argument, depth + 1) ?? argument;
+}
+
+function parameterProps(type: ts.TypeNode): ts.TypeNode | undefined {
+  if (ts.isParenthesizedTypeNode(type)) return parameterProps(type.type);
+  if (ts.isFunctionTypeNode(type) || ts.isConstructorTypeNode(type)) return type.parameters[0]?.type;
+  if (ts.isUnionTypeNode(type)) {
+    for (const part of type.types) {
+      const found = parameterProps(part);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+function referenceName(name: ts.EntityName): string {
+  if (ts.isIdentifier(name)) return name.text;
+  return `${referenceName(name.left)}.${name.right.text}`;
+}
+
+function classPropsType(node: ts.ClassDeclaration): ts.TypeNode | undefined {
+  for (const heritage of node.heritageClauses ?? []) {
+    for (const type of heritage.types) {
+      const argument = type.typeArguments?.[0];
+      if (argument) return argument;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * A published `.d.ts` usually drops `cva()` and keeps `variant?: "a" | "b"`.
+ * Those unions are the variant list. Source files still use `cva()` / `tv()` only.
+ */
+function variantsFromType(
+  node: ts.TypeNode | undefined,
+  typeNodes: Map<string, ts.TypeNode | ts.InterfaceDeclaration>,
+  seen: Set<string> = new Set(),
+): VariantGroup[] {
+  if (!node) return [];
+  if (ts.isParenthesizedTypeNode(node)) return variantsFromType(node.type, typeNodes, seen);
+  if (ts.isIntersectionTypeNode(node) || ts.isUnionTypeNode(node)) {
+    return dedupeGroups(node.types.flatMap((part) => variantsFromType(part, typeNodes, seen)));
+  }
+  if (ts.isTypeLiteralNode(node)) return variantsFromMembers(node.members);
+  const argument = componentPropsArgument(node, 0);
+  if (argument && argument !== node) return variantsFromType(argument, typeNodes, seen);
+  if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+    const name = node.typeName.text;
+    if (seen.has(name)) return [];
+    const declared = typeNodes.get(name);
+    if (!declared) return [];
+    seen.add(name);
+    if (ts.isInterfaceDeclaration(declared)) return variantsFromMembers(declared.members);
+    return variantsFromType(declared, typeNodes, seen);
+  }
+  return [];
+}
+
+function variantsFromMembers(members: ts.NodeArray<ts.TypeElement>): VariantGroup[] {
+  const groups: VariantGroup[] = [];
+  for (const member of members) {
+    if (!ts.isPropertySignature(member) || !member.name) continue;
+    const name = propertyName(member.name);
+    const options = stringLiteralUnion(member.type);
+    if (!name || !options) continue;
+    groups.push({ name, options });
+  }
+  return groups;
+}
+
+function stringLiteralUnion(type: ts.TypeNode | undefined): string[] | null {
+  if (!type) return null;
+  let node = type;
+  while (ts.isParenthesizedTypeNode(node)) node = node.type;
+  if (!ts.isUnionTypeNode(node)) return null;
+  const options: string[] = [];
+  for (const part of node.types) {
+    if (!ts.isLiteralTypeNode(part) || !ts.isStringLiteral(part.literal)) return null;
+    options.push(part.literal.text);
+    if (options.length > 24) return null;
+  }
+  return options.length > 0 ? options : null;
+}
+
+function dedupeGroups(groups: VariantGroup[]): VariantGroup[] {
+  const seen = new Set<string>();
+  const uniqueGroups: VariantGroup[] = [];
+  for (const group of groups) {
+    if (seen.has(group.name)) continue;
+    seen.add(group.name);
+    uniqueGroups.push(group);
+  }
+  return uniqueGroups;
+}
+
+function elementsFromTypeText(names: string[]): string[] {
+  const found: string[] = [];
+  for (const name of names) {
+    if (name.includes("ButtonHTMLAttributes")) found.push("button");
+    else if (name.includes("InputHTMLAttributes")) found.push("input");
+    else if (name.includes("TextareaHTMLAttributes")) found.push("textarea");
+    else if (name.includes("SelectHTMLAttributes")) found.push("select");
+    else if (name.includes("AnchorHTMLAttributes")) found.push("a");
+    const componentProps = name.match(/ComponentProps<\s*["'](button|input|textarea|select|a|dialog)["']/);
+    if (componentProps?.[1]) found.push(componentProps[1]);
+  }
+  return unique(found);
 }

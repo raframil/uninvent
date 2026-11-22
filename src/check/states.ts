@@ -1,7 +1,6 @@
-import { importStatement, suggestionLabel } from "../catalog.js";
+import { componentForImport, importStatement, suggestionLabel } from "../catalog.js";
 import { parseUiSource } from "../parse/file.js";
 import type { ImportRef } from "../parse/types.js";
-import { resolveSpecifier, stripExt } from "../paths.js";
 import type { Catalog, CatalogComponent, Finding, VariantGroup } from "../types.js";
 import { describeFinding } from "./format.js";
 
@@ -128,7 +127,7 @@ export function findStateFindings(options: {
         component: host.component,
         catalog: options.catalog,
         state: host.prop,
-        suggestion: `${suggestionLabel(host.component.name)} ${host.prop}`,
+        suggestion: `${suggestionLabel(host.component.name, options.catalog, host.component)} ${host.prop}`,
         withLine: options.withLine !== false,
       }));
     }
@@ -154,7 +153,7 @@ function loadingInside(
     component,
     catalog: options.catalog,
     state: prop,
-    suggestion: `${suggestionLabel(component.name)} ${prop}`,
+    suggestion: `${suggestionLabel(component.name, options.catalog, component)} ${prop}`,
     withLine: options.withLine !== false,
   });
 }
@@ -225,7 +224,7 @@ function variantFinding(
     component,
     catalog: options.catalog,
     state: `${match.group.name}=${match.option}`,
-    suggestion: `${suggestionLabel(component.name)} ${prop}`,
+    suggestion: `${suggestionLabel(component.name, options.catalog, component)} ${prop}`,
     withLine: options.withLine !== false,
   });
 }
@@ -249,7 +248,7 @@ function disabledFinding(
     component,
     catalog: options.catalog,
     state: "disabled",
-    suggestion: `${suggestionLabel(component.name)} disabled`,
+    suggestion: `${suggestionLabel(component.name, options.catalog, component)} disabled`,
     withLine: options.withLine !== false,
   });
 }
@@ -334,11 +333,7 @@ function pickLine(elementLine: number, evidenceLine: number, lines: Set<number> 
 function importedComponents(specs: ImportRef[], file: string, catalog: Catalog): Map<string, CatalogComponent> {
   const imported = new Map<string, CatalogComponent>();
   for (const spec of specs) {
-    const resolved = resolveSpecifier(file, spec.specifier, catalog.paths);
-    if (!resolved) continue;
-    const component = catalog.components.find(
-      (entry) => stripExt(entry.file) === resolved && entry.name === spec.imported,
-    );
+    const component = componentForImport(catalog.components, catalog.paths, file, spec.specifier, spec.imported);
     if (component) imported.set(spec.local, component);
   }
   return imported;

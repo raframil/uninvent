@@ -294,18 +294,27 @@ class FastParser {
   private parseExport(): void {
     this.consumeWord("export");
     this.skipSpace();
-    const word = this.peekWord();
+    let word = this.peekWord();
+    let declared = false;
+    if (word === "declare") {
+      this.consumeWord("declare");
+      this.skipSpace();
+      word = this.peekWord();
+      declared = true;
+    }
     if (word === "type" || word === "interface") {
       this.consumeWord(word);
+      this.skipSpace();
+      if (this.peek() === "{") this.skipReexportList();
       return;
     }
     if (word === "async" && this.peekWordAfter("async") === "function") {
       this.consumeWord("async");
-      this.parseFunction(true);
+      this.parseFunction(true, declared);
       return;
     }
     if (word === "function") {
-      this.parseFunction(true);
+      this.parseFunction(true, declared);
       return;
     }
     if (word === "const" || word === "let" || word === "var") {
@@ -329,7 +338,21 @@ class FastParser {
       this.prev = "return";
       return;
     }
-    if (this.peek() === "*") return;
+    if (this.peek() === "*") {
+      this.i += 1;
+      this.prev = "other";
+      this.newline = false;
+      this.skipSpace();
+      if (this.peekWord() === "as") {
+        this.consumeWord("as");
+        this.readIdent();
+        this.skipSpace();
+      }
+      this.expectWord("from");
+      this.takeModuleSpecifier();
+      this.consumeClause();
+      return;
+    }
     if (this.peek() === "{") {
       this.expect("{");
       const added = this.pendingReexports.length;
@@ -367,7 +390,35 @@ class FastParser {
     throw new Bail();
   }
 
-  private parseFunction(isExported: boolean): void {
+  /** `export type { A }` and `export { A } from` share this list. Type-only lists are not bindings. */
+  private skipReexportList(): void {
+    this.expect("{");
+    while (!this.eof() && this.peek() !== "}") {
+      this.skipSpace();
+      if (this.peek() === "}") break;
+      if (this.peekWord() === "type") this.consumeWord("type");
+      this.readIdent();
+      this.skipSpace();
+      if (this.peekWord() === "as") {
+        this.consumeWord("as");
+        this.readIdent();
+      }
+      this.skipSpace();
+      if (this.peek() === ",") {
+        this.i += 1;
+        this.prev = ",";
+      }
+    }
+    this.expect("}");
+    this.skipSpace();
+    if (this.peekWord() === "from") {
+      this.consumeWord("from");
+      this.takeModuleSpecifier();
+      this.consumeClause();
+    }
+  }
+
+  private parseFunction(isExported: boolean, declared = false): void {
     this.consumeWord("function");
     this.skipSpace();
     if (this.peek() === "*") {
@@ -378,6 +429,8 @@ class FastParser {
     if (!this.isIdentStart(this.peek())) return;
     const line = this.line;
     const name = this.readIdent();
+    // `export declare function` is a TSDeclareFunction. Babel does not treat it as a value binding.
+    if (declared) return;
     if (/^[A-Z]/.test(name)) {
       this.defined.set(name, line);
       if (isExported) this.exported.set(name, line);

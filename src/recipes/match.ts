@@ -1,4 +1,4 @@
-import { importStatement, suggestionLabel } from "../catalog.js";
+import { componentByName, importStatement, suggestionLabel } from "../catalog.js";
 import { describeFinding } from "../check/format.js";
 import { RAW_ELEMENTS, type Catalog, type CatalogComponent, type Finding, type Recipe } from "../types.js";
 import {
@@ -68,7 +68,7 @@ export function findRecipeHits(options: {
       const counts = tally(node, intrinsicTag);
       if (!withinBounds(counts, signature.signals, signature.anchor)) continue;
       if (!overlapsLines(node.line, node.endLine, options.lines)) continue;
-      const suggestion = signature.suggest.map((name) => suggestionLabel(name)).join(" + ");
+      const suggestion = signature.suggest.map((name) => suggestionLabel(name, options.catalog)).join(" + ");
       if (!suggestion) continue;
       const finding: Finding = {
         kind: "recipe",
@@ -126,7 +126,7 @@ function signatureFor(recipe: Recipe, catalog: Catalog): Signature | null {
   if (!tree || tree.length === 0) return null;
   const slots = new Map<string, string>();
   for (const name of recipe.uses) {
-    const component = catalog.components.find((entry) => entry.name === name);
+    const component = componentByName(catalog, name);
     if (!component) continue;
     const tag = primaryIntrinsic(component);
     if (tag) slots.set(name, tag);
@@ -268,7 +268,7 @@ function importsFor(names: string[], catalog: Catalog): string {
   const seen = new Set<string>();
   const lines: string[] = [];
   for (const name of names) {
-    const component = catalog.components.find((entry) => entry.name === name);
+    const component = componentByName(catalog, name);
     if (!component || seen.has(component.importPath)) continue;
     seen.add(component.importPath);
     lines.push(importStatement(component, catalog));

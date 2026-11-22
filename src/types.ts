@@ -60,7 +60,13 @@ export interface CatalogComponent {
   /** Project-relative posix path. */
   file: string;
   line: number;
+  /** Specifier agents should paste. A package component uses the package name or a subpath. */
   importPath: string;
+  /**
+   * Other specifiers that also export this component (`@acme/ui` and `@acme/ui/button`).
+   * Absent when `importPath` is the only one, and on catalogs written before package sources.
+   */
+  specifiers?: string[];
   props: PropInfo[];
   extends: string[];
   variants: VariantGroup[];
@@ -116,10 +122,27 @@ export interface Catalog {
    * Absent on v0.1 catalogs. Readers treat that as no recipes.
    */
   recipes?: Recipe[];
+  /**
+   * Design-system packages folded into this catalog.
+   * Absent on catalogs written before package sources. Readers treat that as none.
+   */
+  packages?: CatalogPackage[];
+}
+
+/** One design-system package `scan` read. `dir` is project-relative and may start with `..`. */
+export interface CatalogPackage {
+  name: string;
+  dir: string;
 }
 
 export interface Config {
+  /** Local design-system directories. Empty means scan still searches the usual folders. */
   ui: string[];
+  /**
+   * Package names (`@acme/ui`) or paths to a package directory (`packages/ui`).
+   * Absent in a config file means none.
+   */
+  packages: string[];
   ignore: string[];
   catalog: string;
   commitCatalog: boolean;
@@ -130,7 +153,7 @@ export interface Finding {
   file: string;
   line: number;
   message: string;
-  /** Short label, `ui/Button`, `ui/Dialog + ui/Button`, or `ui/Button loading`. */
+  /** Short label, `ui/Button`, `@acme/ui Button`, or `ui/Button loading`. */
   suggestion: string;
   import: string;
   element?: string;

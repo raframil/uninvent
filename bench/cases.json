@@ -182,6 +182,62 @@
       "note": "An account form. Variant is set, no copied classes, no spinner."
     },
     {
+      "id": "package-badge-spinner",
+      "file": "src/pages/BadgeSpinner.tsx",
+      "category": "package",
+      "origin": "with-rule",
+      "catch": "reinvented",
+      "note": "A spinner inside Badge, imported from the workspace package @acme/ui. Badge's story sets loading."
+    },
+    {
+      "id": "package-second-badge",
+      "file": "src/pages/SecondBadge.tsx",
+      "category": "package",
+      "origin": "with-rule",
+      "catch": "export",
+      "note": "A second export named Badge. Badge is exported from @acme/ui, not from components/ui."
+    },
+    {
+      "id": "package-second-banner",
+      "file": "src/pages/SecondBanner.tsx",
+      "category": "package",
+      "origin": "held-out",
+      "catch": "export",
+      "note": "A second export named Banner. Banner exists only as a .d.ts in node_modules/@vendor/ui."
+    },
+    {
+      "id": "clean-uses-badge",
+      "file": "src/pages/UsesBadge.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "Imports Badge from the @acme/ui barrel. That import is reuse."
+    },
+    {
+      "id": "clean-uses-badge-subpath",
+      "file": "src/pages/UsesBadgeSubpath.tsx",
+      "category": "clean",
+      "origin": "held-out",
+      "catch": "silent",
+      "note": "The same Badge, imported from the @acme/ui/badge subpath."
+    },
+    {
+      "id": "clean-uses-banner",
+      "file": "src/pages/UsesBanner.tsx",
+      "category": "clean",
+      "origin": "held-out",
+      "catch": "silent",
+      "note": "Imports Banner from the installed package. Declarations only, no source."
+    },
+    {
+      "id": "clean-package-source",
+      "file": "packages/ui/src/badge.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "The workspace package source itself."
+    },
+    {
       "id": "clean-chart",
       "file": "src/pages/UsageChart.tsx",
       "category": "clean",

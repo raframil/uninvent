@@ -9,7 +9,7 @@ import { UserError } from "./errors.js";
 enableCompileCache();
 
 const BOOLEAN_FLAGS = new Set(["help", "h", "version", "v", "commit", "pre", "force"]);
-const VALUE_FLAGS = new Set(["cwd", "format", "base", "file", "ui"]);
+const VALUE_FLAGS = new Set(["cwd", "format", "base", "file", "ui", "package"]);
 
 /** Enough of the argument list to choose the hook entry without loading the rest of the CLI. */
 function peekCommand(argv: string[]): string | undefined {

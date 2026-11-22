@@ -111,7 +111,7 @@ export function renderReport(results: BenchResult[]): string {
     "",
     "This is a checker benchmark. Each case is a file in `bench/corpus`. `caught / total` is how many non-clean cases in that category produced the finding kind the case asks for (`raw`, `rebuilt`, `reinvented`, or `export`). A clean file that prints anything is a false positive. Cases marked `with-rule` were written with the rule they exercise, including the original demo shapes. Cases marked `held-out` are different files: another control, another wording of the confirm dialog, a loader beside the button, a `cn()` class string. The corpus is not the unit-test fixture set.",
     "",
-    "A version can flag the raw elements inside a recipe file and still score 0 on recipes. The recipe category only counts a `rebuilt …` line. v0.1 does that on purpose: it has no recipes. The same is true for documented states before v0.3.",
+    "A version can flag the raw elements inside a recipe file and still score 0 on recipes. The recipe category only counts a `rebuilt …` line. v0.1 does that on purpose: it has no recipes. The same is true for documented states before v0.3, and for package sources before v0.4.",
     "",
     "Token counts use cl100k_base, the OpenAI GPT-4 tokenizer, as a proxy. Claude and Cursor tokenize differently. Compare versions to each other. The skill and `AGENTS.md` numbers are what a turn carries if those files are in context. `exists` is one query. The source number is `button.tsx` plus its story, the files you would open to learn the same button. The hook number is the mean of the finding lines `check` prints. A clean file is 0. The hook does not print the catalog.",
     "",
@@ -197,7 +197,7 @@ function tokenTable(results: BenchResult[]): string {
 }
 
 function charts(results: BenchResult[], names: string[]): string[] {
-  const interesting = names.filter((name) => name === "recipe" || name === "documented-state");
+  const interesting = names.filter((name) => name === "recipe" || name === "documented-state" || name === "package");
   return interesting.map((name) => {
     const labels = results.map((result) => result.version);
     const values = results.map((result) => result.detection.categories[name]?.caught ?? 0);
@@ -275,6 +275,7 @@ function label(name: string): string {
   if (name === "recipe") return "Recipes";
   if (name === "documented-state") return "Documented states";
   if (name === "name-collision") return "Name collisions";
+  if (name === "package") return "Package sources";
   if (name === "clean") return "Clean false positives";
   return name;
 }

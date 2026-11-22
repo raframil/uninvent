@@ -1,4 +1,4 @@
-import { importStatement, siblingsOf } from "./catalog.js";
+import { componentByName, importStatement, siblingsOf } from "./catalog.js";
 import { UserError } from "./errors.js";
 import { formatPrimitives } from "./primitives.js";
 import { matchStateQuery, stateLabel, type StateQueryHit } from "./stories/states.js";
@@ -82,7 +82,7 @@ function renderRecipe(recipe: Recipe, catalog: Catalog): string {
   lines.push(`  uses: ${recipe.uses.join(", ")}`);
   const seenPaths = new Set<string>();
   for (const name of recipe.uses) {
-    const component = catalog.components.find((entry) => entry.name === name);
+    const component = componentByName(catalog, name);
     if (!component || seenPaths.has(component.importPath)) continue;
     seenPaths.add(component.importPath);
     lines.push(`  ${importStatement(component, catalog)}`);
