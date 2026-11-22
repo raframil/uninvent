@@ -6,7 +6,7 @@ Tokenizer for every token count: cl100k_base via gpt-tokenizer (OpenAI GPT-4 pro
 
 ## Latest
 
-**0.4.0** (local, `16fce42`)
+**0.4.0** (local, `305ca05`)
 
 Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions, 3/3 Package sources. 0 false positives on 13 clean files. Skill 728 tokens. `exists "loading button"` is 30 tokens. Reading the button source is 493 tokens.
 
@@ -34,7 +34,7 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 | 0.1.0 | 463 | 100 | 7 (no match) | 493 | 17.1 | 326.2 | 75.1 |
 | 0.2.0 | 573 | 118 | 7 (no match) | 493 | 17.8 | 353.5 | 79.4 |
 | 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 358.3 | 82.9 |
-| 0.4.0 | 728 | 150 | 30 | 493 | 19.9 | 380.3 | 83.7 |
+| 0.4.0 | 728 | 150 | 30 | 493 | 19.9 | 363.3 | 82.4 |
 
 ## Trend
 

@@ -2,8 +2,8 @@
   "schema": 1,
   "version": "0.4.0",
   "source": "local",
-  "git": "16fce4257fb245da980aac03b149e02a4cb0ac5c",
-  "generatedAt": "2026-11-22T21:18:13.232Z",
+  "git": "305ca05f3a8595a7da44045a17a23bb4e7a87154",
+  "generatedAt": "2026-11-22T21:22:46.331Z",
   "tokenizer": "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)",
   "detection": {
     "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,package:3/3,clean-fp:0/13",
@@ -583,19 +583,19 @@
   "latencyMs": {
     "samples": 5,
     "scan": {
-      "median": 380.3,
-      "min": 362.8,
-      "max": 412.2
+      "median": 363.3,
+      "min": 361,
+      "max": 373.4
     },
     "hookClean": {
-      "median": 83.7,
-      "min": 81.8,
-      "max": 85.7
+      "median": 82.4,
+      "min": 80.7,
+      "max": 83.6
     },
     "hookDirty": {
-      "median": 83.7,
-      "min": 81.4,
-      "max": 99.9
+      "median": 82.5,
+      "min": 80.4,
+      "max": 83.8
     },
     "note": "Median CLI wall time in milliseconds, including Node startup. Detection counts do not depend on this."
   },
