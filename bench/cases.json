@@ -1,0 +1,193 @@
+{
+  "existsQuery": "loading button",
+  "readSource": [
+    "src/components/ui/button.tsx",
+    "src/components/ui/button.stories.tsx"
+  ],
+  "cases": [
+    {
+      "id": "raw-login",
+      "file": "src/pages/Login.tsx",
+      "category": "raw-control",
+      "origin": "with-rule",
+      "catch": "raw",
+      "note": "The v0.1 demo: a sign-in form of raw input and button."
+    },
+    {
+      "id": "raw-modal",
+      "file": "src/components/Modal.tsx",
+      "category": "raw-control",
+      "origin": "with-rule",
+      "catch": "raw",
+      "note": "The v0.1 demo: a hand-rolled dialog element."
+    },
+    {
+      "id": "raw-filters",
+      "file": "src/pages/Filters.tsx",
+      "category": "raw-control",
+      "origin": "held-out",
+      "catch": "raw",
+      "note": "A toolbar select, not the login page the rule was written against."
+    },
+    {
+      "id": "raw-composer",
+      "file": "src/pages/Composer.tsx",
+      "category": "raw-control",
+      "origin": "held-out",
+      "catch": "raw",
+      "note": "A note composer with a raw textarea."
+    },
+    {
+      "id": "recipe-confirm",
+      "file": "src/components/Confirm.tsx",
+      "category": "recipe",
+      "origin": "with-rule",
+      "catch": "rebuilt",
+      "note": "The v0.2 confirm-dialog example, copied in shape from the demo."
+    },
+    {
+      "id": "recipe-archive",
+      "file": "src/pages/Archive.tsx",
+      "category": "recipe",
+      "origin": "held-out",
+      "catch": "rebuilt",
+      "note": "Same confirm shape, different words and file. Not the demo Confirm.tsx."
+    },
+    {
+      "id": "state-save-spinner",
+      "file": "src/pages/SaveButton.tsx",
+      "category": "documented-state",
+      "origin": "with-rule",
+      "catch": "reinvented",
+      "note": "The v0.3 demo: a spinner inside Button, loading not passed."
+    },
+    {
+      "id": "state-danger-class",
+      "file": "src/pages/Danger.tsx",
+      "category": "documented-state",
+      "origin": "with-rule",
+      "catch": "reinvented",
+      "note": "Copies the destructive variant class string. Written with that rule."
+    },
+    {
+      "id": "state-muted",
+      "file": "src/pages/Muted.tsx",
+      "category": "documented-state",
+      "origin": "with-rule",
+      "catch": "reinvented",
+      "note": "opacity-50 and pointer-events-none without disabled. Written with that rule."
+    },
+    {
+      "id": "state-sibling-loader",
+      "file": "src/pages/SiblingLoader.tsx",
+      "category": "documented-state",
+      "origin": "held-out",
+      "catch": "reinvented",
+      "note": "A Loader2 icon beside Button. Different shape from the in-button spinner."
+    },
+    {
+      "id": "state-cn-danger",
+      "file": "src/pages/CnDanger.tsx",
+      "category": "documented-state",
+      "origin": "held-out",
+      "catch": "reinvented",
+      "note": "The destructive classes sit inside a cn() call, not a plain string."
+    },
+    {
+      "id": "state-aria-disabled",
+      "file": "src/pages/AriaDisabled.tsx",
+      "category": "documented-state",
+      "origin": "held-out",
+      "catch": "reinvented",
+      "note": "aria-disabled instead of the disabled prop."
+    },
+    {
+      "id": "collision-button",
+      "file": "src/pages/SecondButton.tsx",
+      "category": "name-collision",
+      "origin": "with-rule",
+      "catch": "export",
+      "note": "A second export named Button. The v0.1 name rule."
+    },
+    {
+      "id": "collision-input",
+      "file": "src/pages/AliasInput.tsx",
+      "category": "name-collision",
+      "origin": "held-out",
+      "catch": "export",
+      "note": "An exported const named Input, not a function named Button."
+    },
+    {
+      "id": "clean-customers",
+      "file": "src/pages/Customers.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "The v0.1 clean screen: catalog components only."
+    },
+    {
+      "id": "clean-uses-loading",
+      "file": "src/pages/UsesLoading.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "Spinner inside Button, but loading is passed. Written with the rule."
+    },
+    {
+      "id": "clean-partial",
+      "file": "src/pages/Partial.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "Only one class from the destructive variant. The rule says stay silent."
+    },
+    {
+      "id": "clean-tie",
+      "file": "src/pages/Tie.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "A spinner equally close to two Buttons. The rule says stay silent."
+    },
+    {
+      "id": "clean-system",
+      "file": "src/components/ui/button.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "The design-system file itself."
+    },
+    {
+      "id": "clean-story",
+      "file": "src/components/ui/button.stories.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "A story file. Ignored by check."
+    },
+    {
+      "id": "clean-settings",
+      "file": "src/pages/Settings.tsx",
+      "category": "clean",
+      "origin": "held-out",
+      "catch": "silent",
+      "note": "A settings form that uses Input and Button, including loading."
+    },
+    {
+      "id": "clean-account",
+      "file": "src/pages/AccountForm.tsx",
+      "category": "clean",
+      "origin": "held-out",
+      "catch": "silent",
+      "note": "An account form. Variant is set, no copied classes, no spinner."
+    },
+    {
+      "id": "clean-chart",
+      "file": "src/pages/UsageChart.tsx",
+      "category": "clean",
+      "origin": "held-out",
+      "catch": "silent",
+      "note": "A spinner lives in a chart card, not next to the page Button."
+    }
+  ]
+}

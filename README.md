@@ -268,6 +268,10 @@ Not in this version: Vue, CSS-in-JS, multi-package monorepos, an MCP server, aut
 | [ReuseGate](https://github.com/SuperMarioYL/reusegate) | A generic gate on symbols. | UI only: CVA, Radix, Base UI, raw controls, design-system names. |
 | Buoy, design-lint, remediation | Loose tokens and one-off values. | Not this. uninvent records CSS variables and then leaves them alone. |
 
+## Benchmark
+
+[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus. 0.3.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, and 2/2 name collisions, with 0 false positives on 9 clean files. 0.1.0 catches the raw controls and the name collisions. 0.2.0 adds recipes. `npm run bench` reproduces the numbers. A live agent trial runs only if you set `UNINVENT_BENCH_API_KEY`.
+
 ## Development
 
 ```bash

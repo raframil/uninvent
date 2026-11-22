@@ -41,6 +41,8 @@
     "build": "tsc -p tsconfig.json && node scripts/link-bin.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
+    "bench": "tsc -p bench/tsconfig.json --noEmit && node --import tsx bench/run.ts",
+    "bench:report": "node --import tsx bench/report.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -49,6 +51,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.19.1",
+    "gpt-tokenizer": "^2.9.0",
     "tsx": "^4.20.6"
   }
 }
