@@ -5,6 +5,19 @@ import { toPosix } from "./paths.js";
 const SKIP_DIRS = new Set(["node_modules", "dist", "build", "coverage", ".git", ".uninvent", ".next", ".turbo"]);
 
 export function walkSourceFiles(root: string, dir = "."): string[] {
+  return walkFiles(root, dir, (name) => /\.(tsx|jsx)$/.test(name));
+}
+
+/** CSF and MDX story files. Not limited to the design-system folder. */
+export function walkStoryFiles(root: string, dir = "."): string[] {
+  return walkFiles(root, dir, isStoryFilename);
+}
+
+export function isStoryFilename(name: string): boolean {
+  return /\.stories\.(tsx|ts|jsx|js|mdx)$/.test(name) || name.endsWith(".mdx");
+}
+
+function walkFiles(root: string, dir: string, include: (name: string) => boolean): string[] {
   const start = path.resolve(root, dir);
   const files: string[] = [];
   const stack = [start];
@@ -26,7 +39,7 @@ export function walkSourceFiles(root: string, dir = "."): string[] {
         continue;
       }
       if (!entry.isFile()) continue;
-      if (!/\.(tsx|jsx)$/.test(entry.name)) continue;
+      if (!include(entry.name)) continue;
       files.push(toPosix(path.relative(root, full)));
     }
   }

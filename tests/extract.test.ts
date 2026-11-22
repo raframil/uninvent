@@ -20,7 +20,9 @@ test("extracts CVA variants, own props, and the rendered element", () => {
   const variant = button.variants.find((entry) => entry.name === "variant");
   assert.deepEqual(variant?.options, ["default", "destructive", "outline", "secondary", "ghost", "link"]);
   assert.equal(variant?.defaultValue, "default");
+  assert.equal(variant?.classes?.destructive, "bg-destructive text-destructive-foreground");
   assert.equal(button.elements.includes("button"), true);
+  assert.equal(button.props.some((prop) => prop.name === "loading"), true);
 });
 
 test("extracts tailwind-variants from the first argument", () => {

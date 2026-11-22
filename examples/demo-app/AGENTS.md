@@ -6,4 +6,6 @@ Reuse the local design system. Before adding UI, run `uninvent exists <Component
 Catalog: Button, Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription, Input, PageHeader, Table, TableHeader, TableBody, TableRow, TableHead, TableCell.
 
 Recipes: Confirm dialog (Dialog, DialogContent, DialogTitle, DialogDescription, Button).
+
+States: Button (disabled, loading, variant=destructive); Input (invalid).
 <!-- uninvent:end -->

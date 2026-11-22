@@ -11,6 +11,48 @@ export interface VariantGroup {
   name: string;
   options: string[];
   defaultValue?: string;
+  /**
+   * Class string for an option written as a string literal (`cva` / `tv`).
+   * Absent on catalogs written before v0.3, and on options that were not literals.
+   */
+  classes?: Record<string, string>;
+}
+
+/** A literal arg or JSX prop a story sets. */
+export interface StoryArg {
+  name: string;
+  /** `destructive`, `true`, `false`, or a number rendered as text. */
+  value: string;
+}
+
+/** One parsed story attached to a single catalog component. */
+export interface StoryDoc {
+  file: string;
+  /** CSF export name, or the MDX `<Story name>`. */
+  name: string;
+  args: StoryArg[];
+}
+
+/**
+ * A state stories document for a component, cross-referenced with its props
+ * and `cva()` / `tv()` variants. Absent on catalogs written before v0.3.
+ */
+export interface ComponentState {
+  /**
+   * Stable id. A variant option is `variant:destructive`.
+   * A boolean prop is the prop name (`loading`).
+   */
+  id: string;
+  /** Short label. Variant options use the option name; props use the prop name. */
+  label: string;
+  /** `story` is a name with no literal arg and no matching prop. `check` ignores it. */
+  kind: "variant" | "prop" | "story";
+  /** Story export names that document this state. */
+  stories: string[];
+  /** Variant group or prop the state sets, when that API is known. */
+  prop?: string;
+  /** Literal value (`destructive`, `true`). */
+  value?: string;
 }
 
 export interface CatalogComponent {
@@ -30,6 +72,16 @@ export interface CatalogComponent {
   /** Intrinsic elements this component renders, when the source says so. */
   elements: string[];
   stories: string[];
+  /**
+   * Parsed stories. Absent on catalogs written before v0.3.
+   * An empty array means scan ran and found no stories for this component.
+   */
+  storyDocs?: StoryDoc[];
+  /**
+   * Documented states. Absent on catalogs written before v0.3.
+   * `check` stays silent about states when the field is missing.
+   */
+  states?: ComponentState[];
 }
 
 /**
@@ -74,17 +126,19 @@ export interface Config {
 }
 
 export interface Finding {
-  kind: "raw-element" | "name-collision" | "recipe";
+  kind: "raw-element" | "name-collision" | "recipe" | "state";
   file: string;
   line: number;
   message: string;
-  /** Short label, `ui/Button`, or `ui/Dialog + ui/Button` for a recipe. */
+  /** Short label, `ui/Button`, `ui/Dialog + ui/Button`, or `ui/Button loading`. */
   suggestion: string;
   import: string;
   element?: string;
   name?: string;
   /** Recipe title, when `kind` is `recipe`. */
   recipe?: string;
+  /** `loading` or `variant=destructive`, when `kind` is `state`. */
+  state?: string;
 }
 
 export interface Reuse {
@@ -95,7 +149,11 @@ export interface Reuse {
 
 export const DEFAULT_IGNORE = [
   "**/*.stories.tsx",
+  "**/*.stories.ts",
   "**/*.stories.jsx",
+  "**/*.stories.js",
+  "**/*.stories.mdx",
+  "**/*.mdx",
   "**/*.test.tsx",
   "**/*.test.jsx",
   "**/*.spec.tsx",

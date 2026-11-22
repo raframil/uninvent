@@ -301,21 +301,38 @@ function parseVariantCall(call: ts.CallExpression, kind: "cva" | "tv"): VariantG
     if (!ts.isPropertyAssignment(property)) continue;
     const name = propertyName(property.name);
     if (!name || !ts.isObjectLiteralExpression(property.initializer)) continue;
-    const options = property.initializer.properties.flatMap((option) => {
-      if (ts.isPropertyAssignment(option) || ts.isMethodDeclaration(option) || ts.isShorthandPropertyAssignment(option)) {
-        const optionName = propertyName(option.name);
-        return optionName ? [optionName] : [];
+    const options: string[] = [];
+    const classes: Record<string, string> = {};
+    for (const option of property.initializer.properties) {
+      if (!ts.isPropertyAssignment(option) && !ts.isMethodDeclaration(option) && !ts.isShorthandPropertyAssignment(option)) {
+        continue;
       }
-      return [];
-    });
+      const optionName = propertyName(option.name);
+      if (!optionName) continue;
+      options.push(optionName);
+      if (ts.isPropertyAssignment(option)) {
+        const literal = classLiteral(option.initializer);
+        if (literal) classes[optionName] = literal;
+      }
+    }
     const fallback = defaults[name];
     groups.push({
       name,
       options,
       ...(fallback ? { defaultValue: fallback } : {}),
+      ...(Object.keys(classes).length > 0 ? { classes } : {}),
     });
   }
   return groups;
+}
+
+function classLiteral(expression: ts.Expression): string | null {
+  let current = expression;
+  while (ts.isAsExpression(current) || ts.isSatisfiesExpression(current) || ts.isParenthesizedExpression(current)) {
+    current = current.expression;
+  }
+  if (ts.isStringLiteral(current) || ts.isNoSubstitutionTemplateLiteral(current)) return current.text;
+  return null;
 }
 
 function stringProps(object: ts.ObjectLiteralExpression): Record<string, string> {

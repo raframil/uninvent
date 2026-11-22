@@ -10,6 +10,7 @@ import { findProjectRoot, loadConfig } from "./config.js";
 import { UserError } from "./errors.js";
 import { renderExists } from "./exists.js";
 import { runHook } from "./hook/run.js";
+import { renderCoverage } from "./stories/coverage.js";
 import { installHooks, parseInstallTarget, type InstallTarget } from "./install.js";
 
 const HELP = `uninvent — check that agents reuse the design system
@@ -19,12 +20,14 @@ Usage
   uninvent scan
   uninvent exists <Component | "intent">
   uninvent check [path...] [--base <ref>] [--format text|json|markdown]
+  uninvent coverage [Component] [--format text|json|markdown]
   uninvent install [claude-code|cursor] [--pre]
   uninvent hook [--file <path>]
 
-check prints one line per reinvented element or recipe and nothing when the file is clean.
-exists matches a component name or a composition recipe, for example: uninvent exists "confirm dialog"
-Exit codes: 0 clean, 1 reinvented, 2 usage or catalog error.
+check prints one line per reinvented element, recipe, or documented state and nothing when the file is clean.
+exists matches a component name, a composition recipe, or a documented state, for example: uninvent exists "loading button"
+coverage lists which variants and states have stories. It exits 0. It is not a failing gate.
+Exit codes: 0 clean, 1 reinvented (or no exists/coverage match), 2 usage or catalog error.
 The hook never blocks a write. It prints nothing unless the edit reinvented UI.
 PreToolUse is off unless you pass --pre.
 
@@ -69,6 +72,13 @@ async function main(): Promise<number> {
       const result = renderExists(catalog, args.positionals.join(" "));
       process.stdout.write(result.text);
       return result.found ? 0 : 1;
+    }
+    case "coverage": {
+      const config = loadConfig(cwd);
+      const catalog = readCatalog(cwd, config.catalog);
+      const result = renderCoverage(catalog, args.positionals.join(" "), args.format);
+      process.stdout.write(result.text);
+      return result.exitCode;
     }
     case "check": {
       const config = loadConfig(cwd);

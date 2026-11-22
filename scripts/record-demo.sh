@@ -3,14 +3,14 @@
 #
 # Shot list, dark terminal, large font, crop to the terminal:
 #   1. uninvent scan
-#        -> "N components, 2 stories, 1 recipe, catalog written to .uninvent/catalog.json"
+#        -> "16 components, 3 stories, 6 states, 1 recipe, catalog written to .uninvent/catalog.json"
 #   2. uninvent exists "confirm dialog"
 #        -> the recipe, the components it uses, the example
-#   3. uninvent exists Dialog
-#        -> file, import, props, radix
-#   4. Cut to examples/demo-app/src/components/Confirm.tsx (a hand-rolled confirm)
+#   3. uninvent exists "loading button"
+#        -> Button's loading state and the story that documents it
+#   4. Cut to examples/demo-app/src/components/Confirm.tsx and SaveButton.tsx
 #   5. uninvent check
-#        -> one line per miss, including the confirm-dialog recipe
+#        -> one line per miss, including the confirm-dialog recipe and Button's loading state
 #   6. uninvent check src/pages/Customers.tsx
 #        -> prints nothing (the screen already uses the system)
 #

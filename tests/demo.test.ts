@@ -9,6 +9,7 @@ import { checkProject } from "../src/check/run.js";
 import { formatReport } from "../src/check/format.js";
 import { loadConfig } from "../src/config.js";
 import { renderExists } from "../src/exists.js";
+import { renderCoverage } from "../src/stories/coverage.js";
 import { initCommand, scanCommand } from "../src/project.js";
 import { buttonComponent, repoRoot, sampleCatalog, tempDir } from "./helpers.js";
 
@@ -16,7 +17,7 @@ const demo = path.join(repoRoot, "examples/demo-app");
 
 test("scan, exists, and check on the demo app", () => {
   const summary = scanCommand(demo);
-  assert.match(summary, /^\d+ components, 2 stories, 1 recipe, catalog written to \.uninvent\/catalog\.json$/);
+  assert.match(summary, /^16 components, 3 stories, 6 states, 1 recipe, catalog written to \.uninvent\/catalog\.json$/);
 
   const config = loadConfig(demo);
   const catalog = readCatalog(demo, config.catalog);
@@ -34,6 +35,23 @@ test("scan, exists, and check on the demo app", () => {
   assert.match(dialog.text, /primitives: radix \(@radix-ui\/react-dialog\)/);
   assert.match(dialog.text, /props: open\?, onOpenChange\?, children\?/);
   assert.match(dialog.text, /also: DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription/);
+  assert.match(dialog.text, /states: open \(Open\)/);
+
+  const buttonExists = renderExists(catalog, "Button");
+  assert.match(buttonExists.text, /states: disabled \(Disabled\), loading \(Loading\), variant=default \(Primary\), variant=destructive \(Destructive\)/);
+
+  const loading = renderExists(catalog, "loading button");
+  assert.equal(loading.found, true);
+  assert.match(loading.text, /^Button  src\/components\/ui\/button\.tsx:\d+\n/);
+  assert.match(loading.text, /state: loading  story Loading/);
+  assert.match(loading.text, /import \{ Button \} from "@\/components\/ui\/button";/);
+
+  const coverage = renderCoverage(catalog, "Button", "text");
+  assert.equal(coverage.exitCode, 0);
+  assert.match(coverage.text, /variant=destructive  Destructive/);
+  assert.match(coverage.text, /variant=outline  —/);
+  assert.match(coverage.text, /loading  Loading/);
+  assert.match(coverage.text, /does not fail the check/);
 
   const missing = renderExists(catalog, "Toaster");
   assert.equal(missing.found, false);
@@ -62,10 +80,12 @@ test("scan, exists, and check on the demo app", () => {
     "raw <dialog> in src/components/Modal.tsx:N, use ui/Dialog",
     "raw <input> in src/pages/Login.tsx:N, use ui/Input",
     "rebuilt Confirm dialog in src/components/Confirm.tsx:N, use ui/Dialog + ui/Button",
+    "reinvented loading on Button in src/components/SaveButton.tsx:N, use ui/Button loading",
   ]);
   const markdown = formatReport(all.findings, all.reuses, "markdown");
-  assert.match(markdown, new RegExp(`\\*\\*reuse ${all.reuses.length} \\/ invent 4\\*\\*`));
+  assert.match(markdown, new RegExp(`\\*\\*reuse ${all.reuses.length} \\/ invent 5\\*\\*`));
   assert.match(markdown, /rebuilt `Confirm dialog`/);
+  assert.match(markdown, /reinvented `loading` on `Button`/);
 });
 
 test("cli stays silent on a clean file and flags the demo", () => {
@@ -87,6 +107,7 @@ test("cli stays silent on a clean file and flags the demo", () => {
   assert.match(dirty.stdout, /raw <button> in src\/pages\/Login\.tsx:\d+, use ui\/Button\n/);
   assert.match(dirty.stdout, /raw <dialog> in src\/components\/Modal\.tsx:\d+, use ui\/Dialog\n/);
   assert.match(dirty.stdout, /rebuilt Confirm dialog in src\/components\/Confirm\.tsx:\d+, use ui\/Dialog \+ ui\/Button\n/);
+  assert.match(dirty.stdout, /reinvented loading on Button in src\/components\/SaveButton\.tsx:\d+, use ui\/Button loading\n/);
   assert.equal(
     dirty.stdout.split("\n").some((line) => line.startsWith("raw") && line.includes("Confirm.tsx")),
     false,
@@ -110,6 +131,25 @@ test("cli stays silent on a clean file and flags the demo", () => {
   );
   assert.equal(hook.status, 0);
   assert.equal(hook.stdout, "");
+
+  const stateHook = spawnSync(
+    "node",
+    ["--import", "tsx", ...cli, "hook", "--cwd", demo],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+      input: JSON.stringify({
+        session_id: "s",
+        hook_event_name: "PostToolUse",
+        cwd: demo,
+        tool_name: "Write",
+        tool_input: { file_path: path.join(demo, "src/components/SaveButton.tsx") },
+      }),
+    },
+  );
+  assert.equal(stateHook.status, 0);
+  assert.match(stateHook.stdout, /reinvented loading on Button in src\/components\/SaveButton\.tsx:\d+, use ui\/Button loading/);
+  assert.equal(stateHook.stdout.includes("raw"), false);
 });
 
 test("init writes a gitignored catalog and a skill that names real components", () => {

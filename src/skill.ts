@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { importStatement, siblingsOf } from "./catalog.js";
 import { formatPrimitives } from "./primitives.js";
+import { conciseStates } from "./stories/states.js";
 import type { Catalog, CatalogComponent, Recipe } from "./types.js";
 
 export const SKILL_FILES = [
@@ -39,6 +40,7 @@ export function renderSkill(catalog: Catalog): string {
     "",
     "```bash",
     "uninvent exists <Component>",
+    ...(stateExample(catalog) ? [`uninvent exists "${stateExample(catalog)}"`] : []),
     "```",
     "",
     "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
@@ -47,6 +49,12 @@ export function renderSkill(catalog: Catalog): string {
   if (recipes.length > 0) {
     lines.push(
       "A recipe is how this project assembles those components. Rebuilding it from raw elements is a miss. The hook names the recipe and the components it uses.",
+      "",
+    );
+  }
+  if (hasDocumentedStates(catalog)) {
+    lines.push(
+      "A documented state is a miss when new code rebuilds it. Pass `loading`, `disabled`, or the variant the catalog names instead of adding a spinner or copying that variant's classes.",
       "",
     );
   }
@@ -77,6 +85,8 @@ export function renderAgentsBlock(catalog: Catalog): string {
     const recipeList = recipes.map((recipe) => `${recipe.title} (${recipe.uses.join(", ")})`).join("; ");
     lines.push("", `Recipes: ${recipeList}.`);
   }
+  const states = statesSummary(catalog);
+  if (states) lines.push("", states);
   lines.push(AGENTS_END);
   return lines.join("\n");
 }
@@ -126,6 +136,39 @@ function upsertAgents(root: string, block: string): string | null {
   return null;
 }
 
+function hasDocumentedStates(catalog: Catalog): boolean {
+  return catalog.components.some((component) => (component.states ?? []).some((state) => state.kind !== "story"));
+}
+
+function stateExample(catalog: Catalog): string | null {
+  const preferred = ["loading", "disabled", "invalid", "empty", "error"];
+  for (const name of preferred) {
+    const component = catalog.components.find((entry) =>
+      (entry.states ?? []).some((state) => state.kind === "prop" && state.prop === name),
+    );
+    if (component) return `${name} ${component.name.toLowerCase()}`;
+  }
+  for (const component of catalog.components) {
+    const label = conciseStates(component, 1)[0];
+    if (!label) continue;
+    const word = label.includes("=") ? label.split("=")[1] ?? label : label;
+    return `${word} ${component.name.toLowerCase()}`;
+  }
+  return null;
+}
+
+function statesSummary(catalog: Catalog): string | null {
+  const parts: string[] = [];
+  for (const component of catalog.components) {
+    const labels = conciseStates(component);
+    if (labels.length === 0) continue;
+    parts.push(`${component.name} (${labels.join(", ")})`);
+    if (parts.length >= 8) break;
+  }
+  if (parts.length === 0) return null;
+  return `States: ${parts.join("; ")}.`;
+}
+
 function declaredRecipes(catalog: Catalog): Recipe[] {
   return (catalog.recipes ?? []).filter((recipe) => recipe.source === "declared");
 }
@@ -173,6 +216,8 @@ function renderGroup(group: CatalogComponent[], catalog: Catalog): string {
       details.push(`variants: ${variants}`);
     }
     if (component.elements.length > 0) details.push(`renders <${component.elements.join(">, <")}>`);
+    const states = conciseStates(component);
+    if (states.length > 0) details.push(`states: ${states.join(", ")}`);
     lines.push(`- ${component.name}${details.length > 0 ? ` — ${details.join("; ")}` : ""}`);
   }
   return lines.join("\n");

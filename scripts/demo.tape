@@ -21,13 +21,13 @@ Sleep 2s
 Type "npx uninvent exists \"confirm dialog\"" Sleep 300ms Enter
 Sleep 3s
 
-Type "npx uninvent exists Dialog" Sleep 300ms Enter
-Sleep 3s
+Type "npx uninvent exists \"loading button\"" Sleep 300ms Enter
+Sleep 2s
 
 Type "npx uninvent check src/components/Confirm.tsx" Sleep 300ms Enter
 Sleep 2s
 
-Type "npx uninvent check src/components/Modal.tsx" Sleep 300ms Enter
+Type "npx uninvent check src/components/SaveButton.tsx" Sleep 300ms Enter
 Sleep 2s
 
 Type "npx uninvent check src/pages/Customers.tsx" Sleep 300ms Enter
