@@ -1,6 +1,6 @@
 # Benchmark
 
-`npm run bench` runs uninvent against [bench/corpus](corpus) and writes `bench/results/<version>.json` plus [BENCHMARK.md](../BENCHMARK.md). Detection counts are checked twice in one run and must match. Latency is a median of five CLI runs and can move by a few milliseconds. Token counts use cl100k_base as a proxy, labeled in the result file.
+`npm run bench` runs uninvent against [bench/corpus](corpus) and writes `bench/results/<version>.json` plus [BENCHMARK.md](../BENCHMARK.md). Detection counts are checked twice in one run and must match. Check and scan latency is a median of five CLI runs and can move by a few milliseconds. Hook latency is the `uninvent hook` process: cold (compile cache off), warm (cache reused), p50 and p95, on a clean file and on a file with a finding. Token counts use cl100k_base as a proxy, labeled in the result file.
 
 ## Run
 

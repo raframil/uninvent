@@ -34,8 +34,19 @@ export interface BenchResult {
   latencyMs: {
     samples: number;
     scan: { median: number; min: number; max: number };
+    /** `uninvent check` on one clean file. Present on every result since 0.1. */
     hookClean: { median: number; min: number; max: number };
     hookDirty: { median: number; min: number; max: number };
+    /**
+     * The real `uninvent hook` process. Absent on results recorded before the hook was timed on its own.
+     */
+    hookRun?: {
+      samples: number;
+      cold: { p50: number; p95: number; min: number; max: number };
+      warm: { p50: number; p95: number; min: number; max: number };
+      warmDirty: { p50: number; p95: number; min: number; max: number };
+      note: string;
+    };
     note: string;
   };
   agentTrial: AgentTrial;
@@ -80,6 +91,12 @@ export function renderReport(results: BenchResult[]): string {
     "",
     tokenTable(results),
     "",
+    "### Hook process",
+    "",
+    "Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turns the V8 compile cache off. Warm reuses it. Older result files did not record this, so those cells are empty. The check column above is still `uninvent check` on one clean file.",
+    "",
+    hookTable(results),
+    "",
     "## Trend",
     "",
     categoryTable(results, names),
@@ -98,7 +115,7 @@ export function renderReport(results: BenchResult[]): string {
     "",
     "Token counts use cl100k_base, the OpenAI GPT-4 tokenizer, as a proxy. Claude and Cursor tokenize differently. Compare versions to each other. The skill and `AGENTS.md` numbers are what a turn carries if those files are in context. `exists` is one query. The source number is `button.tsx` plus its story, the files you would open to learn the same button. The hook number is the mean of the finding lines `check` prints. A clean file is 0. The hook does not print the catalog.",
     "",
-    "Latency is the median CLI time, including Node starting. It will move a few milliseconds between machines. Detection counts and token counts do not, for the same version and the same corpus.",
+    "Latency is wall-clock time, including Node starting. The check column is the median of `uninvent check` on one file. The hook table is `uninvent hook` itself: cold with the V8 compile cache disabled, warm with the cache reused, p50 and p95 inside that sample. It will move a few milliseconds between machines. Detection counts and token counts do not, for the same version and the same corpus.",
     "",
     "The paired agent trial is off unless `UNINVENT_BENCH_API_KEY` is set. A skipped trial has no counts. This report does not invent them. When the trial does run, the wrong-component count is how many lines `uninvent check` prints on the file the model returned. That is the checker judging the model, not a person.",
     "",
@@ -143,6 +160,23 @@ function originTable(result: BenchResult, names: string[]): string {
     const score = result.detection.categories[name];
     if (!score) return [label(name), "—", "—"];
     return [label(name), formatOrigin(score.withRule, name), formatOrigin(score.heldOut, name)];
+  });
+  return table(headers, rows);
+}
+
+function hookTable(results: BenchResult[]): string {
+  const headers = ["Version", "Cold p50", "Cold p95", "Warm p50", "Warm p95", "Warm, with a finding (p50)"];
+  const rows = results.map((result) => {
+    const hook = result.latencyMs.hookRun;
+    if (!hook) return [result.version, "—", "—", "—", "—", "—"];
+    return [
+      result.version,
+      String(hook.cold.p50),
+      String(hook.cold.p95),
+      String(hook.warm.p50),
+      String(hook.warm.p95),
+      String(hook.warmDirty.p50),
+    ];
   });
   return table(headers, rows);
 }

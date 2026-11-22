@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,7 +11,8 @@ import { writeReport, type BenchResult } from "./report.js";
 import { scoreCase, scoreDetection, type CaseResult } from "./score.js";
 
 const TOKENIZER = "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)";
-const LATENCY_NOTE = "Median CLI wall time in milliseconds, including Node startup. Detection counts do not depend on this.";
+const LATENCY_NOTE = "Median CLI wall time in milliseconds, including Node startup. hookClean and hookDirty run uninvent check on one file. Detection counts do not depend on this.";
+const HOOK_NOTE = "uninvent hook with a PostToolUse event, wall time in milliseconds. Cold sets NODE_DISABLE_COMPILE_CACHE. Warm shares one V8 compile cache after a single warmup. p50 and p95 are within that set.";
 
 interface Target {
   version: string;
@@ -192,6 +193,7 @@ async function benchmark(target: Target, rounds: number): Promise<BenchResult> {
       scan: timeIt(target.cli, ["scan", "--cwd", dir], rounds),
       hookClean: timeIt(target.cli, ["check", "--cwd", dir, clean?.file ?? "src/pages/Customers.tsx"], rounds),
       hookDirty: timeIt(target.cli, ["check", "--cwd", dir, dirty?.file ?? "src/pages/Login.tsx"], rounds),
+      hookRun: measureHook(target.cli, dir, clean?.file ?? "src/pages/Customers.tsx", dirty?.file ?? "src/pages/Login.tsx", rounds),
       note: LATENCY_NOTE,
     },
     agentTrial,
@@ -218,6 +220,84 @@ async function maybeAgent(target: Target, skill: string, existsText: string): Pr
   });
 }
 
+function measureHook(
+  cli: string[],
+  dir: string,
+  cleanFile: string,
+  dirtyFile: string,
+  rounds: number,
+): NonNullable<BenchResult["latencyMs"]["hookRun"]> {
+  const samples = Math.max(rounds, 21);
+  const cleanInput = hookEvent(dir, cleanFile);
+  const dirtyInput = hookEvent(dir, dirtyFile);
+  const cleanOnce = invoke(cli, ["hook", "--cwd", dir], { input: cleanInput, env: coldEnv() });
+  if (cleanOnce.status !== 0 || cleanOnce.stdout !== "") {
+    throw new Error(`Hook was not silent on ${cleanFile} (exit ${cleanOnce.status}): ${cleanOnce.stdout || cleanOnce.stderr}`);
+  }
+  const dirtyOnce = invoke(cli, ["hook", "--cwd", dir], { input: dirtyInput, env: coldEnv() });
+  if (dirtyOnce.status !== 0 || !/raw |rebuilt |reinvented |export /.test(dirtyOnce.stdout)) {
+    throw new Error(`Hook printed no finding for ${dirtyFile} (exit ${dirtyOnce.status}): ${dirtyOnce.stdout || dirtyOnce.stderr}`);
+  }
+  return {
+    samples,
+    cold: sampleHook(cli, dir, cleanInput, "cold", samples),
+    warm: sampleHook(cli, dir, cleanInput, "warm", samples),
+    warmDirty: sampleHook(cli, dir, dirtyInput, "warm", samples),
+    note: HOOK_NOTE,
+  };
+}
+
+function hookEvent(dir: string, file: string): string {
+  return JSON.stringify({
+    session_id: "bench",
+    hook_event_name: "PostToolUse",
+    cwd: dir,
+    tool_name: "Write",
+    tool_input: { file_path: path.join(dir, file) },
+  });
+}
+
+function coldEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  env.NODE_DISABLE_COMPILE_CACHE = "1";
+  delete env.NODE_COMPILE_CACHE;
+  return env;
+}
+
+function warmEnv(cacheDir: string): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  delete env.NODE_DISABLE_COMPILE_CACHE;
+  env.NODE_COMPILE_CACHE = cacheDir;
+  return env;
+}
+
+function sampleHook(
+  cli: string[],
+  dir: string,
+  input: string,
+  mode: "cold" | "warm",
+  samples: number,
+): { p50: number; p95: number; min: number; max: number } {
+  const env = mode === "warm" ? warmEnv(mkdtempSync(path.join(tmpdir(), "uninvent-hook-cache-"))) : coldEnv();
+  if (mode === "warm") invoke(cli, ["hook", "--cwd", dir], { input, env });
+  const values: number[] = [];
+  for (let index = 0; index < samples; index += 1) values.push(invoke(cli, ["hook", "--cwd", dir], { input, env }).ms);
+  return summarize(values);
+}
+
+function summarize(values: number[]): { p50: number; p95: number; min: number; max: number } {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const p50 = sorted.length % 2 === 0 ? ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2 : (sorted[mid] ?? 0);
+  const p95Index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * 0.95) - 1));
+  return {
+    p50: round1(p50),
+    p95: round1(sorted[p95Index] ?? 0),
+    min: round1(Math.min(...sorted)),
+    max: round1(Math.max(...sorted)),
+  };
+}
+
 function timeIt(cli: string[], args: string[], rounds: number): { median: number; min: number; max: number } {
   invoke(cli, args);
   const samples: number[] = [];
@@ -232,9 +312,17 @@ function timeIt(cli: string[], args: string[], rounds: number): { median: number
   };
 }
 
-function invoke(cli: string[], args: string[]): { status: number; stdout: string; stderr: string; ms: number } {
+function invoke(
+  cli: string[],
+  args: string[],
+  options?: { input?: string; env?: NodeJS.ProcessEnv },
+): { status: number; stdout: string; stderr: string; ms: number } {
   const started = performance.now();
-  const result = spawnSync(cli[0] ?? "node", [...cli.slice(1), ...args], { encoding: "utf8" });
+  const result = spawnSync(cli[0] ?? "node", [...cli.slice(1), ...args], {
+    encoding: "utf8",
+    input: options?.input,
+    env: options?.env,
+  });
   return {
     status: result.status ?? 2,
     stdout: result.stdout ?? "",

@@ -1,5 +1,6 @@
-import { parse } from "@babel/parser";
 import { componentForImport, importStatement, suggestionLabel } from "../catalog.js";
+import { parseUiSource } from "../parse/file.js";
+import type { ImportRef } from "../parse/types.js";
 import type { Catalog, CatalogComponent, Finding, VariantGroup } from "../types.js";
 import { describeFinding } from "./format.js";
 
@@ -70,12 +71,6 @@ const GENERIC_CLASS_TOKENS = new Set([
   "whitespace-nowrap",
 ]);
 
-interface BabelNode {
-  type: string;
-  loc?: { start: { line: number } };
-  [key: string]: unknown;
-}
-
 interface Attr {
   name: string;
   literal?: string;
@@ -99,9 +94,9 @@ export function findStateFindings(options: {
   withLine?: boolean;
 }): Finding[] {
   if (!options.catalog.components.some((component) => component.states)) return [];
-  const parsed = parseTree(options.source, options.file, Boolean(options.snippet));
+  const parsed = parseUiSource(options.source, options.file, Boolean(options.snippet));
   if (!parsed) return [];
-  const imported = importedComponents(parsed.ast, options.file, options.catalog);
+  const imported = importedComponents(parsed.imports, options.file, options.catalog);
   if (imported.size === 0) return [];
   const findings: Finding[] = [];
   const seen = new Set<string>();
@@ -112,14 +107,14 @@ export function findStateFindings(options: {
     seen.add(key);
     findings.push(finding);
   };
-  walkPairs(parsed.tree, (node) => {
+  walkPairs(parsed.stateTree, (node) => {
     const component = node.kind === "component" ? imported.get(node.name) : undefined;
     if (!component?.states) return;
     add(loadingInside(node, component, options, imported));
     add(variantFinding(node, component, options));
     add(disabledFinding(node, component, options));
   });
-  walkPairs(parsed.tree, (node) => {
+  walkPairs(parsed.stateTree, (node) => {
     for (const child of node.children) {
       if (!isSpinner(child, imported)) continue;
       const host = nearestLoadingHost(node, child, imported);
@@ -335,224 +330,15 @@ function pickLine(elementLine: number, evidenceLine: number, lines: Set<number> 
   return null;
 }
 
-function parseTree(
-  source: string,
-  filename: string,
-  snippet: boolean,
-): { ast: BabelNode; tree: UiNode[] } | null {
-  const direct = tryParse(source, filename);
-  if (direct) return { ast: direct, tree: forest(direct) };
-  if (!snippet) return null;
-  const wrapped = tryParse(`export function __Snippet() {\nreturn (\n${source}\n);\n}\n`, filename);
-  if (!wrapped) return null;
-  return { ast: wrapped, tree: forest(wrapped) };
-}
-
-function tryParse(source: string, filename: string): BabelNode | null {
-  try {
-    return parse(source, {
-      sourceType: "module",
-      sourceFilename: filename,
-      plugins: ["typescript", "jsx"],
-      errorRecovery: true,
-    }) as unknown as BabelNode;
-  } catch {
-    return null;
-  }
-}
-
-function importedComponents(ast: BabelNode, file: string, catalog: Catalog): Map<string, CatalogComponent> {
+function importedComponents(specs: ImportRef[], file: string, catalog: Catalog): Map<string, CatalogComponent> {
   const imported = new Map<string, CatalogComponent>();
-  const program = asNode(ast.program);
-  if (!program) return imported;
-  for (const statement of asNodes(program.body)) {
-    if (statement.type !== "ImportDeclaration" || statement.importKind === "type") continue;
-    const specifier = stringValue(statement.source);
-    if (!specifier) continue;
-    for (const spec of asNodes(statement.specifiers)) {
-      if (spec.type !== "ImportSpecifier" || spec.importKind === "type") continue;
-      const importedName = specifierName(spec.imported);
-      const local = specifierName(spec.local);
-      if (!importedName || !local) continue;
-      const component = componentForImport(catalog.components, catalog.paths, file, specifier, importedName);
-      if (component) imported.set(local, component);
-    }
+  for (const spec of specs) {
+    const component = componentForImport(catalog.components, catalog.paths, file, spec.specifier, spec.imported);
+    if (component) imported.set(spec.local, component);
   }
   return imported;
 }
 
-function forest(ast: BabelNode): UiNode[] {
-  const roots: UiNode[] = [];
-  collect(ast, roots);
-  return roots;
-}
-
-function collect(node: BabelNode, found: UiNode[]): void {
-  const element = buildElement(node);
-  if (element) {
-    found.push(element);
-    return;
-  }
-  for (const child of babelChildren(node)) collect(child, found);
-}
-
-function buildElement(node: BabelNode): UiNode | null {
-  if (node.type === "JSXFragment") {
-    return {
-      name: "",
-      kind: "fragment",
-      line: node.loc?.start.line ?? 1,
-      attrs: [],
-      classTokens: [],
-      children: nested(node),
-    };
-  }
-  if (node.type !== "JSXElement") return null;
-  const opening = asNode(node.openingElement);
-  if (!opening) return null;
-  const tag = jsxName(opening.name);
-  const attrs = attributesOf(opening);
-  const classAttr = attrs.find((attr) => attr.name === "className");
-  return {
-    name: tag?.name ?? "",
-    kind: tag?.kind === "intrinsic" ? "intrinsic" : tag ? "component" : "fragment",
-    line: opening.loc?.start.line ?? node.loc?.start.line ?? 1,
-    attrs,
-    classTokens: classAttr ? tokensFromUnknown(classAttr.raw) : [],
-    children: nested(node),
-  };
-}
-
-function nested(node: BabelNode): UiNode[] {
-  const found: UiNode[] = [];
-  const children = Array.isArray(node.children) ? node.children : [];
-  for (const child of children) {
-    const element = asNode(child);
-    if (element) collect(element, found);
-  }
-  return found;
-}
-
-function attributesOf(opening: BabelNode): (Attr & { raw: unknown })[] {
-  const attrs: (Attr & { raw: unknown })[] = [];
-  for (const attribute of asNodes(opening.attributes)) {
-    if (attribute.type !== "JSXAttribute") continue;
-    const name = identifierName(attribute.name);
-    if (!name) continue;
-    attrs.push({ name, literal: literalAttr(attribute.value), raw: attribute.value });
-  }
-  return attrs;
-}
-
-function literalAttr(value: unknown): string | undefined {
-  if (value === null || value === undefined) return "true";
-  const node = asNode(value);
-  if (!node) return undefined;
-  if (node.type === "StringLiteral" && typeof node.value === "string") return node.value;
-  if (node.type === "JSXExpressionContainer") {
-    const expression = asNode(node.expression);
-    if (!expression) return undefined;
-    if (expression.type === "StringLiteral" && typeof expression.value === "string") return expression.value;
-    if (expression.type === "BooleanLiteral" && typeof expression.value === "boolean") return expression.value ? "true" : "false";
-    if (expression.type === "NumericLiteral" && typeof expression.value === "number") return String(expression.value);
-  }
-  return undefined;
-}
-
-function tokensFromUnknown(value: unknown): string[] {
-  const node = asNode(value);
-  if (!node) return [];
-  return classTokensFrom(node);
-}
-
-function classTokensFrom(node: BabelNode): string[] {
-  if (node.type === "StringLiteral" && typeof node.value === "string") return splitClasses(node.value);
-  if (node.type === "JSXExpressionContainer") {
-    const expression = asNode(node.expression);
-    return expression ? classTokensFrom(expression) : [];
-  }
-  if (node.type === "TemplateLiteral") return templateTokens(node);
-  if (node.type === "CallExpression") return asNodes(node.arguments).flatMap((argument) => classTokensFrom(argument));
-  if (node.type === "LogicalExpression" || node.type === "ConditionalExpression" || node.type === "BinaryExpression") {
-    return babelChildren(node).flatMap((child) => classTokensFrom(child));
-  }
-  if (node.type === "ArrayExpression") return asNodes(node.elements).flatMap((element) => classTokensFrom(element));
-  if (node.type === "ParenthesizedExpression") {
-    const expression = asNode(node.expression);
-    return expression ? classTokensFrom(expression) : [];
-  }
-  return [];
-}
-
-function templateTokens(node: BabelNode): string[] {
-  const quasis = asNodes(node.quasis);
-  return quasis.flatMap((quasi) => {
-    const value = asNode(quasi.value);
-    const cooked = value && typeof value.cooked === "string" ? value.cooked : value && typeof value.raw === "string" ? value.raw : "";
-    return splitClasses(cooked);
-  });
-}
-
 function splitClasses(value: string): string[] {
   return value.split(/\s+/).filter((token) => token.length > 0);
-}
-
-function jsxName(name: unknown): { kind: "intrinsic" | "component"; name: string } | null {
-  const node = asNode(name);
-  if (!node || node.type !== "JSXIdentifier") return null;
-  const value = typeof node.name === "string" ? node.name : "";
-  if (!value) return null;
-  if (value[0] === value[0]?.toLowerCase()) return { kind: "intrinsic", name: value };
-  return { kind: "component", name: value };
-}
-
-function babelChildren(node: BabelNode): BabelNode[] {
-  const found: BabelNode[] = [];
-  for (const [key, value] of Object.entries(node)) {
-    if (key === "loc" || key === "start" || key === "end" || key === "range") continue;
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const child = asNode(item);
-        if (child) found.push(child);
-      }
-    } else {
-      const child = asNode(value);
-      if (child) found.push(child);
-    }
-  }
-  return found;
-}
-
-function asNode(value: unknown): BabelNode | null {
-  if (!value || typeof value !== "object") return null;
-  if (!("type" in value) || typeof (value as { type?: unknown }).type !== "string") return null;
-  return value as BabelNode;
-}
-
-function asNodes(value: unknown): BabelNode[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((item) => {
-    const node = asNode(item);
-    return node ? [node] : [];
-  });
-}
-
-function stringValue(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node || typeof node.value !== "string") return null;
-  return node.value;
-}
-
-function identifierName(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node || typeof node.name !== "string") return null;
-  return node.name;
-}
-
-function specifierName(value: unknown): string | null {
-  const node = asNode(value);
-  if (!node) return null;
-  if (typeof node.name === "string") return node.name;
-  if (typeof node.value === "string") return node.value;
-  return null;
 }
