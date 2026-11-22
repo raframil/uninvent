@@ -1,0 +1,14 @@
+{
+  "tasks": [
+    {
+      "id": "pending-save",
+      "file": "src/pages/SaveChanges.tsx",
+      "prompt": "Write a React function component SaveChanges in one TSX file. Props: pending?: boolean. While pending, the button shows a spinner and cannot be clicked twice. Prefer this project's design system when it already covers the component or the state."
+    },
+    {
+      "id": "delete-account",
+      "file": "src/pages/DeleteAccount.tsx",
+      "prompt": "Write a React function component DeleteAccount in one TSX file. Ask the user to confirm before deleting an account: a title, a one-sentence explanation, and cancel and delete actions. Prefer this project's design system when it already covers the components."
+    }
+  ]
+}
