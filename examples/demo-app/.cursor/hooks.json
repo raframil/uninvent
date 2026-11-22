@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": "../../node_modules/.bin/uninvent hook",
+        "matcher": "Write|StrReplace|EditNotebook|ApplyPatch",
+        "timeout": 15
+      }
+    ]
+  }
+}

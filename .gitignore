@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.uninvent/
+*.tsbuildinfo
+coverage/
+.DS_Store
+*.log
