@@ -1,5 +1,5 @@
 import { parse } from "@babel/parser";
-import { resolveSpecifier, stripExt } from "../paths.js";
+import { componentForImport } from "../catalog.js";
 import type { Catalog } from "../types.js";
 
 export interface JsxNode {
@@ -62,11 +62,7 @@ export function parseExample(source: string): JsxNode[] | null {
 export function catalogLocals(parsed: ParsedUi, file: string, catalog: Catalog): Map<string, string> {
   const locals = new Map<string, string>();
   for (const spec of parsed.imports) {
-    const resolved = resolveSpecifier(file, spec.specifier, catalog.paths);
-    if (!resolved) continue;
-    const component = catalog.components.find(
-      (entry) => stripExt(entry.file) === resolved && entry.name === spec.imported,
-    );
+    const component = componentForImport(catalog.components, catalog.paths, file, spec.specifier, spec.imported);
     if (component) locals.set(spec.local, component.name);
   }
   return locals;

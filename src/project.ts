@@ -4,9 +4,10 @@ import { writeCatalog } from "./catalog.js";
 import { cleanDir, configDocument, loadConfig } from "./config.js";
 import { UserError } from "./errors.js";
 import { discoverUiDirs, readPathMappings } from "./scanner/discover.js";
-import { scanProject } from "./scanner/scan.js";
+import { resolveConfiguredPackages, scanProject } from "./scanner/scan.js";
 import { skillsInstalled, writeSkills } from "./skill.js";
 import { DEFAULT_CATALOG, DEFAULT_IGNORE, type Config } from "./types.js";
+import { discoverDesignPackages } from "./workspace.js";
 
 /** Scan, write the catalog, and quietly refresh a skill that init already generated. */
 export function scanCommand(root: string): string {
@@ -22,35 +23,45 @@ export function initCommand(options: {
   commit: boolean;
   force: boolean;
   ui: string[];
+  packages?: string[];
 }): string[] {
+  const packageArgs = options.packages ?? [];
   const configPath = path.join(options.root, "uninvent.json");
   const hadConfig = existsSync(configPath);
   let config = hadConfig ? loadConfig(options.root) : emptyConfig();
   const lines: string[] = [];
 
-  if (!hadConfig || options.force || options.ui.length > 0 || options.commit) {
+  if (!hadConfig || options.force || options.ui.length > 0 || packageArgs.length > 0 || options.commit) {
     const mappings = readPathMappings(options.root);
-    const discovered = options.ui.length > 0
+    const ui = options.ui.length > 0
       ? options.ui.map(cleanDir)
-      : config.ui.length > 0
+      : config.ui.length > 0 && !options.force
         ? config.ui
         : discoverUiDirs(options.root, [], mappings);
-    if (discovered.length === 0) {
+    const packages = packageArgs.length > 0
+      ? packageArgs.map(cleanDir)
+      : config.packages.length > 0 && !options.force
+        ? config.packages
+        : discoverDesignPackages(options.root);
+    if (ui.length === 0 && packages.length === 0) {
       throw new UserError(
         [
-          "No UI directory found.",
-          "Looked for components.json aliases.ui, src/components/ui, and components/ui.",
-          "Create the folder or re-run with --ui <dir>.",
+          "No design-system source found.",
+          "Looked for components.json aliases.ui, src/components/ui, components/ui,",
+          "and workspace or dependency packages named ui, design-system, or ui-kit.",
+          "Re-run with --ui <dir> or --package <name>.",
         ].join("\n"),
       );
     }
-    for (const dir of discovered) {
+    for (const dir of ui) {
       if (!existsSync(path.join(options.root, dir))) {
         throw new UserError(`UI directory not found: ${dir}`);
       }
     }
+    resolveConfiguredPackages(options.root, packages);
     config = {
-      ui: discovered,
+      ui,
+      packages,
       ignore: config.ignore.length > 0 ? config.ignore : [...DEFAULT_IGNORE],
       catalog: config.catalog || DEFAULT_CATALOG,
       commitCatalog: options.commit ? true : config.commitCatalog,
@@ -78,6 +89,7 @@ export function initCommand(options: {
 function emptyConfig(): Config {
   return {
     ui: [],
+    packages: [],
     ignore: [...DEFAULT_IGNORE],
     catalog: DEFAULT_CATALOG,
     commitCatalog: false,

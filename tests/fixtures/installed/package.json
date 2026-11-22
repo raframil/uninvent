@@ -1,0 +1,7 @@
+{
+  "name": "consumer",
+  "private": true,
+  "dependencies": {
+    "@vendor/ui": "1.0.0"
+  }
+}

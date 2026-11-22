@@ -6,6 +6,7 @@ import { DEFAULT_CATALOG, DEFAULT_IGNORE, type Config } from "./types.js";
 
 export interface ConfigFile {
   ui?: unknown;
+  packages?: unknown;
   ignore?: unknown;
   catalog?: unknown;
   commitCatalog?: unknown;
@@ -46,6 +47,7 @@ export function loadConfig(root: string): Config {
   if (!existsSync(file)) {
     return {
       ui: [],
+      packages: [],
       ignore: [...DEFAULT_IGNORE],
       catalog: DEFAULT_CATALOG,
       commitCatalog: false,
@@ -64,6 +66,9 @@ export function normalizeConfig(parsed: ConfigFile): Config {
   const ui = Array.isArray(parsed.ui)
     ? parsed.ui.filter((entry): entry is string => typeof entry === "string").map(cleanDir)
     : [];
+  const packages = Array.isArray(parsed.packages)
+    ? parsed.packages.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0).map(cleanDir)
+    : [];
   const ignore = Array.isArray(parsed.ignore)
     ? parsed.ignore.filter((entry): entry is string => typeof entry === "string")
     : [...DEFAULT_IGNORE];
@@ -72,6 +77,7 @@ export function normalizeConfig(parsed: ConfigFile): Config {
     : DEFAULT_CATALOG;
   return {
     ui,
+    packages,
     ignore,
     catalog,
     commitCatalog: parsed.commitCatalog === true,
@@ -83,12 +89,14 @@ export function cleanDir(dir: string): string {
 }
 
 export function configDocument(config: Config): ConfigFile {
-  return {
+  const document: ConfigFile = {
     ui: config.ui,
     ignore: config.ignore,
     catalog: config.catalog,
     commitCatalog: config.commitCatalog,
   };
+  if (config.packages.length > 0) document.packages = config.packages;
+  return document;
 }
 
 export function isInsideDir(file: string, dir: string): boolean {

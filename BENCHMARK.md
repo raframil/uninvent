@@ -6,15 +6,15 @@ Tokenizer for every token count: cl100k_base via gpt-tokenizer (OpenAI GPT-4 pro
 
 ## Latest
 
-**0.3.0** (git, `0f3870e`)
+**0.4.0** (local, `16fce42`)
 
-Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions. 0 false positives on 9 clean files. Skill 630 tokens. `exists "loading button"` is 30 tokens. Reading the button source is 493 tokens.
+Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions, 3/3 Package sources. 0 false positives on 13 clean files. Skill 728 tokens. `exists "loading button"` is 30 tokens. Reading the button source is 493 tokens.
 
 ### By category
 
-| Version | Raw controls | Recipes | Documented states | Name collisions | Clean false positives |
-| --- | --- | --- | --- | --- | --- |
-| 0.3.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 fp / 9 |
+| Version | Raw controls | Recipes | Documented states | Name collisions | Package sources | Clean false positives |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.4.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 3 / 3 | 0 fp / 13 |
 
 ### With the rule, and held out
 
@@ -24,38 +24,49 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 | Recipes | 1 / 1 | 1 / 1 |
 | Documented states | 3 / 3 | 3 / 3 |
 | Name collisions | 1 / 1 | 1 / 1 |
-| Clean false positives | 0 fp / 6 | 0 fp / 3 |
+| Package sources | 2 / 2 | 1 / 1 |
+| Clean false positives | 0 fp / 8 | 0 fp / 5 |
 
 ### Tokens and time
 
 | Version | Skill | AGENTS.md | exists | Button source | Hook line (mean) | Scan (ms) | Hook, clean file (ms) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.1.0 | 463 | 100 | 7 (no match) | 493 | 17.1 | 334.8 | 79.4 |
-| 0.2.0 | 573 | 118 | 7 (no match) | 493 | 17.8 | 358.2 | 80.8 |
-| 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 359.9 | 84.6 |
+| 0.1.0 | 463 | 100 | 7 (no match) | 493 | 17.1 | 326.2 | 75.1 |
+| 0.2.0 | 573 | 118 | 7 (no match) | 493 | 17.8 | 353.5 | 79.4 |
+| 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 358.3 | 82.9 |
+| 0.4.0 | 728 | 150 | 30 | 493 | 19.9 | 380.3 | 83.7 |
 
 ## Trend
 
-| Version | Raw controls | Recipes | Documented states | Name collisions | Clean false positives |
-| --- | --- | --- | --- | --- | --- |
-| 0.1.0 | 4 / 4 | 0 / 2 | 0 / 6 | 2 / 2 | 0 fp / 9 |
-| 0.2.0 | 4 / 4 | 2 / 2 | 0 / 6 | 2 / 2 | 0 fp / 9 |
-| 0.3.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 fp / 9 |
+| Version | Raw controls | Recipes | Documented states | Name collisions | Package sources | Clean false positives |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.1.0 | 4 / 4 | 0 / 2 | 0 / 6 | 2 / 2 | 0 / 3 | 0 fp / 13 |
+| 0.2.0 | 4 / 4 | 2 / 2 | 0 / 6 | 2 / 2 | 0 / 3 | 0 fp / 13 |
+| 0.3.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 / 3 | 0 fp / 13 |
+| 0.4.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 3 / 3 | 0 fp / 13 |
 
 ```mermaid
 xychart-beta
     title "Recipes caught"
-    x-axis ["0.1.0", "0.2.0", "0.3.0"]
+    x-axis ["0.1.0", "0.2.0", "0.3.0", "0.4.0"]
     y-axis "Cases caught" 0 --> 2
-    bar [0, 2, 2]
+    bar [0, 2, 2, 2]
 ```
 
 ```mermaid
 xychart-beta
     title "Documented states caught"
-    x-axis ["0.1.0", "0.2.0", "0.3.0"]
+    x-axis ["0.1.0", "0.2.0", "0.3.0", "0.4.0"]
     y-axis "Cases caught" 0 --> 6
-    bar [0, 0, 6]
+    bar [0, 0, 6, 6]
+```
+
+```mermaid
+xychart-beta
+    title "Package sources caught"
+    x-axis ["0.1.0", "0.2.0", "0.3.0", "0.4.0"]
+    y-axis "Cases caught" 0 --> 3
+    bar [0, 0, 0, 3]
 ```
 
 ## Paired agent trial
@@ -66,7 +77,7 @@ Not run. No result file includes a paired trial, so there are no agent numbers. 
 
 This is a checker benchmark. Each case is a file in `bench/corpus`. `caught / total` is how many non-clean cases in that category produced the finding kind the case asks for (`raw`, `rebuilt`, `reinvented`, or `export`). A clean file that prints anything is a false positive. Cases marked `with-rule` were written with the rule they exercise, including the original demo shapes. Cases marked `held-out` are different files: another control, another wording of the confirm dialog, a loader beside the button, a `cn()` class string. The corpus is not the unit-test fixture set.
 
-A version can flag the raw elements inside a recipe file and still score 0 on recipes. The recipe category only counts a `rebuilt …` line. v0.1 does that on purpose: it has no recipes. The same is true for documented states before v0.3.
+A version can flag the raw elements inside a recipe file and still score 0 on recipes. The recipe category only counts a `rebuilt …` line. v0.1 does that on purpose: it has no recipes. The same is true for documented states before v0.3, and for package sources before v0.4.
 
 Token counts use cl100k_base, the OpenAI GPT-4 tokenizer, as a proxy. Claude and Cursor tokenize differently. Compare versions to each other. The skill and `AGENTS.md` numbers are what a turn carries if those files are in context. `exists` is one query. The source number is `button.tsx` plus its story, the files you would open to learn the same button. The hook number is the mean of the finding lines `check` prints. A clean file is 0. The hook does not print the catalog.
 

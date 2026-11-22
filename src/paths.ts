@@ -11,6 +11,12 @@ export function toPosix(value: string): string {
   return value.split(path.sep).join("/");
 }
 
+/** Project-relative posix path. A package outside the project starts with `..`. */
+export function projectRelative(root: string, file: string): string {
+  const relative = toPosix(path.relative(root, file));
+  return relative === "" ? "." : relative;
+}
+
 export function stripExt(file: string): string {
   return file.replace(/\.(tsx|ts|jsx|js|mjs|cjs)$/, "");
 }

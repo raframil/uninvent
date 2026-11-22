@@ -1,5 +1,6 @@
 {
   "ui": ["src/components/ui"],
+  "packages": ["@acme/ui", "@vendor/ui"],
   "ignore": [
     "**/*.stories.tsx",
     "**/*.stories.ts",

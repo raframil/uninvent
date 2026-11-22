@@ -3,10 +3,10 @@
   "version": "0.3.0",
   "source": "git",
   "git": "0f3870e90aac33a049f91fb3c1e7f1ee735a37e8",
-  "generatedAt": "2026-11-22T20:51:42.115Z",
+  "generatedAt": "2026-11-22T21:18:52.717Z",
   "tokenizer": "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)",
   "detection": {
-    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,clean-fp:0/9",
+    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,package:0/3,clean-fp:0/13",
     "categories": {
       "raw-control": {
         "caught": 4,
@@ -68,18 +68,33 @@
           "falsePositives": 0
         }
       },
-      "clean": {
+      "package": {
         "caught": 0,
-        "total": 9,
+        "total": 3,
         "falsePositives": 0,
         "withRule": {
           "caught": 0,
-          "total": 6,
+          "total": 2,
           "falsePositives": 0
         },
         "heldOut": {
           "caught": 0,
-          "total": 3,
+          "total": 1,
+          "falsePositives": 0
+        }
+      },
+      "clean": {
+        "caught": 0,
+        "total": 13,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 0,
+          "total": 8,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 0,
+          "total": 5,
           "falsePositives": 0
         }
       }
@@ -357,6 +372,83 @@
         "lines": []
       },
       {
+        "id": "package-badge-spinner",
+        "file": "src/pages/BadgeSpinner.tsx",
+        "category": "package",
+        "origin": "with-rule",
+        "catch": "reinvented",
+        "note": "A spinner inside Badge, imported from the workspace package @acme/ui. Badge's story sets loading.",
+        "passed": false,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "package-second-badge",
+        "file": "src/pages/SecondBadge.tsx",
+        "category": "package",
+        "origin": "with-rule",
+        "catch": "export",
+        "note": "A second export named Badge. Badge is exported from @acme/ui, not from components/ui.",
+        "passed": false,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "package-second-banner",
+        "file": "src/pages/SecondBanner.tsx",
+        "category": "package",
+        "origin": "held-out",
+        "catch": "export",
+        "note": "A second export named Banner. Banner exists only as a .d.ts in node_modules/@vendor/ui.",
+        "passed": false,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-uses-badge",
+        "file": "src/pages/UsesBadge.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "Imports Badge from the @acme/ui barrel. That import is reuse.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-uses-badge-subpath",
+        "file": "src/pages/UsesBadgeSubpath.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "The same Badge, imported from the @acme/ui/badge subpath.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-uses-banner",
+        "file": "src/pages/UsesBanner.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "Imports Banner from the installed package. Declarations only, no source.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-package-source",
+        "file": "packages/ui/src/badge.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "The workspace package source itself.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
         "id": "clean-chart",
         "file": "src/pages/UsageChart.tsx",
         "category": "clean",
@@ -470,19 +562,19 @@
   "latencyMs": {
     "samples": 5,
     "scan": {
-      "median": 359.9,
-      "min": 357.9,
-      "max": 367.8
+      "median": 358.3,
+      "min": 355,
+      "max": 363.2
     },
     "hookClean": {
-      "median": 84.6,
-      "min": 84.3,
-      "max": 88.1
+      "median": 82.9,
+      "min": 80.9,
+      "max": 84.9
     },
     "hookDirty": {
-      "median": 83.3,
-      "min": 82.3,
-      "max": 84.9
+      "median": 81.3,
+      "min": 80.2,
+      "max": 82.7
     },
     "note": "Median CLI wall time in milliseconds, including Node startup. Detection counts do not depend on this."
   },
