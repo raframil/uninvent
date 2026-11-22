@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { copyCorpus } from "./corpus.js";
+import { prepareChatRequest } from "./trial/headers.js";
 
 export interface AgentTask {
   id: string;
@@ -116,20 +117,18 @@ async function oneCondition(options: {
   let tokens: number | null = null;
   let text = "";
   try {
-    const response = await fetch(`${options.base}/chat/completions`, {
+    const request = prepareChatRequest(options.base, options.key, {
+      model: options.model,
+      temperature: 0,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: options.task.prompt },
+      ],
+    });
+    const response = await fetch(request.url, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${options.key}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: options.model,
-        temperature: 0,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: options.task.prompt },
-        ],
-      }),
+      headers: request.headers,
+      body: JSON.stringify(request.body),
     });
     const body = await response.json() as {
       error?: { message?: string };

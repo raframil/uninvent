@@ -11,6 +11,9 @@ dist/
 !bench/corpus/node_modules/**/dist/
 !bench/corpus/node_modules/**/dist/**
 .uninvent/
+bench/trial/.cache/
+bench/trial/results/
+bench/trial/artifacts/
 *.tsbuildinfo
 coverage/
 .DS_Store

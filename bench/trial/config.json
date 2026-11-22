@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "model": "openai/gpt-4o-mini",
+  "baseUrl": "https://openrouter.ai/api/v1",
+  "runs": 2,
+  "maxTurns": 6,
+  "repos": [
+    {
+      "id": "shadcn-admin",
+      "url": "https://github.com/satnaing/shadcn-admin.git",
+      "sha": "e16c87f213a5ba5e45964e9b67c792105ec74d26",
+      "license": "MIT",
+      "stars": "16952",
+      "why": "An admin dashboard (not the shadcn registry) whose src/components/ui is a shadcn/ui and Radix set: Dialog, AlertDialog, DropdownMenu, Select, Checkbox, Form, Input, Button, Skeleton. MIT, about 17k stars. Pinned at the 2026-06-11 commit that bumps @clerk/react.",
+      "tasks": [
+        {
+          "id": "settings-dialog",
+          "file": "src/features/trial/settings-dialog.tsx",
+          "prompt": "Add a settings dialog for the signed-in user. A Settings button opens it. Inside: the title \"Settings\", one sentence of description, a display-name field, and a way to close it. Create only src/features/trial/settings-dialog.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "confirm-delete",
+          "file": "src/features/trial/confirm-delete.tsx",
+          "prompt": "Add a confirmation dialog before deleting a user. It shows the title \"Delete user?\", a one-sentence warning that the action cannot be undone, and Cancel and Delete actions. Create only src/features/trial/confirm-delete.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "role-filter",
+          "file": "src/features/trial/role-filter.tsx",
+          "prompt": "Add a filter control for a users table. The person picks one role: Admin, Member, or Guest. Create only src/features/trial/role-filter.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "invite-form",
+          "file": "src/features/trial/invite-form.tsx",
+          "prompt": "Add an invite form with an email field, a role field (Admin, Member, or Guest), a checkbox labeled \"Send invite email\", and a submit button labeled \"Send invite\". Create only src/features/trial/invite-form.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "users-empty",
+          "file": "src/features/trial/users-empty.tsx",
+          "prompt": "Add an empty and loading view for the users table. While loading, show a placeholder block. When there are no users, show the sentence \"No users yet.\" and a button labeled \"Invite user\". Props: loading?: boolean. Create only src/features/trial/users-empty.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        }
+      ]
+    },
+    {
+      "id": "taxonomy",
+      "url": "https://github.com/shadcn-ui/taxonomy.git",
+      "sha": "298a8857c7128a0d121e7f699dfd729f23b3966d",
+      "license": "MIT",
+      "stars": "19291",
+      "why": "The canonical Next.js application built with shadcn/ui. components/ui sits at the repo root and @/* maps to ./*. Dialog, AlertDialog, DropdownMenu, Select, Checkbox, Input, Button, and Skeleton are already there. MIT, about 19k stars. A content app, so it is a second shape next to the dashboard. Pinned at the 2026-04-20 commit \"docs: update readme\".",
+      "tasks": [
+        {
+          "id": "settings-dialog",
+          "file": "components/trial/settings-dialog.tsx",
+          "prompt": "Add a settings dialog for the signed-in user. A Settings button opens it. Inside: the title \"Settings\", one sentence of description, a display-name field, and a way to close it. Create only components/trial/settings-dialog.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "confirm-delete",
+          "file": "components/trial/confirm-delete.tsx",
+          "prompt": "Add a confirmation dialog before deleting a post. It shows the title \"Delete post?\", a one-sentence warning that the action cannot be undone, and Cancel and Delete actions. Create only components/trial/confirm-delete.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "post-filter",
+          "file": "components/trial/post-filter.tsx",
+          "prompt": "Add a filter control for a list of posts. The person picks one status: Published or Draft. Create only components/trial/post-filter.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "newsletter-form",
+          "file": "components/trial/newsletter-form.tsx",
+          "prompt": "Add a newsletter form with an email field, a frequency field (Daily or Weekly), a checkbox labeled \"Product updates\", and a submit button labeled \"Subscribe\". Create only components/trial/newsletter-form.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        },
+        {
+          "id": "posts-empty",
+          "file": "components/trial/posts-empty.tsx",
+          "prompt": "Add an empty and loading view for the posts list. While loading, show a placeholder block. When there are no posts, show the sentence \"No posts yet.\" and a button labeled \"New post\". Props: loading?: boolean. Create only components/trial/posts-empty.tsx. Match the React and TypeScript style of this repository. Do not add dependencies."
+        }
+      ]
+    }
+  ]
+}

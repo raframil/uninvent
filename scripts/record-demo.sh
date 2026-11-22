@@ -8,18 +8,22 @@
 #        -> the recipe, the components it uses, the example
 #   3. uninvent exists "loading button"
 #        -> Button's loading state and the story that documents it
-#   4. Cut to examples/demo-app/src/components/Confirm.tsx and SaveButton.tsx
-#   5. uninvent check
-#        -> one line per miss, including the confirm-dialog recipe and Button's loading state
+#   4. uninvent check src/components/Confirm.tsx
+#        -> the confirm-dialog recipe
+#   5. uninvent check src/components/SaveButton.tsx
+#        -> Button's loading state
 #   6. uninvent check src/pages/Customers.tsx
 #        -> prints nothing (the screen already uses the system)
 #
-# This script plays the scan, both exists queries, and both checks.
-# It does not render a GIF. With https://github.com/charmbracelet/vhs installed:
+# This script plays that sequence. It does not render a GIF.
+# With https://github.com/charmbracelet/vhs installed, from the repo root
+# after npm install && npm run build:
 #
 #   vhs scripts/demo.tape
 #
-# That writes docs/demo.gif. Until the GIF exists, the README shows the transcript.
+# That writes docs/demo.gif. The tape calls node ../../dist/cli.js so the
+# demo app does not need its own install. Until the GIF exists, the README
+# shows the transcript.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -39,9 +43,11 @@ show() {
 
 show "${UNINVENT[@]}" scan --cwd examples/demo-app
 show "${UNINVENT[@]}" exists "confirm dialog" --cwd examples/demo-app
-show "${UNINVENT[@]}" exists Dialog --cwd examples/demo-app
-printf '\n$ uninvent check --cwd examples/demo-app\n'
-"${UNINVENT[@]}" check --cwd examples/demo-app || true
+show "${UNINVENT[@]}" exists "loading button" --cwd examples/demo-app
+printf '\n$ uninvent check --cwd examples/demo-app src/components/Confirm.tsx\n'
+"${UNINVENT[@]}" check --cwd examples/demo-app src/components/Confirm.tsx || true
+printf '\n$ uninvent check --cwd examples/demo-app src/components/SaveButton.tsx\n'
+"${UNINVENT[@]}" check --cwd examples/demo-app src/components/SaveButton.tsx || true
 printf '\n$ uninvent check --cwd examples/demo-app src/pages/Customers.tsx\n'
 "${UNINVENT[@]}" check --cwd examples/demo-app src/pages/Customers.tsx
 printf '# exit %s (no output above means the file is clean)\n' "$?"

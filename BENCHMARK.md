@@ -6,7 +6,7 @@ Tokenizer for every token count: cl100k_base via gpt-tokenizer (OpenAI GPT-4 pro
 
 ## Latest
 
-**0.4.1** (local, `e12405c`)
+**0.4.1** (local, `5684a47`)
 
 Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions, 3/3 Package sources. 0 false positives on 13 clean files. Skill 728 tokens. `exists "loading button"` is 30 tokens. Reading the button source is 493 tokens.
 
@@ -33,21 +33,43 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0.1.0 | 463 | 100 | 7 (no match) | 493 | 17.1 | 326.2 | 75.1 |
 | 0.2.0 | 573 | 118 | 7 (no match) | 493 | 17.8 | 353.5 | 79.4 |
-| 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 358.3 | 82.9 |
-| 0.4.0 | 728 | 150 | 30 | 493 | 19.9 | 363.3 | 82.4 |
-| 0.4.1 | 728 | 150 | 30 | 493 | 19.9 | 328.4 | 37.2 |
+| 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 357.4 | 85.2 |
+| 0.4.0 | 728 | 150 | 30 | 493 | 19.9 | 371.7 | 82.9 |
+| 0.4.1 | 728 | 150 | 30 | 493 | 19.9 | 330.5 | 37.8 |
 
 ### Hook process
 
-Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turns the V8 compile cache off. Warm reuses it. Older result files did not record this, so those cells are empty. The check column above is still `uninvent check` on one clean file.
+Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turns the V8 compile cache off. Warm reuses it. Result files recorded before the hook was timed on its own leave those cells empty. The check column above is still `uninvent check` on one clean file.
 
 | Version | Cold p50 | Cold p95 | Warm p50 | Warm p95 | Warm, with a finding (p50) |
 | --- | --- | --- | --- | --- | --- |
 | 0.1.0 | — | — | — | — | — |
 | 0.2.0 | — | — | — | — | — |
-| 0.3.0 | — | — | — | — | — |
-| 0.4.0 | — | — | — | — | — |
-| 0.4.1 | 35.3 | 37.6 | 34.3 | 37.1 | 33.6 |
+| 0.3.0 | 84.5 | 86.9 | 77.4 | 87.2 | 76.3 |
+| 0.4.0 | 85.6 | 90.7 | 78 | 81.3 | 77.2 |
+| 0.4.1 | 36.2 | 38.8 | 33.3 | 34.9 | 34.1 |
+
+## 0.3.0 and 0.4.1
+
+The unpublished release is 0.4.1. 0.4.0, the package-source commit, stays in the trend table. Detection counts and token counts do not move between machines. Latency does.
+
+|  | 0.3.0 | 0.4.1 |
+| --- | --- | --- |
+| Raw controls | 4 / 4 | 4 / 4 |
+| Recipes | 2 / 2 | 2 / 2 |
+| Documented states | 6 / 6 | 6 / 6 |
+| Name collisions | 2 / 2 | 2 / 2 |
+| Package sources | 0 / 3 | 3 / 3 |
+| Clean false positives | 0 fp / 13 | 0 fp / 13 |
+| Skill tokens | 630 | 728 |
+| exists tokens | 30 | 30 |
+| Hook line (mean tokens) | 19.9 | 19.9 |
+| Scan (ms) | 357.4 | 330.5 |
+| Clean-file check (ms) | 85.2 | 37.8 |
+| Hook cold p50 (ms) | 84.5 | 36.2 |
+| Hook cold p95 (ms) | 86.9 | 38.8 |
+| Hook warm p50 (ms) | 77.4 | 33.3 |
+| Hook warm p95 (ms) | 87.2 | 34.9 |
 
 ## Trend
 
@@ -85,7 +107,7 @@ xychart-beta
 
 ## Paired agent trial
 
-Not run. No result file includes a paired trial, so there are no agent numbers. Set `UNINVENT_BENCH_API_KEY` and see [bench/README.md](bench/README.md).
+Not run. No result file includes a paired trial, so there are no agent numbers. Set `UNINVENT_BENCH_API_KEY` and see [bench/README.md](bench/README.md). That corpus trial is not the real-repository study. See [CASE_STUDY.md](CASE_STUDY.md).
 
 ## What this does and does not show
 
@@ -99,5 +121,5 @@ Latency is wall-clock time, including Node starting. The check column is the med
 
 The paired agent trial is off unless `UNINVENT_BENCH_API_KEY` is set. A skipped trial has no counts. This report does not invent them. When the trial does run, the wrong-component count is how many lines `uninvent check` prints on the file the model returned. That is the checker judging the model, not a person.
 
-Nothing here shows that a live coding agent, with tools and a hook, makes fewer mistakes or spends fewer tokens on a real task. That needs the paired trial, or a run of your own.
+Nothing here shows that a live coding agent, with tools and a hook, makes fewer mistakes or spends fewer tokens on a real task. That needs the real-repository trial in [bench/trial](bench/trial/README.md), written up in [CASE_STUDY.md](CASE_STUDY.md). Until that trial has run, the case study has no agent numbers.
 
