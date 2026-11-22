@@ -16,7 +16,7 @@ const demo = path.join(repoRoot, "examples/demo-app");
 
 test("scan, exists, and check on the demo app", () => {
   const summary = scanCommand(demo);
-  assert.match(summary, /^\d+ components, 2 stories, catalog written to \.uninvent\/catalog\.json$/);
+  assert.match(summary, /^\d+ components, 2 stories, 1 recipe, catalog written to \.uninvent\/catalog\.json$/);
 
   const config = loadConfig(demo);
   const catalog = readCatalog(demo, config.catalog);
@@ -39,6 +39,12 @@ test("scan, exists, and check on the demo app", () => {
   assert.equal(missing.found, false);
   assert.match(missing.text, /no match for "Toaster"/);
 
+  const recipe = renderExists(catalog, "confirm dialog");
+  assert.equal(recipe.found, true);
+  assert.match(recipe.text, /^Confirm dialog  recipe confirm-dialog\n/);
+  assert.match(recipe.text, /uses: Dialog, DialogContent, DialogTitle, DialogDescription, Button/);
+  assert.match(recipe.text, /import \{ Button \} from "@\/components\/ui\/button";/);
+
   const clean = checkProject({
     root: demo,
     config,
@@ -55,9 +61,11 @@ test("scan, exists, and check on the demo app", () => {
     "raw <button> in src/pages/Login.tsx:N, use ui/Button",
     "raw <dialog> in src/components/Modal.tsx:N, use ui/Dialog",
     "raw <input> in src/pages/Login.tsx:N, use ui/Input",
+    "rebuilt Confirm dialog in src/components/Confirm.tsx:N, use ui/Dialog + ui/Button",
   ]);
   const markdown = formatReport(all.findings, all.reuses, "markdown");
-  assert.match(markdown, new RegExp(`\\*\\*reuse ${all.reuses.length} \\/ invent 3\\*\\*`));
+  assert.match(markdown, new RegExp(`\\*\\*reuse ${all.reuses.length} \\/ invent 4\\*\\*`));
+  assert.match(markdown, /rebuilt `Confirm dialog`/);
 });
 
 test("cli stays silent on a clean file and flags the demo", () => {
@@ -78,6 +86,11 @@ test("cli stays silent on a clean file and flags the demo", () => {
   assert.equal(dirty.status, 1);
   assert.match(dirty.stdout, /raw <button> in src\/pages\/Login\.tsx:\d+, use ui\/Button\n/);
   assert.match(dirty.stdout, /raw <dialog> in src\/components\/Modal\.tsx:\d+, use ui\/Dialog\n/);
+  assert.match(dirty.stdout, /rebuilt Confirm dialog in src\/components\/Confirm\.tsx:\d+, use ui\/Dialog \+ ui\/Button\n/);
+  assert.equal(
+    dirty.stdout.split("\n").some((line) => line.startsWith("raw") && line.includes("Confirm.tsx")),
+    false,
+  );
   assert.equal(dirty.stdout.includes("Customers.tsx"), false);
 
   const hook = spawnSync(

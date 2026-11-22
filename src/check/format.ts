@@ -5,6 +5,9 @@ export function describeFinding(finding: Finding, withLine = true): string {
   if (finding.kind === "name-collision") {
     return `export ${finding.name} in ${at}, use ${finding.suggestion}`;
   }
+  if (finding.kind === "recipe") {
+    return `rebuilt ${finding.recipe ?? "recipe"} in ${at}, use ${finding.suggestion}`;
+  }
   const element = finding.element === "a" ? "<a role=\"button\">" : `<${finding.element ?? "element"}>`;
   return `raw ${element} in ${at}, use ${finding.suggestion}`;
 }
@@ -55,6 +58,10 @@ export function formatMarkdown(findings: Finding[], reuses: Reuse[]): string {
 function markdownFinding(finding: Finding): string {
   if (finding.kind === "name-collision") {
     return `export \`${finding.name}\` in \`${finding.file}:${finding.line}\`, use \`${finding.suggestion}\``;
+  }
+  if (finding.kind === "recipe") {
+    const parts = finding.suggestion.split(" + ").map((part) => `\`${part}\``).join(" + ");
+    return `rebuilt \`${finding.recipe ?? "recipe"}\` in \`${finding.file}:${finding.line}\`, use ${parts}`;
   }
   const element = finding.element === "a" ? "<a role=\"button\">" : `<${finding.element}>`;
   return `raw \`${element}\` in \`${finding.file}:${finding.line}\`, use \`${finding.suggestion}\``;

@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
-# Record the ~20s uninvent demo.
+# Record the uninvent demo.
 #
 # Shot list, dark terminal, large font, crop to the terminal:
 #   1. uninvent scan
-#        -> "N components, 2 stories, catalog written to .uninvent/catalog.json"
-#   2. uninvent exists Dialog
+#        -> "N components, 2 stories, 1 recipe, catalog written to .uninvent/catalog.json"
+#   2. uninvent exists "confirm dialog"
+#        -> the recipe, the components it uses, the example
+#   3. uninvent exists Dialog
 #        -> file, import, props, radix
-#   3. Cut to examples/demo-app/src/components/Modal.tsx (a native <dialog>)
-#   4. uninvent check
-#        -> one line per miss, including raw <dialog> ... use ui/Dialog
-#   5. uninvent check src/pages/Customers.tsx
+#   4. Cut to examples/demo-app/src/components/Confirm.tsx (a hand-rolled confirm)
+#   5. uninvent check
+#        -> one line per miss, including the confirm-dialog recipe
+#   6. uninvent check src/pages/Customers.tsx
 #        -> prints nothing (the screen already uses the system)
 #
-# This script plays steps 1, 2, 4, and 5 so you can capture them.
+# This script plays the scan, both exists queries, and both checks.
 # It does not render a GIF. With https://github.com/charmbracelet/vhs installed:
 #
 #   vhs scripts/demo.tape
@@ -36,6 +38,7 @@ show() {
 }
 
 show "${UNINVENT[@]}" scan --cwd examples/demo-app
+show "${UNINVENT[@]}" exists "confirm dialog" --cwd examples/demo-app
 show "${UNINVENT[@]}" exists Dialog --cwd examples/demo-app
 printf '\n$ uninvent check --cwd examples/demo-app\n'
 "${UNINVENT[@]}" check --cwd examples/demo-app || true

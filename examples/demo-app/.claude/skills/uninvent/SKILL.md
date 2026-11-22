@@ -1,6 +1,6 @@
 ---
 name: uninvent
-description: "Look up this project's design system before adding UI. Use when creating or editing screens, buttons, dialogs, inputs, tables, or any React component. Catalog includes Button, Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription, Input, PageHeader, Table, TableHeader."
+description: "Look up this project's design system before adding UI. Use when creating or editing screens, buttons, dialogs, inputs, tables, or any React component. Catalog includes Button, Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription, Input, PageHeader, Table, TableHeader. Recipes: Confirm dialog."
 ---
 
 <!-- uninvent:generated -->
@@ -16,6 +16,8 @@ uninvent exists <Component>
 ```
 
 After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.
+
+A recipe is how this project assembles those components. Rebuilding it from raw elements is a miss. The hook names the recipe and the components it uses.
 
 ## Catalog
 
@@ -56,3 +58,11 @@ primitives: radix (@radix-ui/react-dialog)
 - TableRow
 - TableHead
 - TableCell
+
+## Recipes
+
+Prefer a recipe over assembling the same UI from raw elements.
+
+- **Confirm dialog** — Ask before a destructive action. A title, a description, and a cancel/confirm Button row. Uses Dialog, DialogContent, DialogTitle, DialogDescription, Button.
+
+Run `uninvent exists "<recipe>"` for the imports and the example.

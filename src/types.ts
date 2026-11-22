@@ -32,12 +32,38 @@ export interface CatalogComponent {
   stories: string[];
 }
 
+/**
+ * A composition this project already uses: existing components assembled
+ * into a common UI pattern. Declared recipes come from `uninvent.recipes.md`.
+ * Detected recipes are repeated compositions scan noticed and will not flag.
+ */
+export interface Recipe {
+  id: string;
+  title: string;
+  /** Phrases for `uninvent exists`, including the title. */
+  intents: string[];
+  /** Catalog component names the composition is built from. */
+  uses: string[];
+  summary: string;
+  /** Example JSX from the recipe file. Omitted when the recipe has none. */
+  example?: string;
+  source: "declared" | "detected";
+  /** Project-relative path of the recipe file. */
+  file?: string;
+  /** App files a detected composition was seen in. */
+  seenIn?: string[];
+}
+
 export interface Catalog {
   version: 1;
   generatedAt: string;
   paths: PathMapping[];
   components: CatalogComponent[];
   tokens: string[];
+  /**
+   * Absent on v0.1 catalogs. Readers treat that as no recipes.
+   */
+  recipes?: Recipe[];
 }
 
 export interface Config {
@@ -48,15 +74,17 @@ export interface Config {
 }
 
 export interface Finding {
-  kind: "raw-element" | "name-collision";
+  kind: "raw-element" | "name-collision" | "recipe";
   file: string;
   line: number;
   message: string;
-  /** Short label, `ui/Button`. */
+  /** Short label, `ui/Button`, or `ui/Dialog + ui/Button` for a recipe. */
   suggestion: string;
   import: string;
   element?: string;
   name?: string;
+  /** Recipe title, when `kind` is `recipe`. */
+  recipe?: string;
 }
 
 export interface Reuse {

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { importStatement, siblingsOf } from "./catalog.js";
 import { formatPrimitives } from "./primitives.js";
-import type { Catalog, CatalogComponent } from "./types.js";
+import type { Catalog, CatalogComponent, Recipe } from "./types.js";
 
 export const SKILL_FILES = [
   ".claude/skills/uninvent/SKILL.md",
@@ -16,12 +16,14 @@ const AGENTS_END = "<!-- uninvent:end -->";
 
 export function renderSkill(catalog: Catalog): string {
   const names = catalog.components.map((component) => component.name);
+  const recipes = declaredRecipes(catalog);
   const listed = names.slice(0, 12).join(", ");
-  const description = listed.length > 0
+  let description = listed.length > 0
     ? `Look up this project's design system before adding UI. Use when creating or editing screens, buttons, dialogs, inputs, tables, or any React component. Catalog includes ${listed}.`
     : "Look up this project's design system before adding UI. Use when creating or editing screens or React components.";
+  if (recipes.length > 0) description += ` Recipes: ${recipes.slice(0, 4).map((recipe) => recipe.title).join(", ")}.`;
   const blocks = groupByFile(catalog).map((group) => renderGroup(group, catalog));
-  return [
+  const lines = [
     "---",
     "name: uninvent",
     `description: ${yamlQuote(description)}`,
@@ -41,25 +43,42 @@ export function renderSkill(catalog: Catalog): string {
     "",
     "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
     "",
+  ];
+  if (recipes.length > 0) {
+    lines.push(
+      "A recipe is how this project assembles those components. Rebuilding it from raw elements is a miss. The hook names the recipe and the components it uses.",
+      "",
+    );
+  }
+  lines.push(
     "## Catalog",
     "",
     blocks.length > 0 ? blocks.join("\n\n") : "No components scanned yet. Run `uninvent scan`.",
     "",
-  ].join("\n");
+  );
+  const recipeBlock = renderRecipes(recipes);
+  if (recipeBlock) lines.push(recipeBlock, "");
+  return lines.join("\n");
 }
 
 export function renderAgentsBlock(catalog: Catalog): string {
   const names = catalog.components.map((component) => component.name);
   const list = names.length > 0 ? names.join(", ") : "(empty — run uninvent scan)";
-  return [
+  const recipes = declaredRecipes(catalog);
+  const lines = [
     AGENTS_START,
     "## Design system",
     "",
     "Reuse the local design system. Before adding UI, run `uninvent exists <Component>`. Do not leave a raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` in place when the catalog has a component for it.",
     "",
     `Catalog: ${list}.`,
-    AGENTS_END,
-  ].join("\n");
+  ];
+  if (recipes.length > 0) {
+    const recipeList = recipes.map((recipe) => `${recipe.title} (${recipe.uses.join(", ")})`).join("; ");
+    lines.push("", `Recipes: ${recipeList}.`);
+  }
+  lines.push(AGENTS_END);
+  return lines.join("\n");
 }
 
 export function writeSkills(root: string, catalog: Catalog, force = false): string[] {
@@ -105,6 +124,26 @@ function upsertAgents(root: string, block: string): string | null {
     return "AGENTS.md";
   }
   return null;
+}
+
+function declaredRecipes(catalog: Catalog): Recipe[] {
+  return (catalog.recipes ?? []).filter((recipe) => recipe.source === "declared");
+}
+
+function renderRecipes(recipes: Recipe[]): string {
+  if (recipes.length === 0) return "";
+  const lines = [
+    "## Recipes",
+    "",
+    "Prefer a recipe over assembling the same UI from raw elements.",
+    "",
+  ];
+  for (const recipe of recipes) {
+    const summary = recipe.summary ? `${recipe.summary} ` : "";
+    lines.push(`- **${recipe.title}** — ${summary}Uses ${recipe.uses.join(", ")}.`);
+  }
+  lines.push("", "Run `uninvent exists \"<recipe>\"` for the imports and the example.");
+  return lines.join("\n");
 }
 
 function groupByFile(catalog: Catalog): CatalogComponent[][] {

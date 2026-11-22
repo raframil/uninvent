@@ -1,7 +1,7 @@
 import { importStatement, siblingsOf } from "./catalog.js";
 import { UserError } from "./errors.js";
 import { formatPrimitives } from "./primitives.js";
-import type { Catalog, CatalogComponent } from "./types.js";
+import type { Catalog, CatalogComponent, Recipe } from "./types.js";
 
 export function normalizeQuery(input: string): string {
   let query = input.trim().replace(/^["']|["']$/g, "");
@@ -16,10 +16,21 @@ export function normalizeQuery(input: string): string {
 export function renderExists(catalog: Catalog, rawQuery: string): { found: boolean; text: string } {
   const query = normalizeQuery(rawQuery);
   if (!query) throw new UserError("Usage: uninvent exists <Component>");
+  const recipes = (catalog.recipes ?? [])
+    .map((recipe) => ({ recipe, score: scoreRecipe(recipe, query) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || a.recipe.title.localeCompare(b.recipe.title));
   const ranked = catalog.components
     .map((component) => ({ component, score: scoreComponent(component, query) }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score || a.component.file.localeCompare(b.component.file) || a.component.name.localeCompare(b.component.name));
+  const bestRecipe = recipes[0]?.score ?? 0;
+  const bestComponent = ranked[0]?.score ?? 0;
+  const singleToken = !query.includes(" ");
+  const recipeWins =
+    (bestRecipe >= 90 && bestRecipe >= bestComponent && !(bestComponent === 100 && singleToken)) ||
+    (bestRecipe >= 60 && bestComponent === 0);
+  if (recipeWins) return { found: true, text: renderRecipeMatches(recipes, catalog) };
   if (ranked.length === 0) {
     return { found: false, text: `no match for "${rawQuery.trim()}"\n` };
   }
@@ -42,6 +53,59 @@ export function renderExists(catalog: Catalog, rawQuery: string): { found: boole
     blocks.push(renderComponent(match.component, catalog));
   }
   return { found: true, text: `${blocks.join("\n\n")}\n` };
+}
+
+function renderRecipeMatches(
+  ranked: { recipe: Recipe; score: number }[],
+  catalog: Catalog,
+): string {
+  const best = ranked[0]?.score ?? 0;
+  const matches = ranked.filter((entry) => entry.score === best).slice(0, 3);
+  const only = matches[0];
+  if (matches.length === 1 && only) return `${renderRecipe(only.recipe, catalog)}\n`;
+  const lines = [`${matches.length} recipes`];
+  for (const match of matches) lines.push(`  ${match.recipe.title}  ${match.recipe.uses.join(", ")}`);
+  lines.push("Run uninvent exists \"<recipe>\" for one of them.");
+  return `${lines.join("\n")}\n`;
+}
+
+function renderRecipe(recipe: Recipe, catalog: Catalog): string {
+  const lines = [`${recipe.title}  recipe ${recipe.id}`];
+  if (recipe.summary) lines.push(`  ${recipe.summary}`);
+  lines.push(`  uses: ${recipe.uses.join(", ")}`);
+  const seenPaths = new Set<string>();
+  for (const name of recipe.uses) {
+    const component = catalog.components.find((entry) => entry.name === name);
+    if (!component || seenPaths.has(component.importPath)) continue;
+    seenPaths.add(component.importPath);
+    lines.push(`  ${importStatement(component, catalog)}`);
+  }
+  if (recipe.seenIn && recipe.seenIn.length > 0) lines.push(`  seen in: ${recipe.seenIn.join(", ")}`);
+  if (recipe.example) {
+    const example = recipe.example.split("\n");
+    const shown = example.slice(0, 24);
+    lines.push("  example:");
+    for (const line of shown) lines.push(`    ${line}`);
+    if (example.length > shown.length) lines.push("    …");
+  }
+  return lines.join("\n");
+}
+
+function scoreRecipe(recipe: Recipe, query: string): number {
+  const wanted = keyOf(query);
+  if (!wanted) return 0;
+  const fields = [recipe.title, recipe.id, ...recipe.intents];
+  if (fields.some((field) => keyOf(field) === wanted)) return 100;
+  const words = query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length >= 3);
+  if (words.length >= 2) {
+    const haystack = fields.map((field) => keyOf(field)).join(" ");
+    if (words.every((word) => haystack.includes(word))) return 90;
+  }
+  if (wanted.length >= 4 && fields.some((field) => keyOf(field).includes(wanted))) return 60;
+  return 0;
 }
 
 function renderComponent(component: CatalogComponent, catalog: Catalog): string {

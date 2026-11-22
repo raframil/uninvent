@@ -1,4 +1,4 @@
-# vhs script for the ~20s GIF. Requires https://github.com/charmbracelet/vhs
+# vhs script for the demo GIF. Requires https://github.com/charmbracelet/vhs
 # From the repo root, after `npm install && npm run build`:
 #   vhs scripts/demo.tape
 Output docs/demo.gif
@@ -18,8 +18,14 @@ Show
 Type "npx uninvent scan" Sleep 400ms Enter
 Sleep 2s
 
+Type "npx uninvent exists \"confirm dialog\"" Sleep 300ms Enter
+Sleep 3s
+
 Type "npx uninvent exists Dialog" Sleep 300ms Enter
 Sleep 3s
+
+Type "npx uninvent check src/components/Confirm.tsx" Sleep 300ms Enter
+Sleep 2s
 
 Type "npx uninvent check src/components/Modal.tsx" Sleep 300ms Enter
 Sleep 2s

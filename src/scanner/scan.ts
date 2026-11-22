@@ -3,6 +3,8 @@ import path from "node:path";
 import { UserError } from "../errors.js";
 import { walkSourceFiles } from "../fs-walk.js";
 import { resolveSpecifier, toImportPath, toPosix, type PathMapping } from "../paths.js";
+import { detectRecipes } from "../recipes/detect.js";
+import { RECIPES_FILE, finalizeRecipes, loadDeclaredRecipes } from "../recipes/parse.js";
 import type { Catalog, CatalogComponent, Config } from "../types.js";
 import {
   discoverStylesheet,
@@ -52,15 +54,37 @@ export function scanProject(root: string, config: Config): ScanResult {
 
   const stylesheet = discoverStylesheet(root);
   const tokens = stylesheet ? readTokens(readFileSync(path.join(root, stylesheet), "utf8")) : [];
+  const loaded = loadDeclaredRecipes(root);
+  const finalized = finalizeRecipes(loaded.recipes, components);
+  const detected = detectRecipes({
+    root,
+    config,
+    components,
+    paths: mappings,
+    declared: finalized.recipes,
+  });
   const catalog: Catalog = {
     version: 1,
     generatedAt: new Date().toISOString(),
     paths: mappings,
     components,
     tokens,
+    recipes: [...finalized.recipes, ...detected],
   };
   const storyCount = new Set(components.flatMap((component) => component.stories)).size;
-  const summary = `${components.length} components, ${storyCount} stories, catalog written to ${toPosix(config.catalog)}`;
+  const declaredCount = finalized.recipes.length;
+  const recipeLabel = declaredCount === 1 ? "recipe" : "recipes";
+  let summary = `${components.length} components, ${storyCount} stories`;
+  if (declaredCount > 0) summary += `, ${declaredCount} ${recipeLabel}`;
+  summary += `, catalog written to ${toPosix(config.catalog)}`;
+  const notes = [...loaded.warnings, ...finalized.warnings];
+  if (detected.length > 0) {
+    const hint = detected
+      .map((recipe) => `${recipe.title} (${(recipe.seenIn ?? []).join(", ")})`)
+      .join("; ");
+    notes.push(`detected ${hint} — add a recipe to ${RECIPES_FILE} to check it`);
+  }
+  if (notes.length > 0) summary += `\n${notes.join("\n")}`;
   return { catalog, summary };
 }
 
