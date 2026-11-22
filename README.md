@@ -134,7 +134,52 @@ A `<div>` is not a miss. A file named `Modal.tsx` is not a miss by itself — th
 
 ## CI
 
-The catalog is gitignored by default, so CI scans and then checks the pull-request diff. Exit code 1 fails the job. Markdown is a reasonable pull-request comment; a bot that posts it can come later.
+The catalog is gitignored by default, so CI scans and then checks the pull request diff. `check` exits 1 when it finds a miss. The action in this repo does not fail the job for that. It writes the markdown report to the job summary and posts or updates one comment.
+
+```yaml
+name: uninvent
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: raframil/uninvent@v0.3.0
+        with:
+          version: 0.3.0
+          # working-directory: apps/web
+```
+
+`fetch-depth: 0` gives git the history for `check --base`. The action fetches the base commit when the checkout does not have it. Node 20 or newer has to be on `PATH`. `setup-node` is the straightforward way.
+
+The action is not on the Marketplace. `uses` points at a tag or commit of this repository. `version` is what `npm install` installs. v0.3 is not on npm yet, so pin both once a release exists. This repository runs the action on every pull request against [`examples/demo-app`](examples/demo-app), from [`.github/workflows/uninvent.yml`](.github/workflows/uninvent.yml). That workflow builds first and passes `version: local`, which runs `dist/cli.js` from the checkout.
+
+| Input | Default | What it does |
+|---|---|---|
+| `working-directory` | `.` | Directory with `uninvent.json`. Set it for a package in a monorepo. |
+| `version` | this action's `package.json` version | An npm version, `latest`, or `local`. Empty uses `dist/cli.js` when the checkout has one. |
+| `fail-on-findings` | `false` | `true` fails the job when `check` exits 1. A scan or usage error still fails either way. |
+| `comment` | `true` | `false` skips the comment. The job summary is still written. |
+| `token` | `github.token` | Reads and writes the one comment. |
+| `base` | pull request base SHA | Passed through to `check --base`. |
+
+The comment is the markdown report. A hidden HTML marker makes the next push edit that comment instead of adding another. An unchanged report is left alone. A clean diff stays short: the counts, `Nothing reinvented.`, and the names that were reused. Each `working-directory` keeps its own comment, so two packages get two comments and each one updates in place. Two runs that start together can both create; [the workflow in this repo](.github/workflows/uninvent.yml) cancels the older run on that pull request.
+
+Same-repository pull requests can comment with the default `GITHUB_TOKEN` when the workflow sets `pull-requests: write`. A pull request from a fork gets a read-only token on `pull_request`. The action skips the comment, leaves the report in the job summary, and does not fail. `pull_request_target` would have a write token, and it is the wrong event here. The workflow runs from the base branch with that token, and `scan` reads whatever you checked out. Checking out the fork head would run untrusted code with permission to write to the repository. This action does not check out code and does not switch the event.
+
+To run the commands yourself, and to fail the job on the first miss:
 
 ```yaml
 - name: Design system reuse
@@ -143,6 +188,8 @@ The catalog is gitignored by default, so CI scans and then checks the pull-reque
     npx uninvent scan
     npx uninvent check --base "origin/${{ github.base_ref }}" --format markdown | tee "$GITHUB_STEP_SUMMARY"
 ```
+
+`check` exits 1, so that step is red when something was reinvented. The action is not, unless `fail-on-findings` is true.
 
 To keep the catalog in git (slower monorepos, or a hook that must not rescan):
 
@@ -280,13 +327,13 @@ npm test
 npm run build
 ```
 
-`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check.
+`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check. `tests/action.test.ts` covers the sticky pull request comment: create, update, a clean report, and a fork pull request where the token cannot write.
 
 Publishing: `package.json` is set up for a public npm package (`prepublishOnly` builds `dist/`). v0.3 has not been published.
 
 ## Status
 
-v0.3. The catalog, recipes, documented states, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. Coverage lists missing stories. It does not write them.
+v0.3. The catalog, recipes, documented states, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. The GitHub Action posts the markdown `check` report on a pull request. Coverage lists missing stories. It does not write them.
 
 ## License
 
