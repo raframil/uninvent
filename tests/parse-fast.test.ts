@@ -44,6 +44,28 @@ test("the fast scanner matches Babel on the repo's TSX", () => {
   }
 });
 
+test("package and subpath imports match Babel", () => {
+  const source = `import { Button, Input as TextField } from "@acme/ui";
+import { Button as SubpathButton } from "@acme/ui/button";
+export function Page() {
+  return <button>Go</button>;
+}
+`;
+  const fast = parseFast(source);
+  const babel = parseWithBabel(source, "page.tsx");
+  assert.ok(fast);
+  assert.ok(babel);
+  assert.deepEqual(normalize(fast), normalize(babel));
+  assert.deepEqual(
+    fast.imports.map((spec) => `${spec.imported} as ${spec.local} from ${spec.specifier}`),
+    [
+      "Button as Button from @acme/ui",
+      "Input as TextField from @acme/ui",
+      "Button as SubpathButton from @acme/ui/button",
+    ],
+  );
+});
+
 test("export default jsx matches Babel", () => {
   for (const source of [
     "export default <button>Go</button>\n",

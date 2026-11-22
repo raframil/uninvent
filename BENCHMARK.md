@@ -6,7 +6,7 @@ Tokenizer for every token count: cl100k_base via gpt-tokenizer (OpenAI GPT-4 pro
 
 ## Latest
 
-**0.3.1** (local, `f5ffeab`)
+**0.3.1** (local, `926c82c`)
 
 Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions. 0 false positives on 9 clean files. Skill 630 tokens. `exists "loading button"` is 30 tokens. Reading the button source is 493 tokens.
 
@@ -33,7 +33,7 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 | 0.1.0 | 463 | 100 | 7 (no match) | 493 | 17.1 | 334.8 | 79.4 |
 | 0.2.0 | 573 | 118 | 7 (no match) | 493 | 17.8 | 358.2 | 80.8 |
 | 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 359.9 | 84.6 |
-| 0.3.1 | 630 | 131 | 30 | 493 | 19.9 | 324.5 | 37.1 |
+| 0.3.1 | 630 | 131 | 30 | 493 | 19.9 | 324.7 | 38.6 |
 
 ### Hook process
 
@@ -44,7 +44,7 @@ Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turn
 | 0.1.0 | — | — | — | — | — |
 | 0.2.0 | — | — | — | — | — |
 | 0.3.0 | — | — | — | — | — |
-| 0.3.1 | 35.8 | 37.6 | 33.9 | 38.9 | 33.9 |
+| 0.3.1 | 35 | 36.9 | 33.7 | 35.7 | 34.2 |
 
 ## Trend
 
