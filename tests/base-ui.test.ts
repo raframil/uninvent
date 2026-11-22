@@ -99,4 +99,5 @@ test("reads a catalog that still has the old radix field", () => {
   const catalog = readCatalog(root, ".uninvent/catalog.json");
   assert.deepEqual(catalog.components[0]?.primitives, [{ library: "radix", package: "@radix-ui/react-slot" }]);
   assert.equal("radix" in (catalog.components[0] ?? {}), false);
+  assert.deepEqual(catalog.recipes, []);
 });

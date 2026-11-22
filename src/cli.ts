@@ -17,12 +17,13 @@ const HELP = `uninvent — check that agents reuse the design system
 Usage
   uninvent init [--ui <dir>] [--commit] [--force]
   uninvent scan
-  uninvent exists <Component>
+  uninvent exists <Component | "intent">
   uninvent check [path...] [--base <ref>] [--format text|json|markdown]
   uninvent install [claude-code|cursor] [--pre]
   uninvent hook [--file <path>]
 
-check prints one line per reinvented element and nothing when the file is clean.
+check prints one line per reinvented element or recipe and nothing when the file is clean.
+exists matches a component name or a composition recipe, for example: uninvent exists "confirm dialog"
 Exit codes: 0 clean, 1 reinvented, 2 usage or catalog error.
 The hook never blocks a write. It prints nothing unless the edit reinvented UI.
 PreToolUse is off unless you pass --pre.

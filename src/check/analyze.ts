@@ -1,5 +1,6 @@
 import { parse } from "@babel/parser";
 import { importStatement, suggestionLabel } from "../catalog.js";
+import { applyRecipeHits, findRecipeHits } from "../recipes/match.js";
 import { describeFinding } from "./format.js";
 import { matchesIgnore } from "../ignore.js";
 import { isInsideDir } from "../config.js";
@@ -88,8 +89,15 @@ export function analyzeSource(options: {
     reuses.push({ name: component.name, file, line });
   });
 
+  const hits = findRecipeHits({
+    source: options.source,
+    file,
+    catalog: options.catalog,
+    lines: options.lines,
+    withLine: !options.snippet,
+  });
   return {
-    findings: dedupe(findings),
+    findings: dedupe(applyRecipeHits(findings, hits)),
     reuses,
   };
 }
