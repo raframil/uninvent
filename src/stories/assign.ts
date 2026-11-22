@@ -1,3 +1,4 @@
+import { componentForImport } from "../catalog.js";
 import { resolveSpecifier, stripExt } from "../paths.js";
 import type { PathMapping } from "../paths.js";
 import type { CatalogComponent, StoryArg, StoryDoc } from "../types.js";
@@ -54,11 +55,10 @@ function resolveImports(
   const imported = new Map<string, CatalogComponent>();
   for (const specifier of parsed.imports) {
     const resolved = resolveSpecifier(file, specifier.from, mappings);
-    if (!resolved) continue;
-    const matches = components.filter((component) => stripExt(component.file) === resolved);
+    const matches = resolved ? components.filter((component) => stripExt(component.file) === resolved) : [];
     const component = specifier.imported === "default"
       ? matches.find((entry) => entry.name === specifier.local) ?? (matches.length === 1 ? matches[0] : undefined)
-      : matches.find((entry) => entry.name === specifier.imported);
+      : componentForImport(components, mappings, file, specifier.from, specifier.imported);
     if (component) imported.set(specifier.local, component);
   }
   return imported;

@@ -22,10 +22,11 @@ export function detectRecipes(options: {
   components: CatalogComponent[];
   paths: PathMapping[];
   declared: Recipe[];
+  packageDirs?: string[];
 }): Recipe[] {
   const files: { file: string; source: string }[] = [];
   for (const file of walkSourceFiles(options.root)) {
-    if (isUiFile(file, options.config, options.components)) continue;
+    if (isUiFile(file, options.config, options.components, options.packageDirs ?? [])) continue;
     if (matchesIgnore(file, options.config.ignore)) continue;
     files.push({ file, source: readFileSync(path.join(options.root, file), "utf8") });
   }
@@ -136,8 +137,9 @@ function uniqueId(stem: string, ids: Set<string>): string {
   return id;
 }
 
-function isUiFile(file: string, config: Config, components: CatalogComponent[]): boolean {
+function isUiFile(file: string, config: Config, components: CatalogComponent[], packageDirs: string[]): boolean {
   if (config.ui.some((dir) => isInsideDir(file, dir))) return true;
+  if (packageDirs.some((dir) => isInsideDir(file, dir))) return true;
   const directory = posixDir(file);
   return components.some((component) => posixDir(component.file) === directory && directory !== "");
 }

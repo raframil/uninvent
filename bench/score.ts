@@ -3,6 +3,7 @@ export const CATEGORY_ORDER = [
   "recipe",
   "documented-state",
   "name-collision",
+  "package",
   "clean",
 ] as const;
 

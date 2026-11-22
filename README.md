@@ -93,7 +93,7 @@ Inside this repo the demo hook points at `../../node_modules/.bin/uninvent`, whi
 
 | Command | What it does |
 |---|---|
-| `uninvent init` | Config, gitignore, first scan, skill. `--commit` keeps the catalog in git. `--ui <dir>` sets the design-system folder. |
+| `uninvent init` | Config, gitignore, first scan, skill. `--commit` keeps the catalog in git. `--ui <dir>` sets a design-system folder. `--package <name>` adds a package. |
 | `uninvent scan` | Rebuild `.uninvent/catalog.json`. |
 | `uninvent exists <name>` | A component, a recipe (`confirm dialog`), or a documented state (`loading button`). Exit 1 when nothing matches. |
 | `uninvent check [path...]` | Report reinvented UI. Exit 1 when there is a miss. |
@@ -130,7 +130,7 @@ Four rules. The last one only fires when a story already documented the state:
 3. A small subtree that rebuilds a declared recipe from the raw elements in its example, without using the components that recipe names. One line names the recipe. The raw elements inside that subtree are not listed again.
 4. A documented state rebuilt around a catalog component. A spinner inside or directly beside `<Button>` when Button's stories set `loading` and the JSX does not pass it. A `className` that copies every class of one non-default variant option the stories show, when that prop is not set. `opacity-50` together with `pointer-events-none` when the stories set `disabled` and the JSX does not. Anything less specific is silence.
 
-A `<div>` is not a miss. A file named `Modal.tsx` is not a miss by itself — the native `<dialog>` inside it is, and the suggestion is `ui/Dialog`. A `<dialog>` with one button is not a confirm dialog. Files inside the design-system folder, stories, and tests are skipped. uninvent does not guess that a custom card is "80% our Card".
+A `<div>` is not a miss. A file named `Modal.tsx` is not a miss by itself — the native `<dialog>` inside it is, and the suggestion is `ui/Dialog`. A `<dialog>` with one button is not a confirm dialog. Files inside the design-system folder or package, stories, and tests are skipped. uninvent does not guess that a custom card is "80% our Card".
 
 ## CI
 
@@ -218,7 +218,30 @@ Recipes live on the same catalog, under `recipes`. A v0.1 catalog has no such fi
 
 Scanning uses the TypeScript compiler API and does not typecheck the app, so it works on the fixture without installing React. `check` and the hook parse JSX with Babel and only read the JSON catalog, so they stay small enough to run on every edit.
 
-Discovery looks at `uninvent.json` `"ui"`, then `components.json` `aliases.ui`, then `src/components/ui` and `components/ui`.
+Discovery looks at `uninvent.json` `"ui"`, then `components.json` `aliases.ui`, then `src/components/ui` and `components/ui`. Packages listed under `"packages"` are scanned too. See [Packages](#packages).
+
+## Packages
+
+The design system does not have to live in `components/ui`. It can be a workspace package (`packages/ui`, imported as `@acme/ui`) or a package in `node_modules` that shipped compiled JavaScript and `.d.ts` files.
+
+```json
+{
+  "ui": ["src/components/ui"],
+  "packages": ["@acme/ui"]
+}
+```
+
+An entry is a package name (`@acme/ui`, `ui`) or a path to the package directory (`packages/ui`). `--package` repeats the same way `--ui` does. An empty `"ui"` array still searches the usual local folders. `"packages"` adds sources on top of that search.
+
+`init` reads `pnpm-workspace.yaml` and the `workspaces` field npm and yarn use, walking up from the directory you started in. A workspace package is added when its name ends in `ui`, `design-system`, or `ui-kit`. From an app, that package also has to be a dependency of the app. An installed dependency with one of those names is added the same way. A package with any other name is a line you write yourself. An existing `uninvent.json` keeps its list until you pass `--package` or `--force`.
+
+`scan` follows the package `exports` map, or `types` / `main` when there is no `exports`. It reads `.tsx` and `.ts` when those files exist, including `src/` when `exports` points at `dist/`. A package that only has declarations is read from the `.d.ts`: exported components, their props, and string-literal unions such as `variant?: "default" | "outline"`. `cva()` / `tv()` variants, stories, and recipes are recorded when those files are in the package. A catalog written before package sources has no `packages` key and still loads.
+
+The import uninvent prints is a public specifier. A component re-exported from the package root is imported from `@acme/ui`. A component that is only a subpath is imported from `@acme/ui/button`. Both count as reuse, and so does `import { Button } from "@acme/ui/button"` when the root exports it too. `check`, `exists`, the generated skill, `AGENTS.md`, and the hook use that specifier. The suggestion for a package component names the specifier (`@acme/ui Button`). A local `components/ui` component keeps `ui/Button`. When the same name exists in both, the raw-element suggestion stays on the local one. An import from the package still counts as reuse of the package component.
+
+The package directory is skipped, including when you run uninvent at the repo root and the source is `packages/ui`. Running it in the app resolves the package from that app's `node_modules` or from the workspace above it. Recipes are the `uninvent.recipes.md` next to the `uninvent.json` for that run.
+
+A workspace package is preferred over a `node_modules` copy of the same name, so the monorepo scans the source you edit. Set the entry to `node_modules/@acme/ui` when you want the installed build.
 
 ## Recipes
 
@@ -302,7 +325,7 @@ A spinner in another branch of the tree, a partial class (`bg-destructive` witho
 
 uninvent understands React + TypeScript files in a shadcn-style folder: Radix or Base UI primitives (React Aria and Ark are on the same adapter map), Tailwind (v3 `theme.extend` or v4 `@theme`), and variants from `class-variance-authority` or `tailwind-variants`. Story files are parsed for the states they document, not generated. The demo app wraps Radix. `tests/fixtures/base-ui` is the same check against shadcn's Base UI wrappers. `tests/fixtures/stories` covers CSF, a `.stories.ts` file, and MDX.
 
-Not in this version: Vue, CSS-in-JS, multi-package monorepos, an MCP server, autofix, and token linting. A recipe with no example, or an example that is not a small concrete shape, is listed by `exists` and the skill and is not flagged. Coverage does not fail a build.
+Not in this version: Vue, CSS-in-JS, an MCP server, autofix, and token linting. A recipe with no example, or an example that is not a small concrete shape, is listed by `exists` and the skill and is not flagged. Coverage does not fail a build.
 
 ## Related tools
 
@@ -317,7 +340,7 @@ Not in this version: Vue, CSS-in-JS, multi-package monorepos, an MCP server, aut
 
 ## Benchmark
 
-[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus. 0.3.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, and 2/2 name collisions, with 0 false positives on 9 clean files. 0.1.0 catches the raw controls and the name collisions. 0.2.0 adds recipes. `npm run bench` reproduces the numbers. A live agent trial runs only if you set `UNINVENT_BENCH_API_KEY`.
+[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus. 0.4.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, 2/2 name collisions, and 3/3 package sources, with 0 false positives on 13 clean files. 0.1.0 catches the raw controls and the name collisions. 0.2.0 adds recipes. 0.3.0 adds documented states. `npm run bench` reproduces the numbers. A live agent trial runs only if you set `UNINVENT_BENCH_API_KEY`.
 
 ## Development
 
@@ -327,13 +350,13 @@ npm test
 npm run build
 ```
 
-`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check. `tests/action.test.ts` covers the sticky pull request comment: create, update, a clean report, and a fork pull request where the token cannot write.
+`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check. `tests/fixtures/workspace` is a pnpm-style workspace with `packages/ui` and an app. `tests/fixtures/installed` is a package that exists only as `.d.ts` and compiled JavaScript under `node_modules`. `tests/action.test.ts` covers the sticky pull request comment: create, update, a clean report, and a fork pull request where the token cannot write.
 
-Publishing: `package.json` is set up for a public npm package (`prepublishOnly` builds `dist/`). v0.3 has not been published.
+Publishing: `package.json` is set up for a public npm package (`prepublishOnly` builds `dist/`). v0.4 has not been published.
 
 ## Status
 
-v0.3. The catalog, recipes, documented states, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. The GitHub Action posts the markdown `check` report on a pull request. Coverage lists missing stories. It does not write them.
+v0.4. The catalog, recipes, documented states, package sources, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. The GitHub Action posts the markdown `check` report on a pull request. Coverage lists missing stories. It does not write them.
 
 ## License
 

@@ -1,0 +1,5 @@
+{
+  "name": "uninvent-bench-corpus",
+  "private": true,
+  "workspaces": ["packages/*"]
+}

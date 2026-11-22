@@ -58,6 +58,13 @@ export function renderSkill(catalog: Catalog): string {
       "",
     );
   }
+  const packageNames = (catalog.packages ?? []).map((pkg) => pkg.name);
+  if (packageNames.length > 0) {
+    lines.push(
+      `Import packaged components from ${packageNames.map((name) => `\`${name}\``).join(", ")}. Do not copy them into the app.`,
+      "",
+    );
+  }
   lines.push(
     "## Catalog",
     "",
@@ -81,6 +88,8 @@ export function renderAgentsBlock(catalog: Catalog): string {
     "",
     `Catalog: ${list}.`,
   ];
+  const packageNames = (catalog.packages ?? []).map((pkg) => pkg.name);
+  if (packageNames.length > 0) lines.push("", `Packages: ${packageNames.join(", ")}.`);
   if (recipes.length > 0) {
     const recipeList = recipes.map((recipe) => `${recipe.title} (${recipe.uses.join(", ")})`).join("; ");
     lines.push("", `Recipes: ${recipeList}.`);

@@ -1,8 +1,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { UserError } from "./errors.js";
+import { resolveSpecifier, stripExt, type PathMapping } from "./paths.js";
 import type { PrimitiveUse } from "./primitives.js";
-import type { Catalog, CatalogComponent, ComponentState, Recipe, StoryArg, StoryDoc } from "./types.js";
+import type { Catalog, CatalogComponent, CatalogPackage, ComponentState, Recipe, StoryArg, StoryDoc } from "./types.js";
 
 export function catalogPath(root: string, relative: string): string {
   return path.join(root, relative);
@@ -27,6 +28,7 @@ export function readCatalog(root: string, relative: string): Catalog {
   parsed.paths ??= [];
   parsed.tokens ??= [];
   parsed.recipes = normalizeRecipes(parsed.recipes);
+  if ("packages" in parsed) parsed.packages = normalizePackages(parsed.packages);
   for (const component of parsed.components) normalizeComponent(component);
   return parsed;
 }
@@ -45,6 +47,13 @@ function normalizeComponent(component: CatalogComponent & { radix?: unknown }): 
   component.stories ??= [];
   if ("states" in component) component.states = normalizeStates(component.states);
   if ("storyDocs" in component) component.storyDocs = normalizeStoryDocs(component.storyDocs);
+  if ("specifiers" in component) {
+    const specifiers = Array.isArray(component.specifiers)
+      ? component.specifiers.filter((entry): entry is string => typeof entry === "string" && entry.length > 0)
+      : [];
+    if (specifiers.length > 0) component.specifiers = specifiers;
+    else delete component.specifiers;
+  }
   for (const variant of component.variants) {
     variant.options ??= [];
     if (variant.classes !== undefined && !isStringRecord(variant.classes)) delete variant.classes;
@@ -167,6 +176,20 @@ function isStringRecord(value: unknown): value is Record<string, string> {
   return Object.values(value).every((entry) => typeof entry === "string");
 }
 
+function normalizePackages(value: unknown): CatalogPackage[] {
+  if (!Array.isArray(value)) return [];
+  const packages: CatalogPackage[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object") continue;
+    const name = (entry as { name?: unknown }).name;
+    const dir = (entry as { dir?: unknown }).dir;
+    if (typeof name !== "string" || name.length === 0) continue;
+    if (typeof dir !== "string" || dir.length === 0) continue;
+    packages.push({ name, dir });
+  }
+  return packages;
+}
+
 function isPrimitiveUse(value: unknown): value is PrimitiveUse {
   if (!value || typeof value !== "object") return false;
   const entry = value as { library?: unknown; package?: unknown };
@@ -177,6 +200,7 @@ export function writeCatalog(root: string, relative: string, catalog: Catalog): 
   const file = catalogPath(root, relative);
   mkdirSync(path.dirname(file), { recursive: true });
   const document: Catalog = { ...catalog, recipes: catalog.recipes ?? [] };
+  if (!document.packages || document.packages.length === 0) delete document.packages;
   writeFileSync(file, `${JSON.stringify(document, null, 2)}\n`);
 }
 
@@ -191,6 +215,59 @@ export function importStatement(component: CatalogComponent, catalog: Catalog): 
   return `import { ${names} } from "${component.importPath}";`;
 }
 
-export function suggestionLabel(name: string): string {
+export function suggestionLabel(
+  name: string,
+  catalog?: Pick<Catalog, "components" | "paths">,
+  component?: CatalogComponent,
+): string {
+  const chosen = component ?? (catalog ? componentByName(catalog, name) : undefined);
+  if (chosen && isPackageSpecifier(chosen.importPath, catalog?.paths ?? [])) {
+    const leaf = chosen.importPath.split("/").pop() ?? "";
+    if (leaf.toLowerCase() === chosen.name.toLowerCase()) return chosen.importPath;
+    return `${chosen.importPath} ${chosen.name}`;
+  }
   return `ui/${name}`;
+}
+
+/**
+ * The component a raw element or a recipe name should point at.
+ * A local folder wins when the same name is also exported from a package,
+ * so an existing `components/ui` catalog keeps its `ui/Button` suggestion.
+ */
+export function componentByName(
+  catalog: Pick<Catalog, "components" | "paths">,
+  name: string,
+): CatalogComponent | undefined {
+  const matches = catalog.components.filter((entry) => entry.name === name);
+  const local = matches.find((entry) => !isPackageSpecifier(entry.importPath, catalog.paths));
+  return local ?? matches[0];
+}
+
+export function componentForImport(
+  components: CatalogComponent[],
+  paths: PathMapping[],
+  fromFile: string,
+  specifier: string,
+  importedName: string,
+): CatalogComponent | undefined {
+  const resolved = resolveSpecifier(fromFile, specifier, paths);
+  if (resolved) {
+    const byFile = components.find((entry) => stripExt(entry.file) === resolved && entry.name === importedName);
+    if (byFile) return byFile;
+  }
+  return components.find((entry) => entry.name === importedName && specifierExports(entry, specifier));
+}
+
+export function specifierExports(component: CatalogComponent, specifier: string): boolean {
+  if (component.importPath === specifier) return true;
+  return component.specifiers?.includes(specifier) ?? false;
+}
+
+export function isPackageSpecifier(specifier: string, mappings: PathMapping[]): boolean {
+  if (!specifier || specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("@/")) return false;
+  for (const mapping of mappings) {
+    if (!mapping.prefix) continue;
+    if (specifier === mapping.prefix.replace(/\/$/, "") || specifier.startsWith(mapping.prefix)) return false;
+  }
+  return true;
 }

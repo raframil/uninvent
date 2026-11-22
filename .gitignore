@@ -1,5 +1,15 @@
 node_modules/
 dist/
+# Fixture packages that ship only compiled output. Parent directories have to be
+# un-ignored before the files inside them, and `dist/` is matched again below.
+!tests/fixtures/installed/node_modules/
+!tests/fixtures/installed/node_modules/**
+!tests/fixtures/installed/node_modules/**/dist/
+!tests/fixtures/installed/node_modules/**/dist/**
+!bench/corpus/node_modules/
+!bench/corpus/node_modules/**
+!bench/corpus/node_modules/**/dist/
+!bench/corpus/node_modules/**/dist/**
 .uninvent/
 *.tsbuildinfo
 coverage/

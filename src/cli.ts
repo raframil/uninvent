@@ -16,7 +16,7 @@ import { installHooks, parseInstallTarget, type InstallTarget } from "./install.
 const HELP = `uninvent — check that agents reuse the design system
 
 Usage
-  uninvent init [--ui <dir>] [--commit] [--force]
+  uninvent init [--ui <dir>] [--package <name>] [--commit] [--force]
   uninvent scan
   uninvent exists <Component | "intent">
   uninvent check [path...] [--base <ref>] [--format text|json|markdown]
@@ -34,6 +34,7 @@ PreToolUse is off unless you pass --pre.
   --cwd <dir>     Project root. Defaults to the nearest uninvent.json
   --commit        Keep the catalog in git instead of gitignoring .uninvent/
   --ui <dir>      Design-system directory, relative to the project. Repeatable
+  --package <n>   Package name (@acme/ui) or path (packages/ui). Repeatable
   --base <ref>    Check the git diff against this ref
   --format        text (default), json, or markdown
   --pre           Also install a non-blocking PreToolUse hook
@@ -56,7 +57,13 @@ async function main(): Promise<number> {
   switch (args.command) {
     case "init": {
       const { initCommand } = await import("./project.js");
-      for (const line of initCommand({ root: cwd, commit: args.commit, force: args.force, ui: args.ui })) {
+      for (const line of initCommand({
+        root: cwd,
+        commit: args.commit,
+        force: args.force,
+        ui: args.ui,
+        packages: args.packages,
+      })) {
         process.stdout.write(`${line}\n`);
       }
       return 0;

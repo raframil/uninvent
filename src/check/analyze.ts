@@ -1,11 +1,11 @@
 import { parse } from "@babel/parser";
-import { importStatement, suggestionLabel } from "../catalog.js";
+import { componentByName, componentForImport, importStatement, suggestionLabel } from "../catalog.js";
 import { applyRecipeHits, findRecipeHits } from "../recipes/match.js";
 import { describeFinding } from "./format.js";
 import { findStateFindings } from "./states.js";
 import { matchesIgnore } from "../ignore.js";
 import { isInsideDir } from "../config.js";
-import { posixDir, resolveSpecifier, stripExt } from "../paths.js";
+import { posixDir } from "../paths.js";
 import {
   RAW_ELEMENTS,
   type Catalog,
@@ -64,7 +64,7 @@ export function analyzeSource(options: {
 
   if (!options.snippet) {
     for (const name of exported) {
-      const component = options.catalog.components.find((entry) => entry.name === name);
+      const component = componentByName(options.catalog, name);
       const line = defined.get(name);
       if (!component || line === undefined) continue;
       if (!keepLine(line, options.lines)) continue;
@@ -114,6 +114,7 @@ export function analyzeSource(options: {
 
 export function isDesignSystemFile(file: string, config: Config, catalog: Catalog): boolean {
   if (config.ui.some((dir) => isInsideDir(file, dir))) return true;
+  if ((catalog.packages ?? []).some((pkg) => pkg.dir && isInsideDir(file, pkg.dir))) return true;
   const directory = posixDir(file);
   return catalog.components.some((component) => posixDir(component.file) === directory && directory !== "");
 }
@@ -131,7 +132,7 @@ function collisionFinding(
     file,
     line,
     name,
-    suggestion: suggestionLabel(component.name),
+    suggestion: suggestionLabel(name, catalog, component),
     import: importStatement(component, catalog),
     message: "",
   };
@@ -154,14 +155,14 @@ function rawFinding(
   const buttonLink = element === "a" && role === "button";
   const wanted = buttonLink ? "Button" : RAW_ELEMENTS[element];
   if (!wanted) return null;
-  const component = catalog.components.find((entry) => entry.name === wanted);
+  const component = componentByName(catalog, wanted);
   if (!component) return null;
   const finding: Finding = {
     kind: "raw-element",
     file,
     line,
     element,
-    suggestion: suggestionLabel(component.name),
+    suggestion: suggestionLabel(component.name, catalog, component),
     import: importStatement(component, catalog),
     message: "",
   };
@@ -187,17 +188,13 @@ function collectModules(
       if (statement.importKind === "type") continue;
       const specifier = asString(statement.source);
       if (!specifier) continue;
-      const resolved = resolveSpecifier(file, specifier, catalog.paths);
-      if (!resolved) continue;
       const specifiers = asNodes(statement.specifiers);
       for (const spec of specifiers) {
         if (spec.type !== "ImportSpecifier" || spec.importKind === "type") continue;
         const importedName = specifierName(spec.imported);
         const local = specifierName(spec.local);
         if (!importedName || !local) continue;
-        const component = catalog.components.find(
-          (entry) => stripExt(entry.file) === resolved && entry.name === importedName,
-        );
+        const component = componentForImport(catalog.components, catalog.paths, file, specifier, importedName);
         if (component) imported.set(local, component);
       }
       continue;
