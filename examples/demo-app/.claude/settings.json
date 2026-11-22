@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "../../node_modules/.bin/uninvent hook",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

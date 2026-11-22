@@ -1,0 +1,13 @@
+{
+  "ui": ["src/components/ui"],
+  "ignore": [
+    "**/*.stories.tsx",
+    "**/*.stories.jsx",
+    "**/*.test.tsx",
+    "**/*.test.jsx",
+    "**/*.spec.tsx",
+    "**/*.spec.jsx"
+  ],
+  "catalog": ".uninvent/catalog.json",
+  "commitCatalog": false
+}

@@ -1,0 +1,6 @@
+{
+  "name": "uninvent-demo-app",
+  "private": true,
+  "description": "Fixture app for uninvent. The CLI reads this source; nothing here needs to be installed or started.",
+  "type": "module"
+}

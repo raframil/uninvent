@@ -1,0 +1,54 @@
+{
+  "name": "uninvent",
+  "version": "0.1.0",
+  "description": "Check that coding agents reuse the design system instead of reinventing it.",
+  "keywords": [
+    "design-system",
+    "cli",
+    "react",
+    "shadcn",
+    "cva",
+    "tailwind",
+    "claude",
+    "cursor",
+    "ai-agents"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "uninvent": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raframil/uninvent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/raframil/uninvent/issues"
+  },
+  "homepage": "https://github.com/raframil/uninvent#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/link-bin.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.28.5",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.1",
+    "tsx": "^4.20.6"
+  }
+}
