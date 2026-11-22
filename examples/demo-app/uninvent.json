@@ -2,7 +2,11 @@
   "ui": ["src/components/ui"],
   "ignore": [
     "**/*.stories.tsx",
+    "**/*.stories.ts",
     "**/*.stories.jsx",
+    "**/*.stories.js",
+    "**/*.stories.mdx",
+    "**/*.mdx",
     "**/*.test.tsx",
     "**/*.test.jsx",
     "**/*.spec.tsx",

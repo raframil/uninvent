@@ -10,6 +10,7 @@ From `examples/demo-app`:
 $ uninvent check
 rebuilt Confirm dialog in src/components/Confirm.tsx:7, use ui/Dialog + ui/Button
 raw <dialog> in src/components/Modal.tsx:10, use ui/Dialog
+reinvented loading on Button in src/components/SaveButton.tsx:11, use ui/Button loading
 raw <input> in src/pages/Login.tsx:9, use ui/Input
 raw <button> in src/pages/Login.tsx:10, use ui/Button
 ```
@@ -18,13 +19,18 @@ A clean file prints nothing.
 
 ## Demo
 
-[`examples/demo-app`](examples/demo-app) is a small Radix, Tailwind, and CVA app in the shadcn shape: `Button`, `Input`, `Dialog`, `PageHeader`, and `Table`. `src/pages/Customers.tsx` uses them. `src/pages/Login.tsx` and `src/components/Modal.tsx` do not. `src/components/Confirm.tsx` rebuilds the confirm-dialog recipe from a raw `<dialog>` and two buttons.
+[`examples/demo-app`](examples/demo-app) is a small Radix, Tailwind, and CVA app in the shadcn shape: `Button`, `Input`, `Dialog`, `PageHeader`, and `Table`. `src/pages/Customers.tsx` uses them. `src/pages/Login.tsx` and `src/components/Modal.tsx` do not. `src/components/Confirm.tsx` rebuilds the confirm-dialog recipe from a raw `<dialog>` and two buttons. `src/components/SaveButton.tsx` puts a spinner inside `Button`, which already has a `loading` state in its stories.
 
 From `examples/demo-app`:
 
 ```text
 $ uninvent scan
-16 components, 2 stories, 1 recipe, catalog written to .uninvent/catalog.json
+16 components, 3 stories, 6 states, 1 recipe, catalog written to .uninvent/catalog.json
+
+$ uninvent exists "loading button"
+Button  src/components/ui/button.tsx:39
+  state: loading  story Loading
+  import { Button } from "@/components/ui/button";
 
 $ uninvent exists "confirm dialog"
 Confirm dialog  recipe confirm-dialog
@@ -38,6 +44,7 @@ Dialog  src/components/ui/dialog.tsx:5
   import { Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
   props: open?, onOpenChange?, children?
   primitives: radix (@radix-ui/react-dialog)
+  states: open (Open)
   stories: src/components/ui/dialog.stories.tsx
   also: DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription
 
@@ -45,7 +52,7 @@ $ uninvent check src/pages/Customers.tsx
 # no output, exit 0
 ```
 
-There is no GIF in the repo yet. [`scripts/record-demo.sh`](scripts/record-demo.sh) plays that demo in the terminal. With [vhs](https://github.com/charmbracelet/vhs) installed, `vhs scripts/demo.tape` records it to `docs/demo.gif` (dark theme, a short GIF). Crop to the terminal. The interesting frame is the `check` line that names the confirm-dialog recipe, then the clean file that prints nothing.
+There is no GIF in the repo yet. [`scripts/record-demo.sh`](scripts/record-demo.sh) plays that demo in the terminal. With [vhs](https://github.com/charmbracelet/vhs) installed, `vhs scripts/demo.tape` records it to `docs/demo.gif` (dark theme, a short GIF). Crop to the terminal. The interesting frame is the `check` line that names the confirm-dialog recipe, then the loading line, then the clean file that prints nothing.
 
 The demo does not need its own `npm install`. From this repo, after `npm install` and `npm run build`:
 
@@ -71,7 +78,7 @@ npx uninvent install
 - `.agents/skills/uninvent/SKILL.md`
 - a marked block in `AGENTS.md`
 
-The skill names the components that were actually scanned, and the declared recipes. It tells the agent to run `uninvent exists <Component>` before creating UI. `scan` refreshes that skill when it is already there.
+The skill names the components that were actually scanned, the declared recipes, and the states stories document. It tells the agent to run `uninvent exists <Component>` before creating UI. `scan` refreshes that skill when it is already there.
 
 `install` adds a **PostToolUse** hook for Claude Code (`.claude/settings.json`) and Cursor (`.cursor/hooks.json`). It merges into the files you already have. The hook runs after an edit, reads the catalog, and:
 
@@ -88,8 +95,9 @@ Inside this repo the demo hook points at `../../node_modules/.bin/uninvent`, whi
 |---|---|
 | `uninvent init` | Config, gitignore, first scan, skill. `--commit` keeps the catalog in git. `--ui <dir>` sets the design-system folder. |
 | `uninvent scan` | Rebuild `.uninvent/catalog.json`. |
-| `uninvent exists <name>` | A component, or a recipe when the query is a phrase (`confirm dialog`). Exit 1 when nothing matches. |
+| `uninvent exists <name>` | A component, a recipe (`confirm dialog`), or a documented state (`loading button`). Exit 1 when nothing matches. |
 | `uninvent check [path...]` | Report reinvented UI. Exit 1 when there is a miss. |
+| `uninvent coverage [name]` | Which variants and states have stories. Exit 0. Not a failing gate. |
 | `uninvent install` | Hook for Claude Code, Cursor, or both. `--pre` also installs PreToolUse. |
 | `uninvent hook` | The hook entrypoint. Reads a tool event on stdin. |
 
@@ -100,10 +108,11 @@ Text is the short lines, and it is empty when every file is clean. JSON and mark
 ```markdown
 ## uninvent
 
-**reuse 11 / invent 4**
+**reuse 12 / invent 5**
 
 - rebuilt `Confirm dialog` in `src/components/Confirm.tsx:7`, use `ui/Dialog` + `ui/Button`
 - raw `<dialog>` in `src/components/Modal.tsx:10`, use `ui/Dialog`
+- reinvented `loading` on `Button` in `src/components/SaveButton.tsx:11`, use `ui/Button loading`
 - raw `<input>` in `src/pages/Login.tsx:9`, use `ui/Input`
 - raw `<button>` in `src/pages/Login.tsx:10`, use `ui/Button`
 
@@ -114,11 +123,12 @@ Reused: Button, PageHeader, Table, TableBody, TableCell, TableHead, TableHeader,
 
 ### What counts as inventing
 
-Two rules, both exact:
+Four rules. The last one only fires when a story already documented the state:
 
 1. A raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` in app code, when the catalog has `Button`, `Input`, `Textarea`, `Select`, or `Dialog`. The match is the component name. A Base UI wrapper and a Radix wrapper are the same miss.
 2. A new export whose name matches a catalog component (`export function Button` outside `components/ui`).
 3. A small subtree that rebuilds a declared recipe from the raw elements in its example, without using the components that recipe names. One line names the recipe. The raw elements inside that subtree are not listed again.
+4. A documented state rebuilt around a catalog component. A spinner inside or directly beside `<Button>` when Button's stories set `loading` and the JSX does not pass it. A `className` that copies every class of one non-default variant option the stories show, when that prop is not set. `opacity-50` together with `pointer-events-none` when the stories set `disabled` and the JSX does not. Anything less specific is silence.
 
 A `<div>` is not a miss. A file named `Modal.tsx` is not a miss by itself — the native `<dialog>` inside it is, and the suggestion is `ui/Dialog`. A `<dialog>` with one button is not a confirm dialog. Files inside the design-system folder, stories, and tests are skipped. uninvent does not guess that a custom card is "80% our Card".
 
@@ -144,7 +154,7 @@ That leaves `.uninvent/catalog.json` un-ignored. Remove the `.uninvent/` line fr
 
 ## Catalog
 
-`scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, headless primitives, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, and CSS variables declared in the stylesheet from `components.json`.
+`scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, the class string of a variant option when it was a string literal, headless primitives, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, the states those stories document, and CSS variables declared in the stylesheet from `components.json`.
 
 Primitives come from a small adapter map in `src/primitives.ts`. Each hit is `{ library, package }`. Built in today:
 
@@ -202,11 +212,50 @@ rebuilt Confirm dialog in src/components/Confirm.tsx:7, use ui/Dialog + ui/Butto
 
 The generated skill and the `AGENTS.md` block list each declared recipe in one line.
 
+## States
+
+Storybook is where a design system shows which states a component supports. `scan` reads that statically. It does not start Storybook, and it does not need Storybook installed. A project with no story files scans, checks, and writes the skill the same way it did before.
+
+Story files it reads:
+
+- CSF in `*.stories.tsx`, `*.stories.ts`, `*.stories.jsx`, and `*.stories.js`
+- MDX in `*.stories.mdx` (`<Meta>`, `<Story name>` or `<Story of>`, and the JSX inside the story)
+
+For each story it keeps the export name and the literal args or JSX props: a variant or size, and booleans such as `loading`, `disabled`, and `invalid`. Those are matched against the props and `cva()` / `tv()` options already on the component. The result is `states` on that component. A story named `Loading` with no literal arg is recorded too, but `check` only trusts a state when the story sets the prop or the component actually has it. `children`, `className`, and event handlers are not states.
+
+`states` and `storyDocs` are absent on a v0.1 or v0.2 catalog. Readers still load that file. `check` does not invent state findings from it. Run `scan` again to fill them in.
+
+```text
+$ uninvent exists Button
+  states: disabled (Disabled), loading (Loading), variant=default (Primary), variant=destructive (Destructive)
+
+$ uninvent coverage Button
+Button  src/components/ui/button.tsx
+  variant=default  Primary
+  variant=destructive  Destructive
+  variant=outline  —
+  ...
+  loading  Loading
+  disabled  Disabled
+
+4 documented. 8 without a story. Coverage is informational and does not fail the check.
+```
+
+`coverage` exits 0 even when stories are missing. It is not a CI gate. `check` is the gate, and it only adds a line when the pattern is specific. From the demo:
+
+```text
+reinvented loading on Button in src/components/SaveButton.tsx:11, use ui/Button loading
+```
+
+A copied variant class uses the same shape: `reinvented variant=destructive on Button in src/Form.tsx:4, use ui/Button variant="destructive"`.
+
+A spinner in another branch of the tree, a partial class (`bg-destructive` without the rest of the option), a variant prop that is already set, or a `<Spinner>` that is itself in the catalog: no line. The hook prints the same line, or nothing.
+
 ## Supported stack
 
-uninvent understands React + TypeScript files in a shadcn-style folder: Radix or Base UI primitives (React Aria and Ark are on the same adapter map), Tailwind (v3 `theme.extend` or v4 `@theme`), and variants from `class-variance-authority` or `tailwind-variants`. Story files are recorded, not generated. The demo app wraps Radix. `tests/fixtures/base-ui` is the same check against shadcn's Base UI wrappers.
+uninvent understands React + TypeScript files in a shadcn-style folder: Radix or Base UI primitives (React Aria and Ark are on the same adapter map), Tailwind (v3 `theme.extend` or v4 `@theme`), and variants from `class-variance-authority` or `tailwind-variants`. Story files are parsed for the states they document, not generated. The demo app wraps Radix. `tests/fixtures/base-ui` is the same check against shadcn's Base UI wrappers. `tests/fixtures/stories` covers CSF, a `.stories.ts` file, and MDX.
 
-Not in this version: Vue, CSS-in-JS, multi-package monorepos, Storybook state coverage, an MCP server, autofix, and token linting. A recipe with no example, or an example that is not a small concrete shape, is listed by `exists` and the skill and is not flagged.
+Not in this version: Vue, CSS-in-JS, multi-package monorepos, an MCP server, autofix, and token linting. A recipe with no example, or an example that is not a small concrete shape, is listed by `exists` and the skill and is not flagged. Coverage does not fail a build.
 
 ## Related tools
 
@@ -227,13 +276,13 @@ npm test
 npm run build
 ```
 
-`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, and `Confirm.tsx` are not. `tests/fixtures/recipes` covers recipe parsing, repeated-composition detection, `exists`, and `check`.
+`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check.
 
-Publishing: `package.json` is set up for a public npm package (`prepublishOnly` builds `dist/`). v0.2 has not been published.
+Publishing: `package.json` is set up for a public npm package (`prepublishOnly` builds `dist/`). v0.3 has not been published.
 
 ## Status
 
-v0.2. The catalog, recipes, `exists`, `check`, the generated skill, and the PostToolUse hook are the product. Suggested Storybook stories for missing states come after this.
+v0.3. The catalog, recipes, documented states, `exists`, `coverage`, `check`, the generated skill, and the PostToolUse hook are the product. Coverage lists missing stories. It does not write them.
 
 ## License
 

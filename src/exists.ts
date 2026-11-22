@@ -1,6 +1,7 @@
 import { importStatement, siblingsOf } from "./catalog.js";
 import { UserError } from "./errors.js";
 import { formatPrimitives } from "./primitives.js";
+import { matchStateQuery, stateLabel, type StateQueryHit } from "./stories/states.js";
 import type { Catalog, CatalogComponent, Recipe } from "./types.js";
 
 export function normalizeQuery(input: string): string {
@@ -24,9 +25,15 @@ export function renderExists(catalog: Catalog, rawQuery: string): { found: boole
     .map((component) => ({ component, score: scoreComponent(component, query) }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score || a.component.file.localeCompare(b.component.file) || a.component.name.localeCompare(b.component.name));
+  const stateHits = matchStateQuery(catalog, query);
+  const bestState = stateHits[0]?.score ?? 0;
   const bestRecipe = recipes[0]?.score ?? 0;
   const bestComponent = ranked[0]?.score ?? 0;
   const singleToken = !query.includes(" ");
+  const exactComponent = bestComponent === 100 && singleToken;
+  if (!exactComponent && bestState >= 70 && bestState >= bestRecipe && bestState >= bestComponent) {
+    return { found: true, text: renderStateHits(stateHits, catalog) };
+  }
   const recipeWins =
     (bestRecipe >= 90 && bestRecipe >= bestComponent && !(bestComponent === 100 && singleToken)) ||
     (bestRecipe >= 60 && bestComponent === 0);
@@ -128,12 +135,50 @@ function renderComponent(component: CatalogComponent, catalog: Catalog): string 
     lines.push(`  renders: ${component.elements.map((element) => `<${element}>`).join(", ")}`);
   }
   if (component.primitives.length > 0) lines.push(`  primitives: ${formatPrimitives(component.primitives)}`);
+  const states = formatStateLine(component);
+  if (states) lines.push(states);
   if (component.stories.length > 0) lines.push(`  stories: ${component.stories.join(", ")}`);
   const also = siblingsOf(component, catalog)
     .filter((entry) => entry.name !== component.name)
     .map((entry) => entry.name);
   if (also.length > 0) lines.push(`  also: ${also.join(", ")}`);
   return lines.join("\n");
+}
+
+function renderStateHits(hits: StateQueryHit[], catalog: Catalog): string {
+  const best = hits[0]?.score ?? 0;
+  const matches = hits.filter((hit) => hit.score === best).slice(0, 5);
+  const only = matches[0];
+  if (matches.length === 1 && only) return `${renderStateHit(only, catalog)}\n`;
+  const label = only ? stateLabel(only.states[0] ?? { id: "state", label: "state", kind: "story", stories: [] }) : "state";
+  const lines = [`${matches.length} components document ${label}`];
+  for (const hit of matches) {
+    const stories = [...new Set(hit.states.flatMap((state) => state.stories))];
+    lines.push(`  ${hit.component.name}  ${stories.join(", ")}`);
+  }
+  lines.push("Run uninvent exists \"<state> <name>\" for one of them.");
+  return `${lines.join("\n")}\n`;
+}
+
+function renderStateHit(hit: StateQueryHit, catalog: Catalog): string {
+  const lines = [`${hit.component.name}  ${hit.component.file}:${hit.component.line}`];
+  for (const state of hit.states) {
+    const stories = state.stories.length > 0 ? `  story ${state.stories.join(", ")}` : "";
+    lines.push(`  state: ${stateLabel(state)}${stories}`);
+  }
+  lines.push(`  ${importStatement(hit.component, catalog)}`);
+  return lines.join("\n");
+}
+
+function formatStateLine(component: CatalogComponent): string | null {
+  const states = component.states ?? [];
+  if (states.length === 0) return null;
+  const shown = states.slice(0, 8).map((state) => {
+    const stories = state.stories.join(", ");
+    return stories ? `${stateLabel(state)} (${stories})` : stateLabel(state);
+  });
+  const extra = states.length > shown.length ? `, +${states.length - shown.length}` : "";
+  return `  states: ${shown.join(", ")}${extra}`;
 }
 
 function scoreComponent(component: CatalogComponent, query: string): number {

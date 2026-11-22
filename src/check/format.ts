@@ -8,6 +8,9 @@ export function describeFinding(finding: Finding, withLine = true): string {
   if (finding.kind === "recipe") {
     return `rebuilt ${finding.recipe ?? "recipe"} in ${at}, use ${finding.suggestion}`;
   }
+  if (finding.kind === "state") {
+    return `reinvented ${finding.state ?? "state"} on ${finding.name ?? "component"} in ${at}, use ${finding.suggestion}`;
+  }
   const element = finding.element === "a" ? "<a role=\"button\">" : `<${finding.element ?? "element"}>`;
   return `raw ${element} in ${at}, use ${finding.suggestion}`;
 }
@@ -62,6 +65,9 @@ function markdownFinding(finding: Finding): string {
   if (finding.kind === "recipe") {
     const parts = finding.suggestion.split(" + ").map((part) => `\`${part}\``).join(" + ");
     return `rebuilt \`${finding.recipe ?? "recipe"}\` in \`${finding.file}:${finding.line}\`, use ${parts}`;
+  }
+  if (finding.kind === "state") {
+    return `reinvented \`${finding.state ?? "state"}\` on \`${finding.name ?? "component"}\` in \`${finding.file}:${finding.line}\`, use \`${finding.suggestion}\``;
   }
   const element = finding.element === "a" ? "<a role=\"button\">" : `<${finding.element}>`;
   return `raw \`${element}\` in \`${finding.file}:${finding.line}\`, use \`${finding.suggestion}\``;

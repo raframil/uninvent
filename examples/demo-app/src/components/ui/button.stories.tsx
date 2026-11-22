@@ -16,3 +16,11 @@ export const Primary: Story = {
 export const Destructive: Story = {
   args: { children: "Delete", variant: "destructive" },
 };
+
+export const Loading: Story = {
+  args: { children: "Saving", loading: true },
+};
+
+export const Disabled: Story = {
+  args: { children: "Save", disabled: true },
+};

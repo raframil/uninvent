@@ -1,11 +1,14 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { UserError } from "../errors.js";
-import { walkSourceFiles } from "../fs-walk.js";
-import { resolveSpecifier, toImportPath, toPosix, type PathMapping } from "../paths.js";
+import { walkSourceFiles, walkStoryFiles } from "../fs-walk.js";
+import { resolveSpecifier, stripExt, toImportPath, toPosix, type PathMapping } from "../paths.js";
 import { detectRecipes } from "../recipes/detect.js";
 import { RECIPES_FILE, finalizeRecipes, loadDeclaredRecipes } from "../recipes/parse.js";
-import type { Catalog, CatalogComponent, Config } from "../types.js";
+import { assignStoryDocs } from "../stories/assign.js";
+import { parseStorySource } from "../stories/parse.js";
+import { deriveStates } from "../stories/states.js";
+import type { Catalog, CatalogComponent, Config, StoryDoc } from "../types.js";
 import {
   discoverStylesheet,
   discoverUiDirs,
@@ -72,9 +75,11 @@ export function scanProject(root: string, config: Config): ScanResult {
     recipes: [...finalized.recipes, ...detected],
   };
   const storyCount = new Set(components.flatMap((component) => component.stories)).size;
+  const stateCount = components.reduce((sum, component) => sum + (component.states?.length ?? 0), 0);
   const declaredCount = finalized.recipes.length;
   const recipeLabel = declaredCount === 1 ? "recipe" : "recipes";
   let summary = `${components.length} components, ${storyCount} stories`;
+  if (stateCount > 0) summary += `, ${stateCount} ${stateCount === 1 ? "state" : "states"}`;
   if (declaredCount > 0) summary += `, ${declaredCount} ${recipeLabel}`;
   summary += `, catalog written to ${toPosix(config.catalog)}`;
   const notes = [...loaded.warnings, ...finalized.warnings];
@@ -95,27 +100,49 @@ function attachStories(root: string, components: CatalogComponent[], mappings: P
     list.push(component);
     byFile.set(component.file, list);
   }
-  const stories = walkSourceFiles(root).filter((file) => /\.stories\.(tsx|jsx)$/.test(file));
-  for (const story of stories) {
-    const targets = new Set<string>();
-    const source = readFileSync(path.join(root, story), "utf8");
-    for (const specifier of importSpecifiers(source)) {
-      const resolved = resolveSpecifier(story, specifier, mappings);
-      if (!resolved) continue;
-      for (const file of byFile.keys()) {
-        if (stripKnown(file) === resolved) targets.add(file);
-      }
+  for (const story of walkStoryFiles(root)) {
+    let source = "";
+    try {
+      source = readFileSync(path.join(root, story), "utf8");
+    } catch {
+      continue;
     }
-    const base = story.replace(/\.stories\.(tsx|jsx)$/, "");
-    for (const file of byFile.keys()) {
-      if (stripKnown(file) === base) targets.add(file);
-    }
-    for (const file of targets) {
+    for (const file of storyTargets(story, source, byFile, mappings)) {
       for (const component of byFile.get(file) ?? []) {
         if (!component.stories.includes(story)) component.stories.push(story);
       }
     }
+    const parsed = parseStorySource(story, source);
+    for (const [component, docs] of assignStoryDocs(story, parsed, components, mappings)) {
+      const list: StoryDoc[] = component.storyDocs ?? [];
+      component.storyDocs = [...list, ...docs];
+    }
   }
+  for (const component of components) {
+    component.storyDocs ??= [];
+    component.states = deriveStates(component, component.storyDocs);
+  }
+}
+
+function storyTargets(
+  story: string,
+  source: string,
+  byFile: Map<string, CatalogComponent[]>,
+  mappings: PathMapping[],
+): Set<string> {
+  const targets = new Set<string>();
+  for (const specifier of importSpecifiers(source)) {
+    const resolved = resolveSpecifier(story, specifier, mappings);
+    if (!resolved) continue;
+    for (const file of byFile.keys()) {
+      if (stripExt(file) === resolved) targets.add(file);
+    }
+  }
+  const base = story.replace(/\.stories\.(tsx|ts|jsx|js|mdx)$/, "").replace(/\.mdx$/, "");
+  for (const file of byFile.keys()) {
+    if (stripExt(file) === base) targets.add(file);
+  }
+  return targets;
 }
 
 function importSpecifiers(source: string): string[] {
@@ -128,6 +155,3 @@ function importSpecifiers(source: string): string[] {
   return specs;
 }
 
-function stripKnown(file: string): string {
-  return file.replace(/\.(tsx|ts|jsx|js)$/, "");
-}
