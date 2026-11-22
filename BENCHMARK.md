@@ -6,7 +6,7 @@ Tokenizer for every token count: cl100k_base via gpt-tokenizer (OpenAI GPT-4 pro
 
 ## Latest
 
-**0.3.0** (git, `0f3870e`)
+**0.3.1** (local, `f5ffeab`)
 
 Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions. 0 false positives on 9 clean files. Skill 630 tokens. `exists "loading button"` is 30 tokens. Reading the button source is 493 tokens.
 
@@ -14,7 +14,7 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 
 | Version | Raw controls | Recipes | Documented states | Name collisions | Clean false positives |
 | --- | --- | --- | --- | --- | --- |
-| 0.3.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 fp / 9 |
+| 0.3.1 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 fp / 9 |
 
 ### With the rule, and held out
 
@@ -33,6 +33,18 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 | 0.1.0 | 463 | 100 | 7 (no match) | 493 | 17.1 | 334.8 | 79.4 |
 | 0.2.0 | 573 | 118 | 7 (no match) | 493 | 17.8 | 358.2 | 80.8 |
 | 0.3.0 | 630 | 131 | 30 | 493 | 19.9 | 359.9 | 84.6 |
+| 0.3.1 | 630 | 131 | 30 | 493 | 19.9 | 324.5 | 37.1 |
+
+### Hook process
+
+Cold and warm are wall-clock times for `uninvent hook` after one edit. Cold turns the V8 compile cache off. Warm reuses it. Older result files did not record this, so those cells are empty. The check column above is still `uninvent check` on one clean file.
+
+| Version | Cold p50 | Cold p95 | Warm p50 | Warm p95 | Warm, with a finding (p50) |
+| --- | --- | --- | --- | --- | --- |
+| 0.1.0 | — | — | — | — | — |
+| 0.2.0 | — | — | — | — | — |
+| 0.3.0 | — | — | — | — | — |
+| 0.3.1 | 35.8 | 37.6 | 33.9 | 38.9 | 33.9 |
 
 ## Trend
 
@@ -41,21 +53,22 @@ Caught 4/4 Raw controls, 2/2 Recipes, 6/6 Documented states, 2/2 Name collisions
 | 0.1.0 | 4 / 4 | 0 / 2 | 0 / 6 | 2 / 2 | 0 fp / 9 |
 | 0.2.0 | 4 / 4 | 2 / 2 | 0 / 6 | 2 / 2 | 0 fp / 9 |
 | 0.3.0 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 fp / 9 |
+| 0.3.1 | 4 / 4 | 2 / 2 | 6 / 6 | 2 / 2 | 0 fp / 9 |
 
 ```mermaid
 xychart-beta
     title "Recipes caught"
-    x-axis ["0.1.0", "0.2.0", "0.3.0"]
+    x-axis ["0.1.0", "0.2.0", "0.3.0", "0.3.1"]
     y-axis "Cases caught" 0 --> 2
-    bar [0, 2, 2]
+    bar [0, 2, 2, 2]
 ```
 
 ```mermaid
 xychart-beta
     title "Documented states caught"
-    x-axis ["0.1.0", "0.2.0", "0.3.0"]
+    x-axis ["0.1.0", "0.2.0", "0.3.0", "0.3.1"]
     y-axis "Cases caught" 0 --> 6
-    bar [0, 0, 6]
+    bar [0, 0, 6, 6]
 ```
 
 ## Paired agent trial
@@ -70,7 +83,7 @@ A version can flag the raw elements inside a recipe file and still score 0 on re
 
 Token counts use cl100k_base, the OpenAI GPT-4 tokenizer, as a proxy. Claude and Cursor tokenize differently. Compare versions to each other. The skill and `AGENTS.md` numbers are what a turn carries if those files are in context. `exists` is one query. The source number is `button.tsx` plus its story, the files you would open to learn the same button. The hook number is the mean of the finding lines `check` prints. A clean file is 0. The hook does not print the catalog.
 
-Latency is the median CLI time, including Node starting. It will move a few milliseconds between machines. Detection counts and token counts do not, for the same version and the same corpus.
+Latency is wall-clock time, including Node starting. The check column is the median of `uninvent check` on one file. The hook table is `uninvent hook` itself: cold with the V8 compile cache disabled, warm with the cache reused, p50 and p95 inside that sample. It will move a few milliseconds between machines. Detection counts and token counts do not, for the same version and the same corpus.
 
 The paired agent trial is off unless `UNINVENT_BENCH_API_KEY` is set. A skipped trial has no counts. This report does not invent them. When the trial does run, the wrong-component count is how many lines `uninvent check` prints on the file the model returned. That is the checker judging the model, not a person.
 

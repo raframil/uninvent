@@ -1,0 +1,515 @@
+{
+  "schema": 1,
+  "version": "0.3.1",
+  "source": "local",
+  "git": "f5ffeab15f5b84ec0bffd47742e100c5478b1d24",
+  "generatedAt": "2026-11-22T21:24:08.398Z",
+  "tokenizer": "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)",
+  "detection": {
+    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,clean-fp:0/9",
+    "categories": {
+      "raw-control": {
+        "caught": 4,
+        "total": 4,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 2,
+          "total": 2,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 2,
+          "total": 2,
+          "falsePositives": 0
+        }
+      },
+      "recipe": {
+        "caught": 2,
+        "total": 2,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 1,
+          "total": 1,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 1,
+          "total": 1,
+          "falsePositives": 0
+        }
+      },
+      "documented-state": {
+        "caught": 6,
+        "total": 6,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 3,
+          "total": 3,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 3,
+          "total": 3,
+          "falsePositives": 0
+        }
+      },
+      "name-collision": {
+        "caught": 2,
+        "total": 2,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 1,
+          "total": 1,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 1,
+          "total": 1,
+          "falsePositives": 0
+        }
+      },
+      "clean": {
+        "caught": 0,
+        "total": 9,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 0,
+          "total": 6,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 0,
+          "total": 3,
+          "falsePositives": 0
+        }
+      }
+    },
+    "cases": [
+      {
+        "id": "raw-login",
+        "file": "src/pages/Login.tsx",
+        "category": "raw-control",
+        "origin": "with-rule",
+        "catch": "raw",
+        "note": "The v0.1 demo: a sign-in form of raw input and button.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "raw <input> in src/pages/Login.tsx:5, use ui/Input",
+          "raw <button> in src/pages/Login.tsx:6, use ui/Button"
+        ]
+      },
+      {
+        "id": "raw-modal",
+        "file": "src/components/Modal.tsx",
+        "category": "raw-control",
+        "origin": "with-rule",
+        "catch": "raw",
+        "note": "The v0.1 demo: a hand-rolled dialog element.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "raw <dialog> in src/components/Modal.tsx:3, use ui/Dialog"
+        ]
+      },
+      {
+        "id": "raw-filters",
+        "file": "src/pages/Filters.tsx",
+        "category": "raw-control",
+        "origin": "held-out",
+        "catch": "raw",
+        "note": "A toolbar select, not the login page the rule was written against.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "raw <select> in src/pages/Filters.tsx:7, use ui/Select"
+        ]
+      },
+      {
+        "id": "raw-composer",
+        "file": "src/pages/Composer.tsx",
+        "category": "raw-control",
+        "origin": "held-out",
+        "catch": "raw",
+        "note": "A note composer with a raw textarea.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "raw <textarea> in src/pages/Composer.tsx:5, use ui/Textarea"
+        ]
+      },
+      {
+        "id": "recipe-confirm",
+        "file": "src/components/Confirm.tsx",
+        "category": "recipe",
+        "origin": "with-rule",
+        "catch": "rebuilt",
+        "note": "The v0.2 confirm-dialog example, copied in shape from the demo.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "rebuilt Confirm dialog in src/components/Confirm.tsx:3, use ui/Dialog + ui/Button"
+        ]
+      },
+      {
+        "id": "recipe-archive",
+        "file": "src/pages/Archive.tsx",
+        "category": "recipe",
+        "origin": "held-out",
+        "catch": "rebuilt",
+        "note": "Same confirm shape, different words and file. Not the demo Confirm.tsx.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "rebuilt Confirm dialog in src/pages/Archive.tsx:3, use ui/Dialog + ui/Button"
+        ]
+      },
+      {
+        "id": "state-save-spinner",
+        "file": "src/pages/SaveButton.tsx",
+        "category": "documented-state",
+        "origin": "with-rule",
+        "catch": "reinvented",
+        "note": "The v0.3 demo: a spinner inside Button, loading not passed.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented loading on Button in src/pages/SaveButton.tsx:6, use ui/Button loading"
+        ]
+      },
+      {
+        "id": "state-danger-class",
+        "file": "src/pages/Danger.tsx",
+        "category": "documented-state",
+        "origin": "with-rule",
+        "catch": "reinvented",
+        "note": "Copies the destructive variant class string. Written with that rule.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented variant=destructive on Button in src/pages/Danger.tsx:4, use ui/Button variant=\"destructive\""
+        ]
+      },
+      {
+        "id": "state-muted",
+        "file": "src/pages/Muted.tsx",
+        "category": "documented-state",
+        "origin": "with-rule",
+        "catch": "reinvented",
+        "note": "opacity-50 and pointer-events-none without disabled. Written with that rule.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented disabled on Button in src/pages/Muted.tsx:4, use ui/Button disabled"
+        ]
+      },
+      {
+        "id": "state-sibling-loader",
+        "file": "src/pages/SiblingLoader.tsx",
+        "category": "documented-state",
+        "origin": "held-out",
+        "catch": "reinvented",
+        "note": "A Loader2 icon beside Button. Different shape from the in-button spinner.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented loading on Button in src/pages/SiblingLoader.tsx:7, use ui/Button loading"
+        ]
+      },
+      {
+        "id": "state-cn-danger",
+        "file": "src/pages/CnDanger.tsx",
+        "category": "documented-state",
+        "origin": "held-out",
+        "catch": "reinvented",
+        "note": "The destructive classes sit inside a cn() call, not a plain string.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented variant=destructive on Button in src/pages/CnDanger.tsx:5, use ui/Button variant=\"destructive\""
+        ]
+      },
+      {
+        "id": "state-aria-disabled",
+        "file": "src/pages/AriaDisabled.tsx",
+        "category": "documented-state",
+        "origin": "held-out",
+        "catch": "reinvented",
+        "note": "aria-disabled instead of the disabled prop.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "reinvented disabled on Button in src/pages/AriaDisabled.tsx:4, use ui/Button disabled"
+        ]
+      },
+      {
+        "id": "collision-button",
+        "file": "src/pages/SecondButton.tsx",
+        "category": "name-collision",
+        "origin": "with-rule",
+        "catch": "export",
+        "note": "A second export named Button. The v0.1 name rule.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "export Button in src/pages/SecondButton.tsx:1, use ui/Button"
+        ]
+      },
+      {
+        "id": "collision-input",
+        "file": "src/pages/AliasInput.tsx",
+        "category": "name-collision",
+        "origin": "held-out",
+        "catch": "export",
+        "note": "An exported const named Input, not a function named Button.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "export Input in src/pages/AliasInput.tsx:1, use ui/Input"
+        ]
+      },
+      {
+        "id": "clean-customers",
+        "file": "src/pages/Customers.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "The v0.1 clean screen: catalog components only.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-uses-loading",
+        "file": "src/pages/UsesLoading.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "Spinner inside Button, but loading is passed. Written with the rule.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-partial",
+        "file": "src/pages/Partial.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "Only one class from the destructive variant. The rule says stay silent.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-tie",
+        "file": "src/pages/Tie.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "A spinner equally close to two Buttons. The rule says stay silent.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-system",
+        "file": "src/components/ui/button.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "The design-system file itself.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-story",
+        "file": "src/components/ui/button.stories.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "A story file. Ignored by check.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-settings",
+        "file": "src/pages/Settings.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "A settings form that uses Input and Button, including loading.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-account",
+        "file": "src/pages/AccountForm.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "An account form. Variant is set, no copied classes, no spinner.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-chart",
+        "file": "src/pages/UsageChart.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "A spinner lives in a chart card, not next to the page Button.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      }
+    ]
+  },
+  "tokens": {
+    "skill": 630,
+    "agents": 131,
+    "exists": {
+      "query": "loading button",
+      "tokens": 30,
+      "found": true
+    },
+    "readSource": {
+      "files": [
+        "src/components/ui/button.tsx",
+        "src/components/ui/button.stories.tsx"
+      ],
+      "tokens": 493
+    },
+    "hook": {
+      "cleanFile": "src/pages/Customers.tsx",
+      "cleanTokens": 0,
+      "perFinding": [
+        {
+          "file": "src/pages/Login.tsx",
+          "line": "raw <input> in src/pages/Login.tsx:5, use ui/Input",
+          "tokens": 16
+        },
+        {
+          "file": "src/pages/Login.tsx",
+          "line": "raw <button> in src/pages/Login.tsx:6, use ui/Button",
+          "tokens": 16
+        },
+        {
+          "file": "src/components/Modal.tsx",
+          "line": "raw <dialog> in src/components/Modal.tsx:3, use ui/Dialog",
+          "tokens": 18
+        },
+        {
+          "file": "src/pages/Filters.tsx",
+          "line": "raw <select> in src/pages/Filters.tsx:7, use ui/Select",
+          "tokens": 18
+        },
+        {
+          "file": "src/pages/Composer.tsx",
+          "line": "raw <textarea> in src/pages/Composer.tsx:5, use ui/Textarea",
+          "tokens": 18
+        },
+        {
+          "file": "src/components/Confirm.tsx",
+          "line": "rebuilt Confirm dialog in src/components/Confirm.tsx:3, use ui/Dialog + ui/Button",
+          "tokens": 21
+        },
+        {
+          "file": "src/pages/Archive.tsx",
+          "line": "rebuilt Confirm dialog in src/pages/Archive.tsx:3, use ui/Dialog + ui/Button",
+          "tokens": 21
+        },
+        {
+          "file": "src/pages/SaveButton.tsx",
+          "line": "reinvented loading on Button in src/pages/SaveButton.tsx:6, use ui/Button loading",
+          "tokens": 21
+        },
+        {
+          "file": "src/pages/Danger.tsx",
+          "line": "reinvented variant=destructive on Button in src/pages/Danger.tsx:4, use ui/Button variant=\"destructive\"",
+          "tokens": 27
+        },
+        {
+          "file": "src/pages/Muted.tsx",
+          "line": "reinvented disabled on Button in src/pages/Muted.tsx:4, use ui/Button disabled",
+          "tokens": 20
+        },
+        {
+          "file": "src/pages/SiblingLoader.tsx",
+          "line": "reinvented loading on Button in src/pages/SiblingLoader.tsx:7, use ui/Button loading",
+          "tokens": 21
+        },
+        {
+          "file": "src/pages/CnDanger.tsx",
+          "line": "reinvented variant=destructive on Button in src/pages/CnDanger.tsx:5, use ui/Button variant=\"destructive\"",
+          "tokens": 28
+        },
+        {
+          "file": "src/pages/AriaDisabled.tsx",
+          "line": "reinvented disabled on Button in src/pages/AriaDisabled.tsx:4, use ui/Button disabled",
+          "tokens": 21
+        },
+        {
+          "file": "src/pages/SecondButton.tsx",
+          "line": "export Button in src/pages/SecondButton.tsx:1, use ui/Button",
+          "tokens": 16
+        },
+        {
+          "file": "src/pages/AliasInput.tsx",
+          "line": "export Input in src/pages/AliasInput.tsx:1, use ui/Input",
+          "tokens": 16
+        }
+      ],
+      "meanPerFinding": 19.9
+    }
+  },
+  "latencyMs": {
+    "samples": 5,
+    "scan": {
+      "median": 324.5,
+      "min": 322.3,
+      "max": 331.7
+    },
+    "hookClean": {
+      "median": 37.1,
+      "min": 35.8,
+      "max": 39.6
+    },
+    "hookDirty": {
+      "median": 37.2,
+      "min": 35.8,
+      "max": 41
+    },
+    "hookRun": {
+      "samples": 21,
+      "cold": {
+        "p50": 35.8,
+        "p95": 37.6,
+        "min": 33,
+        "max": 38.4
+      },
+      "warm": {
+        "p50": 33.9,
+        "p95": 38.9,
+        "min": 32.2,
+        "max": 46
+      },
+      "warmDirty": {
+        "p50": 33.9,
+        "p95": 35.6,
+        "min": 31.7,
+        "max": 36.6
+      },
+      "note": "uninvent hook with a PostToolUse event, wall time in milliseconds. Cold sets NODE_DISABLE_COMPILE_CACHE. Warm shares one V8 compile cache after a single warmup. p50 and p95 are within that set."
+    },
+    "note": "Median CLI wall time in milliseconds, including Node startup. hookClean and hookDirty run uninvent check on one file. Detection counts do not depend on this."
+  },
+  "agentTrial": {
+    "status": "skipped",
+    "reason": "UNINVENT_BENCH_API_KEY is not set. The paired agent trial did not run."
+  }
+}
