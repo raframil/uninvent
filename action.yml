@@ -1,0 +1,83 @@
+name: uninvent
+description: >-
+  Report design-system reuse on a pull request. Scans, checks the diff against
+  the base, writes the job summary, and posts or updates one comment.
+  Informational unless fail-on-findings is true.
+
+branding:
+  icon: check-circle
+  color: gray-dark
+
+inputs:
+  working-directory:
+    description: >-
+      Directory that contains uninvent.json, relative to the repository root.
+      Set this for a package in a monorepo. Each directory keeps its own sticky comment.
+    required: false
+    default: "."
+  version:
+    description: >-
+      uninvent version to install from npm (0.3.0, latest, or next).
+      local uses dist/cli.js from this action checkout.
+      Empty uses that build when it exists, otherwise the version in this action's package.json.
+    required: false
+    default: ""
+  fail-on-findings:
+    description: >-
+      Fail the job when check reports reinvented UI. Default false keeps the job green.
+      A failed scan, a missing base, or a usage error still fails the job.
+    required: false
+    default: "false"
+  comment:
+    description: >-
+      Post or update one sticky pull request comment with the markdown report.
+      The job summary is written either way.
+    required: false
+    default: "true"
+  token:
+    description: >-
+      Token used to read and write the one comment. Defaults to github.token.
+      The workflow needs pull-requests: write. A fork pull_request job cannot
+      comment with the default token; the report stays in the job summary.
+    required: false
+    default: ${{ github.token }}
+  base:
+    description: >-
+      Git ref passed to uninvent check --base. Defaults to the pull request base SHA.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Require Node 20
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v node >/dev/null 2>&1; then
+          echo "uninvent needs Node 20 or newer. Add actions/setup-node before this action." >&2
+          exit 1
+        fi
+        major="$(node -p "Number(process.versions.node.split('.')[0])")"
+        if [ "$major" -lt 20 ]; then
+          echo "uninvent needs Node 20 or newer (found $(node -v)). Add actions/setup-node before this action." >&2
+          exit 1
+        fi
+
+    - name: Install uninvent
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: bash "$ACTION_PATH/action/install.sh"
+
+    - name: Scan, check, and comment
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+        COMMENT: ${{ inputs.comment }}
+        BASE: ${{ inputs.base }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: node "$ACTION_PATH/action/run.mjs"
