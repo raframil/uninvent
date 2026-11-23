@@ -18,10 +18,10 @@ Show
 Type "node ../../dist/cli.js scan" Sleep 400ms Enter
 Sleep 2s
 
-Type "node ../../dist/cli.js exists \"confirm dialog\"" Sleep 300ms Enter
+Type "node ../../dist/cli.js exists 'confirm dialog'" Sleep 300ms Enter
 Sleep 3s
 
-Type "node ../../dist/cli.js exists \"loading button\"" Sleep 300ms Enter
+Type "node ../../dist/cli.js exists 'loading button'" Sleep 300ms Enter
 Sleep 2s
 
 Type "node ../../dist/cli.js check src/components/Confirm.tsx" Sleep 300ms Enter

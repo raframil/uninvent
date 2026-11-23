@@ -1,0 +1,78 @@
+diff --git a/components/trial/newsletter-form.tsx b/components/trial/newsletter-form.tsx
+new file mode 100644
+index 0000000..e258419
+--- /dev/null
++++ b/components/trial/newsletter-form.tsx
+@@ -0,0 +1,72 @@
++"use client"
++
++import * as React from "react"
++import { Button } from "@/components/ui/button"
++import { Input } from "@/components/ui/input"
++import { Label } from "@/components/ui/label"
++import { Checkbox } from "@/components/ui/checkbox"
++import {
++  Select,
++  SelectContent,
++  SelectItem,
++  SelectTrigger,
++  SelectValue,
++} from "@/components/ui/select"
++
++export function NewsletterForm() {
++  const [email, setEmail] = React.useState("")
++  const [frequency, setFrequency] = React.useState("")
++  const [productUpdates, setProductUpdates] = React.useState(false)
++
++  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
++    e.preventDefault()
++    console.log({ email, frequency, productUpdates })
++  }
++
++  return (
++    <form onSubmit={handleSubmit} className="space-y-6">
++      <div className="space-y-2">
++        <Label htmlFor="email">Email</Label>
++        <Input
++          id="email"
++          type="email"
++          placeholder="Enter your email"
++          value={email}
++          onChange={(e) => setEmail(e.target.value)}
++          required
++        />
++      </div>
++
++      <div className="space-y-2">
++        <Label htmlFor="frequency">Frequency</Label>
++        <Select value={frequency} onValueChange={setFrequency} required>
++          <SelectTrigger id="frequency">
++            <SelectValue placeholder="Select frequency" />
++          </SelectTrigger>
++          <SelectContent>
++            <SelectItem value="daily">Daily</SelectItem>
++            <SelectItem value="weekly">Weekly</SelectItem>
++          </SelectContent>
++        </Select>
++      </div>
++
++      <div className="flex items-center space-x-2">
++        <Checkbox
++          id="product-updates"
++          checked={productUpdates}
++          onCheckedChange={(checked) => setProductUpdates(checked === true)}
++        />
++        <Label
++          htmlFor="product-updates"
++          className="cursor-pointer font-normal"
++        >
++          Product updates
++        </Label>
++      </div>
++
++      <Button type="submit" className="w-full">
++        Subscribe
++      </Button>
++    </form>
++  )
++}

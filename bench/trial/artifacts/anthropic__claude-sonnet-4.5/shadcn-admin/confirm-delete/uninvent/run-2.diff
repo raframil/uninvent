@@ -1,0 +1,48 @@
+diff --git a/src/features/trial/confirm-delete.tsx b/src/features/trial/confirm-delete.tsx
+new file mode 100644
+index 0000000..6295e32
+--- /dev/null
++++ b/src/features/trial/confirm-delete.tsx
+@@ -0,0 +1,42 @@
++import * as React from 'react'
++import {
++  AlertDialog,
++  AlertDialogAction,
++  AlertDialogCancel,
++  AlertDialogContent,
++  AlertDialogDescription,
++  AlertDialogFooter,
++  AlertDialogHeader,
++  AlertDialogTitle,
++} from '@/components/ui/alert-dialog'
++
++interface ConfirmDeleteProps {
++  open: boolean
++  onOpenChange: (open: boolean) => void
++  onConfirm: () => void
++}
++
++export function ConfirmDelete({
++  open,
++  onOpenChange,
++  onConfirm,
++}: ConfirmDeleteProps) {
++  return (
++    <AlertDialog open={open} onOpenChange={onOpenChange}>
++      <AlertDialogContent>
++        <AlertDialogHeader>
++          <AlertDialogTitle>Delete user?</AlertDialogTitle>
++          <AlertDialogDescription>
++            This action cannot be undone.
++          </AlertDialogDescription>
++        </AlertDialogHeader>
++        <AlertDialogFooter>
++          <AlertDialogCancel>Cancel</AlertDialogCancel>
++          <AlertDialogAction variant="destructive" onClick={onConfirm}>
++            Delete
++          </AlertDialogAction>
++        </AlertDialogFooter>
++      </AlertDialogContent>
++    </AlertDialog>
++  )
++}

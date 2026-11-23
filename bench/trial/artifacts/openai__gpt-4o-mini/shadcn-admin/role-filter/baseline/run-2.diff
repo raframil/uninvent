@@ -1,0 +1,37 @@
+diff --git a/src/features/trial/role-filter.tsx b/src/features/trial/role-filter.tsx
+new file mode 100644
+index 0000000..5370b1a
+--- /dev/null
++++ b/src/features/trial/role-filter.tsx
+@@ -0,0 +1,31 @@
++import React from 'react';
++
++type Role = 'Admin' | 'Member' | 'Guest';
++
++interface RoleFilterProps {
++    selectedRole: Role;
++    onRoleChange: (role: Role) => void;
++}
++
++const RoleFilter: React.FC<RoleFilterProps> = ({ selectedRole, onRoleChange }) => {
++    const roles: Role[] = ['Admin', 'Member', 'Guest'];
++
++    return (
++        <div>
++            <label htmlFor="role-filter">Filter by Role:</label>
++            <select
++                id="role-filter"
++                value={selectedRole}
++                onChange={(e) => onRoleChange(e.target.value as Role)}
++            >
++                {roles.map((role) => (
++                    <option key={role} value={role}>
++                        {role}
++                    </option>
++                ))}
++            </select>
++        </div>
++    );
++};
++
++export default RoleFilter;

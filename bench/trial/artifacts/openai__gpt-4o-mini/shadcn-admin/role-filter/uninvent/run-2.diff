@@ -1,0 +1,30 @@
+diff --git a/src/features/trial/role-filter.tsx b/src/features/trial/role-filter.tsx
+new file mode 100644
+index 0000000..5a48f34
+--- /dev/null
++++ b/src/features/trial/role-filter.tsx
+@@ -0,0 +1,24 @@
++import React from 'react';
++import { Select, SelectTrigger, SelectContent, SelectItem, SelectLabel } from '@/components/ui/select';
++
++type RoleFilterProps = {
++  selectedRole: string;
++  onRoleChange: (role: string) => void;
++};
++
++const RoleFilter: React.FC<RoleFilterProps> = ({ selectedRole, onRoleChange }) => {
++  return (
++    <Select value={selectedRole} onValueChange={onRoleChange}>
++      <SelectTrigger>
++        <SelectLabel>Select Role</SelectLabel>
++      </SelectTrigger>
++      <SelectContent>
++        <SelectItem value="Admin">Admin</SelectItem>
++        <SelectItem value="Member">Member</SelectItem>
++        <SelectItem value="Guest">Guest</SelectItem>
++      </SelectContent>
++    </Select>
++  );
++};
++
++export default RoleFilter;

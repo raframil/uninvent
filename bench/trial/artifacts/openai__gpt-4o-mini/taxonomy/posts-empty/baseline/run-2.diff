@@ -1,0 +1,27 @@
+diff --git a/components/trial/posts-empty.tsx b/components/trial/posts-empty.tsx
+new file mode 100644
+index 0000000..878c4bb
+--- /dev/null
++++ b/components/trial/posts-empty.tsx
+@@ -0,0 +1,21 @@
++import React from 'react';
++import { Button, Placeholder } from 'your-component-library'; // Adjust this import based on your existing components
++
++interface PostsEmptyProps {
++  loading?: boolean;
++}
++
++const PostsEmpty: React.FC<PostsEmptyProps> = ({ loading }) => {
++  if (loading) {
++    return <Placeholder />;
++  }
++
++  return (
++    <div>
++      <p>No posts yet.</p>
++      <Button label="New post" onClick={() => {/* Handle new post action */}} />
++    </div>
++  );
++};
++
++export default PostsEmpty;

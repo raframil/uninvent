@@ -1,0 +1,64 @@
+diff --git a/components/trial/newsletter-form.tsx b/components/trial/newsletter-form.tsx
+new file mode 100644
+index 0000000..107c635
+--- /dev/null
++++ b/components/trial/newsletter-form.tsx
+@@ -0,0 +1,58 @@
++import React, { useState } from 'react';
++import { Button } from '@/components/ui/button';
++import { Input } from '@/components/ui/input';
++
++const NewsletterForm: React.FC = () => {
++    const [email, setEmail] = useState('');
++    const [frequency, setFrequency] = useState('Daily');
++    const [productUpdates, setProductUpdates] = useState(false);
++
++    const handleSubmit = (e: React.FormEvent) => {
++        e.preventDefault();
++        // Handle form submission logic here
++        console.log({ email, frequency, productUpdates });
++    };
++
++    return (
++        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
++            <Input
++                type="email"
++                placeholder="Enter your email"
++                value={email}
++                onChange={(e) => setEmail(e.target.value)}
++                required
++            />
++            <div>
++                <label>
++                    <Input
++                        type="radio"
++                        value="Daily"
++                        checked={frequency === 'Daily'}
++                        onChange={() => setFrequency('Daily')}
++                    />
++                    Daily
++                </label>
++                <label>
++                    <Input
++                        type="radio"
++                        value="Weekly"
++                        checked={frequency === 'Weekly'}
++                        onChange={() => setFrequency('Weekly')}
++                    />
++                    Weekly
++                </label>
++            </div>
++            <label>
++                <Input
++                    type="checkbox"
++                    checked={productUpdates}
++                    onChange={() => setProductUpdates(!productUpdates)}
++                />
++                Product updates
++            </label>
++            <Button type="submit">Subscribe</Button>
++        </form>
++    );
++};
++
++export default NewsletterForm;

@@ -1,0 +1,59 @@
+diff --git a/src/features/trial/invite-form.tsx b/src/features/trial/invite-form.tsx
+new file mode 100644
+index 0000000..e167867
+--- /dev/null
++++ b/src/features/trial/invite-form.tsx
+@@ -0,0 +1,53 @@
++import React, { useState } from 'react';
++
++const InviteForm: React.FC = () => {
++    const [email, setEmail] = useState('');
++    const [role, setRole] = useState('Member');
++    const [sendEmail, setSendEmail] = useState(false);
++
++    const handleSubmit = (event: React.FormEvent) => {
++        event.preventDefault();
++        // Handle form submission logic here
++        console.log({ email, role, sendEmail });
++    };
++
++    return (
++        <form onSubmit={handleSubmit}>
++            <div>
++                <label htmlFor="email">Email:</label>
++                <input
++                    type="email"
++                    id="email"
++                    value={email}
++                    onChange={(e) => setEmail(e.target.value)}
++                    required
++                />
++            </div>
++            <div>
++                <label htmlFor="role">Role:</label>
++                <select
++                    id="role"
++                    value={role}
++                    onChange={(e) => setRole(e.target.value)}
++                >
++                    <option value="Admin">Admin</option>
++                    <option value="Member">Member</option>
++                    <option value="Guest">Guest</option>
++                </select>
++            </div>
++            <div>
++                <label>
++                    <input
++                        type="checkbox"
++                        checked={sendEmail}
++                        onChange={(e) => setSendEmail(e.target.checked)}
++                    />
++                    Send invite email
++                </label>
++            </div>
++            <button type="submit">Send invite</button>
++        </form>
++    );
++};
++
++export default InviteForm;

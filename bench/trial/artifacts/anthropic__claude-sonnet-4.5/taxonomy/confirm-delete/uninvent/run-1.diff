@@ -1,0 +1,53 @@
+diff --git a/components/trial/confirm-delete.tsx b/components/trial/confirm-delete.tsx
+new file mode 100644
+index 0000000..028315b
+--- /dev/null
++++ b/components/trial/confirm-delete.tsx
+@@ -0,0 +1,47 @@
++"use client"
++
++import * as React from "react"
++import {
++  AlertDialog,
++  AlertDialogAction,
++  AlertDialogCancel,
++  AlertDialogContent,
++  AlertDialogDescription,
++  AlertDialogFooter,
++  AlertDialogHeader,
++  AlertDialogTitle,
++} from "@/components/ui/alert-dialog"
++
++interface ConfirmDeleteProps {
++  open: boolean
++  onOpenChange: (open: boolean) => void
++  onConfirm: () => void
++}
++
++export function ConfirmDelete({
++  open,
++  onOpenChange,
++  onConfirm,
++}: ConfirmDeleteProps) {
++  return (
++    <AlertDialog open={open} onOpenChange={onOpenChange}>
++      <AlertDialogContent>
++        <AlertDialogHeader>
++          <AlertDialogTitle>Delete post?</AlertDialogTitle>
++          <AlertDialogDescription>
++            This action cannot be undone.
++          </AlertDialogDescription>
++        </AlertDialogHeader>
++        <AlertDialogFooter>
++          <AlertDialogCancel>Cancel</AlertDialogCancel>
++          <AlertDialogAction
++            onClick={onConfirm}
++            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
++          >
++            Delete
++          </AlertDialogAction>
++        </AlertDialogFooter>
++      </AlertDialogContent>
++    </AlertDialog>
++  )
++}

@@ -1,0 +1,28 @@
+diff --git a/src/features/trial/users-empty.tsx b/src/features/trial/users-empty.tsx
+new file mode 100644
+index 0000000..5bbe904
+--- /dev/null
++++ b/src/features/trial/users-empty.tsx
+@@ -0,0 +1,22 @@
++import React from 'react';
++import { Button } from '@/components/ui/button';
++import { Skeleton } from '@/components/ui/skeleton';
++
++interface UsersEmptyProps {
++  loading?: boolean;
++}
++
++const UsersEmpty: React.FC<UsersEmptyProps> = ({ loading }) => {
++  if (loading) {
++    return <Skeleton className="h-40 w-full" />;
++  }
++
++  return (
++    <div className="flex flex-col items-center justify-center text-center">
++      <p>No users yet.</p>
++      <Button className="mt-4">Invite user</Button>
++    </div>
++  );
++};
++
++export default UsersEmpty;

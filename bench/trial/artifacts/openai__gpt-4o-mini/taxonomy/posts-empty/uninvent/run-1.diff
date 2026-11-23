@@ -1,0 +1,28 @@
+diff --git a/components/trial/posts-empty.tsx b/components/trial/posts-empty.tsx
+new file mode 100644
+index 0000000..60cad27
+--- /dev/null
++++ b/components/trial/posts-empty.tsx
+@@ -0,0 +1,22 @@
++import React from 'react';
++import { Button } from '@/components/ui/button';
++import { Skeleton } from '@/components/ui/skeleton';
++
++interface PostsEmptyProps {
++  loading?: boolean;
++}
++
++const PostsEmpty: React.FC<PostsEmptyProps> = ({ loading }) => {
++  if (loading) {
++    return <Skeleton className="h-48 w-full" />;
++  }
++
++  return (
++    <div className="flex flex-col items-center justify-center text-center">
++      <p>No posts yet.</p>
++      <Button className="mt-4">New post</Button>
++    </div>
++  );
++};
++
++export default PostsEmpty;

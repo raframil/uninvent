@@ -1,0 +1,33 @@
+diff --git a/src/features/trial/confirm-delete.tsx b/src/features/trial/confirm-delete.tsx
+new file mode 100644
+index 0000000..1c48a86
+--- /dev/null
++++ b/src/features/trial/confirm-delete.tsx
+@@ -0,0 +1,27 @@
++import React from 'react';
++import { Modal, Button } from 'react-bootstrap';
++
++interface ConfirmDeleteProps {
++    show: boolean;
++    onHide: () => void;
++    onDelete: () => void;
++}
++
++const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ show, onHide, onDelete }) => {
++    return (
++        <Modal show={show} onHide={onHide}>
++            <Modal.Header closeButton>
++                <Modal.Title>Delete user?</Modal.Title>
++            </Modal.Header>
++            <Modal.Body>
++                <p>This action cannot be undone.</p>
++            </Modal.Body>
++            <Modal.Footer>
++                <Button variant="secondary" onClick={onHide}>Cancel</Button>
++                <Button variant="danger" onClick={onDelete}>Delete</Button>
++            </Modal.Footer>
++        </Modal>
++    );
++};
++
++export default ConfirmDelete;

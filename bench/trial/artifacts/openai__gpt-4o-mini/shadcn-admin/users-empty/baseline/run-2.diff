@@ -1,0 +1,31 @@
+diff --git a/src/features/trial/users-empty.tsx b/src/features/trial/users-empty.tsx
+new file mode 100644
+index 0000000..7f9dbd9
+--- /dev/null
++++ b/src/features/trial/users-empty.tsx
+@@ -0,0 +1,25 @@
++import React from 'react';
++import { Button, Placeholder } from 'your-component-library'; // Adjust the import based on your component library
++
++interface UsersEmptyProps {
++  loading?: boolean;
++}
++
++const UsersEmpty: React.FC<UsersEmptyProps> = ({ loading }) => {
++  if (loading) {
++    return (
++      <div>
++        <Placeholder />
++      </div>
++    );
++  }
++
++  return (
++    <div>
++      <p>No users yet.</p>
++      <Button onClick={() => alert('Invite user clicked!')}>Invite user</Button>
++    </div>
++  );
++};
++
++export default UsersEmpty;

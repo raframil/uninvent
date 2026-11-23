@@ -1,0 +1,58 @@
+diff --git a/components/trial/newsletter-form.tsx b/components/trial/newsletter-form.tsx
+new file mode 100644
+index 0000000..3973161
+--- /dev/null
++++ b/components/trial/newsletter-form.tsx
+@@ -0,0 +1,52 @@
++import React, { useState } from 'react';
++
++const NewsletterForm: React.FC = () => {
++    const [email, setEmail] = useState('');
++    const [frequency, setFrequency] = useState('Daily');
++    const [productUpdates, setProductUpdates] = useState(false);
++
++    const handleSubmit = (event: React.FormEvent) => {
++        event.preventDefault();
++        // Handle form submission logic here
++        console.log({ email, frequency, productUpdates });
++    };
++
++    return (
++        <form onSubmit={handleSubmit}>
++            <div>
++                <label htmlFor="email">Email:</label>
++                <input
++                    type="email"
++                    id="email"
++                    value={email}
++                    onChange={(e) => setEmail(e.target.value)}
++                    required
++                />
++            </div>
++            <div>
++                <label htmlFor="frequency">Frequency:</label>
++                <select
++                    id="frequency"
++                    value={frequency}
++                    onChange={(e) => setFrequency(e.target.value)}
++                >
++                    <option value="Daily">Daily</option>
++                    <option value="Weekly">Weekly</option>
++                </select>
++            </div>
++            <div>
++                <label>
++                    <input
++                        type="checkbox"
++                        checked={productUpdates}
++                        onChange={(e) => setProductUpdates(e.target.checked)}
++                    />
++                    Product updates
++                </label>
++            </div>
++            <button type="submit">Subscribe</button>
++        </form>
++    );
++};
++
++export default NewsletterForm;

@@ -224,11 +224,18 @@ function readBench(file: string): BenchFile | null {
 }
 
 function readFileSafe(file: string): string {
-  try {
-    return readFileSync(file, "utf8");
-  } catch {
-    return "";
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+  const marker = "bench/trial/";
+  const at = file.indexOf(marker);
+  const relative = at === -1 ? file : file.slice(at);
+  for (const candidate of [file, path.resolve(root, relative)]) {
+    try {
+      return readFileSync(candidate, "utf8");
+    } catch {
+      // The stored path may be from the GitHub runner. Try the checkout copy.
+    }
   }
+  return "";
 }
 
 function clip(text: string): string {

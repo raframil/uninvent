@@ -1,0 +1,75 @@
+diff --git a/src/features/trial/invite-form.tsx b/src/features/trial/invite-form.tsx
+new file mode 100644
+index 0000000..40b0467
+--- /dev/null
++++ b/src/features/trial/invite-form.tsx
+@@ -0,0 +1,69 @@
++import React, { useState } from 'react';
++import { Button } from '@/components/ui/button';
++import { Checkbox } from '@/components/ui/checkbox';
++import { Input } from '@/components/ui/input';
++import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
++import { Select, SelectTrigger, SelectContent, SelectItem, SelectLabel } from '@/components/ui/select';
++
++const InviteForm: React.FC = () => {
++  const [email, setEmail] = useState('');
++  const [role, setRole] = useState('Member');
++  const [sendEmail, setSendEmail] = useState(false);
++
++  const handleSubmit = (e: React.FormEvent) => {
++    e.preventDefault();
++    // Handle form submission logic here
++    console.log({ email, role, sendEmail });
++  };
++
++  return (
++    <Form onSubmit={handleSubmit}>
++      <FormField>
++        <FormItem>
++          <FormLabel>Email</FormLabel>
++          <FormControl>
++            <Input
++              type="email"
++              value={email}
++              onChange={(e) => setEmail(e.target.value)}
++              required
++            />
++          </FormControl>
++          <FormMessage />
++        </FormItem>
++      </FormField>
++      <FormField>
++        <FormItem>
++          <FormLabel>Role</FormLabel>
++          <FormControl>
++            <Select value={role} onValueChange={setRole}>
++              <SelectTrigger>
++                <SelectLabel>{role}</SelectLabel>
++              </SelectTrigger>
++              <SelectContent>
++                <SelectItem value="Admin">Admin</SelectItem>
++                <SelectItem value="Member">Member</SelectItem>
++                <SelectItem value="Guest">Guest</SelectItem>
++              </SelectContent>
++            </Select>
++          </FormControl>
++          <FormMessage />
++        </FormItem>
++      </FormField>
++      <FormField>
++        <FormItem>
++          <FormControl>
++            <Checkbox
++              checked={sendEmail}
++              onChange={(e) => setSendEmail(e.target.checked)}
++            />
++            <span>Send invite email</span>
++          </FormControl>
++        </FormItem>
++      </FormField>
++      <Button type="submit">Send invite</Button>
++    </Form>
++  );
++};
++
++export default InviteForm;
