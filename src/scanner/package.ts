@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { projectRelative } from "../paths.js";
-import { matchPrimitive, type PrimitiveUse } from "../primitives.js";
+import { BUILTIN_LIBRARIES, matchPrimitive, type PrimitiveLibrary, type PrimitiveUse } from "../primitives.js";
 import type { CatalogComponent } from "../types.js";
 import { packageExportTargets, readPackageJson, type ResolvedPackage } from "../workspace.js";
 import { extractFile, type ExtractedComponent } from "./extract.js";
@@ -31,7 +31,11 @@ interface ModuleRecord {
  * Source (`.tsx` / `.ts`) wins over a sibling `.d.ts`. Declarations are the fallback
  * when the package only shipped build output.
  */
-export function scanPackage(projectRoot: string, pkg: ResolvedPackage): CatalogComponent[] {
+export function scanPackage(
+  projectRoot: string,
+  pkg: ResolvedPackage,
+  libraries: readonly PrimitiveLibrary[] = BUILTIN_LIBRARIES,
+): CatalogComponent[] {
   const meta = readPackageJson(pkg.dir);
   if (!meta) return [];
   const entries = entryPoints(pkg);
@@ -39,7 +43,7 @@ export function scanPackage(projectRoot: string, pkg: ResolvedPackage): CatalogC
   const byOrigin = new Map<string, { component: ExtractedComponent; file: string; specifiers: Set<string> }>();
 
   for (const entry of entries) {
-    for (const [name, origin] of exportedComponents(pkg.dir, entry.file, modules, new Set())) {
+    for (const [name, origin] of exportedComponents(pkg.dir, entry.file, modules, new Set(), libraries)) {
       const key = `${origin.file}\0${origin.component.name}\0${name}`;
       const existing = byOrigin.get(key);
       if (existing) {
@@ -111,11 +115,12 @@ function exportedComponents(
   file: string,
   modules: Map<string, ModuleRecord>,
   seen: Set<string>,
+  libraries: readonly PrimitiveLibrary[],
 ): Map<string, { component: ExtractedComponent; file: string }> {
   const found = new Map<string, { component: ExtractedComponent; file: string }>();
   if (seen.has(file) || seen.size > MAX_FILES) return found;
   seen.add(file);
-  const record = loadModule(pkgDir, file, modules);
+  const record = loadModule(pkgDir, file, modules, libraries);
   if (!record) return found;
   for (const component of record.declared) {
     found.set(component.name, { component, file });
@@ -124,7 +129,7 @@ function exportedComponents(
     if (edge.imported === "*") {
       const target = resolveModule(pkgDir, file, edge.from);
       if (!target) continue;
-      for (const [name, origin] of exportedComponents(pkgDir, target, modules, seen)) {
+      for (const [name, origin] of exportedComponents(pkgDir, target, modules, seen, libraries)) {
         if (!found.has(name)) found.set(name, origin);
       }
       continue;
@@ -132,23 +137,28 @@ function exportedComponents(
     if (!isComponentName(edge.name)) continue;
     const target = resolveModule(pkgDir, file, edge.from);
     if (!target) {
-      if (!found.has(edge.name)) found.set(edge.name, { component: externalComponent(edge.name, edge.from), file });
+      if (!found.has(edge.name)) found.set(edge.name, { component: externalComponent(edge.name, edge.from, libraries), file });
       continue;
     }
-    const inner = exportedComponents(pkgDir, target, modules, seen);
+    const inner = exportedComponents(pkgDir, target, modules, seen, libraries);
     const origin = inner.get(edge.imported);
     if (origin) found.set(edge.name, { component: { ...origin.component, name: edge.name }, file: origin.file });
   }
   return found;
 }
 
-function externalComponent(name: string, specifier: string): ExtractedComponent {
-  const primitive = matchPrimitive(specifier);
+function externalComponent(name: string, specifier: string, libraries: readonly PrimitiveLibrary[]): ExtractedComponent {
+  const primitive = matchPrimitive(specifier, libraries);
   const primitives: PrimitiveUse[] = primitive ? [primitive] : [];
   return { name, line: 1, props: [], extends: [], variants: [], primitives, elements: [] };
 }
 
-function loadModule(pkgDir: string, file: string, modules: Map<string, ModuleRecord>): ModuleRecord | null {
+function loadModule(
+  pkgDir: string,
+  file: string,
+  modules: Map<string, ModuleRecord>,
+  libraries: readonly PrimitiveLibrary[],
+): ModuleRecord | null {
   const cached = modules.get(file);
   if (cached) return cached;
   let source = "";
@@ -158,7 +168,7 @@ function loadModule(pkgDir: string, file: string, modules: Map<string, ModuleRec
     return null;
   }
   const relative = projectRelative(pkgDir, file);
-  const record = { declared: extractFile(relative, source), edges: readReexports(relative, source) };
+  const record = { declared: extractFile(relative, source, libraries), edges: readReexports(relative, source) };
   modules.set(file, record);
   return record;
 }
@@ -314,7 +324,7 @@ function orderSpecifiers(packageName: string, specifiers: string[]): string[] {
 }
 
 function isNoiseFile(name: string): boolean {
-  return /\.(stories|test|spec)\.(tsx|ts|jsx|js)$/.test(name) || name.endsWith(".map") || name === "package.json";
+  return /\.(stories|story|test|spec)\.(tsx|ts|jsx|js)$/.test(name) || name.endsWith(".map") || name === "package.json";
 }
 
 function isComponentName(name: string): boolean {

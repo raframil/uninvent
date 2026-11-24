@@ -135,6 +135,8 @@ function renderComponent(component: CatalogComponent, catalog: Catalog): string 
     lines.push(`  renders: ${component.elements.map((element) => `<${element}>`).join(", ")}`);
   }
   if (component.primitives.length > 0) lines.push(`  primitives: ${formatPrimitives(component.primitives)}`);
+  const parts = component.primitives.flatMap((entry) => entry.parts ?? []);
+  if (parts.length > 0) lines.push(`  parts: ${parts.join(", ")}`);
   const states = formatStateLine(component);
   if (states) lines.push(states);
   if (component.stories.length > 0) lines.push(`  stories: ${component.stories.join(", ")}`);

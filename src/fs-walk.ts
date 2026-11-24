@@ -13,6 +13,15 @@ export function walkStoryFiles(root: string, dir = "."): string[] {
   return walkFiles(root, dir, isStoryFilename);
 }
 
+export function walkNamedFiles(root: string, dir: string, include: (name: string) => boolean): string[] {
+  return walkFiles(root, dir, include);
+}
+
+/** Every file under `dir`, still skipping dependency and build folders. */
+export function walkAllFiles(root: string, dir = "."): string[] {
+  return walkFiles(root, dir, () => true);
+}
+
 export function isStoryFilename(name: string): boolean {
   return /\.stories\.(tsx|ts|jsx|js|mdx)$/.test(name) || name.endsWith(".mdx");
 }

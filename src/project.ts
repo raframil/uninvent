@@ -65,6 +65,8 @@ export function initCommand(options: {
       ignore: config.ignore.length > 0 ? config.ignore : [...DEFAULT_IGNORE],
       catalog: config.catalog || DEFAULT_CATALOG,
       commitCatalog: options.commit ? true : config.commitCatalog,
+      primitives: config.primitives,
+      ...(config.states ? { states: config.states } : {}),
     };
     if (!hadConfig) {
       config.ignore = [...DEFAULT_IGNORE];
@@ -93,6 +95,7 @@ function emptyConfig(): Config {
     ignore: [...DEFAULT_IGNORE],
     catalog: DEFAULT_CATALOG,
     commitCatalog: false,
+    primitives: [],
   };
 }
 

@@ -22,7 +22,7 @@ Usage
 
 check prints one line per reinvented element, recipe, or documented state and nothing when the file is clean.
 exists matches a component name, a composition recipe, or a documented state, for example: uninvent exists "loading button"
-coverage lists which variants and states have stories. It exits 0. It is not a failing gate.
+coverage lists which variants and states have stories. It exits 0. It is not a failing gate. With no states source, it prints one line.
 Exit codes: 0 clean, 1 reinvented (or no exists/coverage match), 2 usage or catalog error.
 The hook never blocks a write. It prints nothing unless the edit reinvented UI.
 PreToolUse is off unless you pass --pre.

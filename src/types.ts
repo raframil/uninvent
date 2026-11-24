@@ -1,5 +1,5 @@
 import type { PathMapping } from "./paths.js";
-import type { PrimitiveUse } from "./primitives.js";
+import type { PrimitiveConfig, PrimitiveUse } from "./primitives.js";
 
 export interface PropInfo {
   name: string;
@@ -71,8 +71,9 @@ export interface CatalogComponent {
   extends: string[];
   variants: VariantGroup[];
   /**
-   * Headless primitives imported by the file.
-   * `library` is an adapter id (`radix`, `base-ui`, `react-aria`, `ark`).
+   * Headless primitives this component wraps.
+   * `library` is an id from the primitive map (`base-ui`, `radix`, `react-aria`, `ark`, …)
+   * or one declared in `uninvent.json`. `parts` lists the parts the component renders.
    */
   primitives: PrimitiveUse[];
   /** Intrinsic elements this component renders, when the source says so. */
@@ -127,6 +128,40 @@ export interface Catalog {
    * Absent on catalogs written before package sources. Readers treat that as none.
    */
   packages?: CatalogPackage[];
+  /**
+   * States sources `scan` read. An empty array means scan looked and found none.
+   * Absent on catalogs written before states sources. `coverage` then keeps the
+   * older per-component report.
+   */
+  statesSources?: StatesSourceInfo[];
+  /**
+   * One line when scan saw a source it does not parse (Histoire Vue SFCs).
+   * Absent when there is nothing to add.
+   */
+  statesNote?: string;
+}
+
+/** One states source that contributed files. `id` is `storybook`, `ladle`, `histoire`, `manifest`, `jsdoc`, or `glob`. */
+export interface StatesSourceInfo {
+  id: string;
+  files: string[];
+}
+
+/** `uninvent.json` `states`. Every field is optional; omitted means auto-detect. */
+export interface StatesSourceToggle {
+  globs?: string[];
+}
+
+export interface StatesConfig {
+  /** Extra files. `*.stories.*`, `*.story.*`, and `*.mdx` use the CSF parser. JSON uses the manifest parser. Other files are scanned for `@state` tags. */
+  globs?: string[];
+  /** Manifest path. `false` skips `uninvent.states.json`. */
+  manifest?: string | false;
+  storybook?: boolean | StatesSourceToggle;
+  ladle?: boolean | StatesSourceToggle;
+  histoire?: boolean | StatesSourceToggle;
+  /** `@state` tags and front matter in component files. Default on. */
+  jsdoc?: boolean | StatesSourceToggle;
 }
 
 /** One design-system package `scan` read. `dir` is project-relative and may start with `..`. */
@@ -146,6 +181,13 @@ export interface Config {
   ignore: string[];
   catalog: string;
   commitCatalog: boolean;
+  /**
+   * Extra primitive libraries, or extra packages and parts for a built-in id.
+   * Absent in a config file means the built-in map only.
+   */
+  primitives: PrimitiveConfig[];
+  /** States sources. Absent means Storybook, Ladle, Histoire, the manifest, and `@state` tags are auto-detected. */
+  states?: StatesConfig;
 }
 
 export interface Finding {
@@ -177,6 +219,10 @@ export const DEFAULT_IGNORE = [
   "**/*.stories.js",
   "**/*.stories.mdx",
   "**/*.mdx",
+  "**/*.story.tsx",
+  "**/*.story.ts",
+  "**/*.story.jsx",
+  "**/*.story.js",
   "**/*.test.tsx",
   "**/*.test.jsx",
   "**/*.spec.tsx",

@@ -1,6 +1,14 @@
 import ts from "typescript";
-import { matchPrimitive, type PrimitiveUse } from "../primitives.js";
-import type { PropInfo, VariantGroup } from "../types.js";
+import {
+  BUILTIN_LIBRARIES,
+  familyFromSpecifier,
+  lookupPart,
+  matchPrimitive,
+  partKeys,
+  type PrimitiveLibrary,
+  type PrimitiveUse,
+} from "../primitives.js";
+import { RAW_ELEMENTS, type PropInfo, type VariantGroup } from "../types.js";
 
 export interface ExtractedComponent {
   name: string;
@@ -33,7 +41,11 @@ const INTERESTING_ELEMENTS = new Set([
  * Syntactic extract of one UI file. No typecheck and no node_modules walk:
  * scan should work in a fixture that has never installed React.
  */
-export function extractFile(fileName: string, source: string): ExtractedComponent[] {
+export function extractFile(
+  fileName: string,
+  source: string,
+  libraries: readonly PrimitiveLibrary[] = BUILTIN_LIBRARIES,
+): ExtractedComponent[] {
   const sourceFile = ts.createSourceFile(
     fileName,
     source,
@@ -47,12 +59,13 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
   const types = new Map<string, TypeInfo>();
   const typeNodes = new Map<string, ts.TypeNode | ts.InterfaceDeclaration>();
   const primitives = new Map<string, PrimitiveUse>();
+  const bindings: PrimitiveBinding[] = [];
   const declarations = new Map<string, { node: ts.Node; line: number; propsType?: ts.TypeNode; body?: ts.Node }>();
   const exported = new Set<string>();
   const exportAliases = new Map<string, string>();
 
   for (const statement of sourceFile.statements) {
-    collectImports(statement, primitives);
+    collectImports(statement, primitives, bindings, libraries);
     collectTypes(statement, sourceFile, types, typeNodes);
     collectVariants(statement, variants);
     collectDeclaration(statement, sourceFile, declarations, exported);
@@ -72,7 +85,9 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
         groups.push(group);
       }
     }
-    const elements = decl.body ? elementsIn(decl.body) : [];
+    const rendered = renderedNode(decl);
+    const elements = rendered ? elementsIn(rendered) : [];
+    const uses = rendered ? primitiveUsesIn(rendered, bindings, libraries) : emptyUses();
     if (declarationFile) {
       for (const element of elementsFromTypeText(resolved.extendNames)) {
         if (!elements.includes(element)) elements.push(element);
@@ -81,16 +96,15 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
     const extendNames = declarationFile
       ? resolved.extendNames.filter((name) => !name.includes("RefAttributes"))
       : resolved.extendNames;
+    const partElements = uses.elements.filter((element) => RAW_ELEMENTS[element] === name);
     components.push({
       name,
       line: decl.line,
       props: resolved.props,
       extends: unique(extendNames),
       variants: groups,
-      primitives: [...primitives.values()].sort(
-        (a, b) => a.library.localeCompare(b.library) || a.package.localeCompare(b.package),
-      ),
-      elements,
+      primitives: primitivesWithParts(primitives, uses.parts),
+      elements: unique([...elements, ...partElements]),
     });
   }
 
@@ -102,12 +116,121 @@ function emptyType(): TypeInfo {
   return { props: [], extendNames: [], variantRefs: [] };
 }
 
-function collectImports(statement: ts.Statement, found: Map<string, PrimitiveUse>): void {
+interface PrimitiveBinding {
+  local: string;
+  family: string;
+  use: PrimitiveUse;
+}
+
+interface PrimitiveUses {
+  parts: Map<string, Set<string>>;
+  elements: string[];
+}
+
+function emptyUses(): PrimitiveUses {
+  return { parts: new Map(), elements: [] };
+}
+
+function collectImports(
+  statement: ts.Statement,
+  found: Map<string, PrimitiveUse>,
+  bindings: PrimitiveBinding[],
+  libraries: readonly PrimitiveLibrary[],
+): void {
   if (!ts.isImportDeclaration(statement)) return;
   if (!ts.isStringLiteral(statement.moduleSpecifier)) return;
-  const hit = matchPrimitive(statement.moduleSpecifier.text);
+  const specifier = statement.moduleSpecifier.text;
+  const hit = matchPrimitive(specifier, libraries);
   if (!hit) return;
   found.set(`${hit.library}\0${hit.package}`, hit);
+  const clause = statement.importClause;
+  if (!clause || clause.isTypeOnly) return;
+  const fromPackage = familyFromSpecifier(specifier);
+  if (clause.name) {
+    bindings.push({ local: clause.name.text, family: fromPackage || clause.name.text, use: hit });
+  }
+  const named = clause.namedBindings;
+  if (!named) return;
+  if (ts.isNamespaceImport(named)) {
+    bindings.push({ local: named.name.text, family: fromPackage || named.name.text, use: hit });
+    return;
+  }
+  for (const element of named.elements) {
+    if (element.isTypeOnly) continue;
+    const imported = element.propertyName?.text ?? element.name.text;
+    bindings.push({ local: element.name.text, family: imported, use: hit });
+  }
+}
+
+function primitivesWithParts(found: Map<string, PrimitiveUse>, parts: Map<string, Set<string>>): PrimitiveUse[] {
+  return [...found.values()]
+    .map((entry) => {
+      const used = [...(parts.get(`${entry.library}\0${entry.package}`) ?? [])].sort();
+      return used.length > 0 ? { ...entry, parts: used } : { ...entry };
+    })
+    .sort((a, b) => a.library.localeCompare(b.library) || a.package.localeCompare(b.package));
+}
+
+function renderedNode(decl: { node: ts.Node; body?: ts.Node }): ts.Node | undefined {
+  if (decl.body) return decl.body;
+  if (ts.isVariableDeclaration(decl.node)) return decl.node.initializer;
+  return undefined;
+}
+
+/**
+ * JSX tags and value aliases that render a primitive part.
+ * `<ButtonPrimitive>` and `DialogPrimitive.Popup` are parts. A type reference
+ * such as `ButtonPrimitive.Props` lives outside the function body and is ignored.
+ * The element is recorded only when this component's name is the raw control
+ * (`Button` for `<button>`), so a dialog popup part does not make `DialogContent`
+ * a second dialog slot.
+ */
+function primitiveUsesIn(
+  node: ts.Node,
+  bindings: PrimitiveBinding[],
+  libraries: readonly PrimitiveLibrary[],
+): PrimitiveUses {
+  const uses = emptyUses();
+  const byLocal = new Map(bindings.map((binding) => [binding.local, binding]));
+  const note = (local: string, member: string | null): void => {
+    const binding = byLocal.get(local);
+    if (!binding) return;
+    const found = lookupPart(libraries, binding.use.library, partKeys(binding.family, member));
+    if (!found) return;
+    const key = `${binding.use.library}\0${binding.use.package}`;
+    const list = uses.parts.get(key) ?? new Set<string>();
+    list.add(found.part);
+    uses.parts.set(key, list);
+    for (const element of found.elements) {
+      if (!uses.elements.includes(element)) uses.elements.push(element);
+    }
+  };
+  const visit = (current: ts.Node): void => {
+    if (ts.isJsxOpeningElement(current) || ts.isJsxSelfClosingElement(current)) {
+      const tag = jsxPart(current.tagName);
+      if (tag) note(tag.local, tag.member);
+    } else if (ts.isPropertyAccessExpression(current) && ts.isIdentifier(current.expression)) {
+      const parent = current.parent;
+      const isTag = parent && (ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent)) && parent.tagName === current;
+      if (!isTag && byLocal.has(current.expression.text)) note(current.expression.text, current.name.text);
+    } else if (ts.isIdentifier(current) && byLocal.has(current.text)) {
+      const parent = current.parent;
+      const ownedByAccess = parent && ts.isPropertyAccessExpression(parent) && parent.expression === current;
+      const isTag = parent && (ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent)) && parent.tagName === current;
+      if (!ownedByAccess && !isTag) note(current.text, null);
+    }
+    ts.forEachChild(current, visit);
+  };
+  visit(node);
+  return uses;
+}
+
+function jsxPart(name: ts.JsxTagNameExpression): { local: string; member: string | null } | null {
+  if (ts.isIdentifier(name)) return { local: name.text, member: null };
+  if (ts.isPropertyAccessExpression(name) && ts.isIdentifier(name.expression)) {
+    return { local: name.expression.text, member: name.name.text };
+  }
+  return null;
 }
 
 function collectTypes(

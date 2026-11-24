@@ -12,7 +12,7 @@ test("extracts CVA variants, own props, and the rendered element", () => {
   assert.ok(button);
   assert.equal(button.name, "Button");
   assert.equal(button.props.some((prop) => prop.name === "asChild"), true);
-  assert.deepEqual(button.primitives, [{ library: "radix", package: "@radix-ui/react-slot" }]);
+  assert.deepEqual(button.primitives, [{ library: "radix", package: "@radix-ui/react-slot", parts: ["Slot"] }]);
   assert.deepEqual(
     button.variants.map((variant) => variant.name),
     ["variant", "size"],
@@ -57,7 +57,8 @@ test("keeps dialog siblings and does not treat a cva helper as a component", () 
     dialog?.props.map((prop) => prop.name),
     ["open", "onOpenChange", "children"],
   );
-  assert.deepEqual(dialog?.primitives, [{ library: "radix", package: "@radix-ui/react-dialog" }]);
+  assert.deepEqual(dialog?.primitives, [{ library: "radix", package: "@radix-ui/react-dialog", parts: ["Dialog.Root"] }]);
+  assert.equal(dialog?.elements.includes("dialog"), true);
 });
 
 test("reads exports, props, and string-literal variants from a declaration file", () => {
@@ -94,7 +95,10 @@ test("records Base UI, React Aria, and Ark through the adapter map", () => {
        return <DialogPrimitive.Root {...props} />;
      }`,
   );
-  assert.deepEqual(base[0]?.primitives, [{ library: "base-ui", package: "@base-ui-components/react/dialog" }]);
+  assert.deepEqual(base[0]?.primitives, [
+    { library: "base-ui", package: "@base-ui-components/react/dialog", parts: ["Dialog.Root"] },
+  ]);
+  assert.equal(base[0]?.elements.includes("dialog"), true);
 
   const current = extractFile(
     "button.tsx",
@@ -103,20 +107,61 @@ test("records Base UI, React Aria, and Ark through the adapter map", () => {
        return <ButtonPrimitive {...props} />;
      }`,
   );
-  assert.deepEqual(current[0]?.primitives, [{ library: "base-ui", package: "@base-ui/react/button" }]);
-  assert.equal(current[0]?.elements.includes("button"), false);
+  assert.deepEqual(current[0]?.primitives, [{ library: "base-ui", package: "@base-ui/react/button", parts: ["Button"] }]);
+  assert.equal(current[0]?.elements.includes("button"), true);
 
   const aria = extractFile(
     "button.tsx",
     `import { Button } from "react-aria-components";
      export function AriaButton(props: { children?: string }) { return <Button {...props} />; }`,
   );
-  assert.deepEqual(aria[0]?.primitives, [{ library: "react-aria", package: "react-aria-components" }]);
+  assert.deepEqual(aria[0]?.primitives, [{ library: "react-aria", package: "react-aria-components", parts: ["Button"] }]);
+  assert.equal(aria[0]?.elements.includes("button"), false);
+  const ariaNamed = extractFile(
+    "button.tsx",
+    `import { Button as ButtonPrimitive } from "react-aria-components";
+     export function Button(props: { children?: string }) { return <ButtonPrimitive {...props} />; }`,
+  );
+  assert.equal(ariaNamed[0]?.elements.includes("button"), true);
 
   const ark = extractFile(
     "dialog.tsx",
     `import { Dialog } from "@ark-ui/react/dialog";
-     export function DialogRoot() { return <Dialog.Root />; }`,
+     export function Dialog(props: { children?: string }) { return <Dialog.Root {...props} />; }`,
   );
-  assert.deepEqual(ark[0]?.primitives, [{ library: "ark", package: "@ark-ui/react/dialog" }]);
+  assert.deepEqual(ark[0]?.primitives, [{ library: "ark", package: "@ark-ui/react/dialog", parts: ["Dialog.Root"] }]);
+  assert.equal(ark[0]?.elements.includes("dialog"), true);
+
+  const bundled = extractFile(
+    "dialog.tsx",
+    `import { Dialog as DialogPrimitive } from "radix-ui";
+     export function Dialog(props: DialogPrimitive.Root.Props) { return <DialogPrimitive.Root {...props} />; }`,
+  );
+  assert.equal(bundled[0]?.primitives[0]?.library, "radix");
+  assert.equal(bundled[0]?.primitives[0]?.package, "radix-ui");
+  assert.deepEqual(bundled[0]?.primitives[0]?.parts, ["Dialog.Root"]);
+
+  const headless = extractFile(
+    "dialog.tsx",
+    `import { Dialog } from "@headlessui/react";
+     export function Dialog(props: { children?: string }) { return <Dialog {...props} />; }`,
+  );
+  assert.equal(headless[0]?.primitives[0]?.library, "headless-ui");
+  assert.equal(headless[0]?.elements.includes("dialog"), true);
+
+  const mantine = extractFile(
+    "button.tsx",
+    `import { Button } from "@mantine/core";
+     export function Button(props: { children?: string }) { return <Button {...props} />; }`,
+  );
+  assert.equal(mantine[0]?.primitives[0]?.library, "mantine");
+  assert.equal(mantine[0]?.elements.includes("button"), true);
+
+  const chakra = extractFile(
+    "input.tsx",
+    `import { Input } from "@chakra-ui/react";
+     export function Input(props: { children?: string }) { return <Input {...props} />; }`,
+  );
+  assert.equal(chakra[0]?.primitives[0]?.library, "chakra");
+  assert.equal(chakra[0]?.elements.includes("input"), true);
 });

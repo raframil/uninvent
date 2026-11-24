@@ -18,9 +18,13 @@ export interface CoverageComponent {
   rows: CoverageRow[];
 }
 
+/** Printed when scan looked and found no Storybook, Ladle, Histoire, manifest, or `@state` tags. */
+export const NO_STATES_SOURCE = "No states source found.";
+
 /**
  * Which variants and states have a story, and which do not.
  * Informational: this never decides that a check failed.
+ * A catalog that records an empty `statesSources` list prints one line.
  */
 export function renderCoverage(
   catalog: Catalog,
@@ -38,6 +42,16 @@ export function renderCoverage(
       : components.filter((component) => wanted.length >= 3 && keyOf(component.name).includes(wanted));
     if (components.length === 0) return { text: `no match for "${query}"\n`, exitCode: 1 };
   }
+  const missingSource = noStatesSource(catalog);
+  if (missingSource) {
+    if (format === "json") {
+      return {
+        text: `${JSON.stringify({ sources: catalog.statesSources ?? [], informational: true, note: missingSource }, null, 2)}\n`,
+        exitCode: 0,
+      };
+    }
+    return { text: `${missingSource}\n`, exitCode: 0 };
+  }
   const documented = components.reduce((sum, component) => sum + component.rows.filter((row) => row.covered).length, 0);
   const missing = components.reduce((sum, component) => sum + component.rows.filter((row) => !row.covered).length, 0);
   if (format === "json") {
@@ -50,6 +64,15 @@ export function renderCoverage(
     return { text: renderMarkdown(components, parsed, documented, missing), exitCode: 0 };
   }
   return { text: renderText(components, parsed, documented, missing), exitCode: 0 };
+}
+
+function noStatesSource(catalog: Catalog): string | null {
+  if (!Array.isArray(catalog.statesSources) || catalog.statesSources.length > 0) return null;
+  const documented = catalog.components.some(
+    (component) => component.stories.length > 0 || (component.states?.length ?? 0) > 0,
+  );
+  if (documented) return null;
+  return catalog.statesNote ?? NO_STATES_SOURCE;
 }
 
 function coverageComponent(component: CatalogComponent, parsed: boolean): CoverageComponent {

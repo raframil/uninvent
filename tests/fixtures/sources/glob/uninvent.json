@@ -1,0 +1,9 @@
+{
+  "ui": ["src/components/ui"],
+  "states": {
+    "storybook": false,
+    "globs": ["src/docs/*.docs.tsx"]
+  },
+  "catalog": ".uninvent/catalog.json",
+  "commitCatalog": false
+}

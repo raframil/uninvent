@@ -45,6 +45,7 @@ export function sampleConfig(overrides: Partial<Config> = {}): Config {
     ignore: ["**/*.stories.tsx", "**/*.test.tsx"],
     catalog: ".uninvent/catalog.json",
     commitCatalog: false,
+    primitives: [],
     ...overrides,
   };
 }
