@@ -38,7 +38,7 @@ function packageName(file: string): string | null {
   }
 }
 
-function isOurHook(command: string): boolean {
+export function isOurHook(command: string): boolean {
   return command.includes("uninvent hook") || command.endsWith("dist/cli.js hook");
 }
 
@@ -48,6 +48,15 @@ export function installHooks(root: string, targets: InstallTarget[], pre: boolea
   for (const target of targets) {
     if (target === "claude-code") lines.push(installClaude(root, command, pre));
     else lines.push(installCursor(root, command, pre));
+  }
+  return lines;
+}
+
+export function uninstallHooks(root: string, targets: InstallTarget[]): string[] {
+  const lines: string[] = [];
+  for (const target of targets) {
+    if (target === "claude-code") lines.push(uninstallClaude(root));
+    else lines.push(uninstallCursor(root));
   }
   return lines;
 }
@@ -88,6 +97,40 @@ function installClaude(root: string, command: string, pre: boolean): string {
     : `Claude Code: PostToolUse hook in ${relative}`;
 }
 
+function uninstallClaude(root: string): string {
+  const relative = ".claude/settings.json";
+  const file = path.join(root, relative);
+  if (!existsSync(file)) return `Claude Code: no hook in ${relative}`;
+  const current = readJson(file);
+  if (!isRecord(current)) return `Claude Code: no hook in ${relative}`;
+  const hooks = isRecord(current.hooks) ? { ...current.hooks } : {};
+  hooks.PostToolUse = removeClaude(hooks.PostToolUse);
+  hooks.PreToolUse = removeClaude(hooks.PreToolUse);
+  if (emptyList(hooks.PostToolUse)) delete hooks.PostToolUse;
+  if (emptyList(hooks.PreToolUse)) delete hooks.PreToolUse;
+  if (Object.keys(hooks).length === 0) delete current.hooks;
+  else current.hooks = hooks;
+  writeOrRemove(file, current);
+  return `Claude Code: removed uninvent hooks from ${relative}`;
+}
+
+function uninstallCursor(root: string): string {
+  const relative = ".cursor/hooks.json";
+  const file = path.join(root, relative);
+  if (!existsSync(file)) return `Cursor: no hook in ${relative}`;
+  const current = readJson(file);
+  if (!isRecord(current)) return `Cursor: no hook in ${relative}`;
+  const hooks = isRecord(current.hooks) ? { ...current.hooks } : {};
+  hooks.postToolUse = removeCursor(hooks.postToolUse);
+  hooks.preToolUse = removeCursor(hooks.preToolUse);
+  if (emptyList(hooks.postToolUse)) delete hooks.postToolUse;
+  if (emptyList(hooks.preToolUse)) delete hooks.preToolUse;
+  if (Object.keys(hooks).length === 0) delete current.hooks;
+  else current.hooks = hooks;
+  writeOrRemove(file, current);
+  return `Cursor: removed uninvent hooks from ${relative}`;
+}
+
 function installCursor(root: string, command: string, pre: boolean): string {
   const relative = ".cursor/hooks.json";
   const file = path.join(root, relative);
@@ -123,6 +166,27 @@ function upsertCursor(existing: unknown, matcher: string, command: string): unkn
   return entries;
 }
 
+function removeClaude(existing: unknown): unknown[] {
+  const groups = Array.isArray(existing) ? existing.map((group) => clone(group)) : [];
+  const kept: unknown[] = [];
+  for (const group of groups) {
+    const list = isRecord(group) ? group.hooks : undefined;
+    if (!isRecord(group) || !Array.isArray(list)) {
+      kept.push(group);
+      continue;
+    }
+    const hooks = list.filter((hook) => !(isRecord(hook) && typeof hook.command === "string" && isOurHook(hook.command)));
+    group.hooks = hooks;
+    if (hooks.length > 0) kept.push(group);
+  }
+  return kept;
+}
+
+function removeCursor(existing: unknown): unknown[] {
+  const entries = Array.isArray(existing) ? existing.map((entry) => clone(entry)) : [];
+  return entries.filter((entry) => !(isRecord(entry) && typeof entry.command === "string" && isOurHook(entry.command)));
+}
+
 function replaceCommand(groups: unknown[], command: string): boolean {
   let found = false;
   for (const group of groups) {
@@ -151,6 +215,19 @@ function readJson(file: string): unknown {
 function writeJson(file: string, value: unknown): void {
   mkdirSync(path.dirname(file), { recursive: true });
   writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function writeOrRemove(file: string, value: Record<string, unknown>): void {
+  if (!existsSync(file)) return;
+  if (Object.keys(value).length === 0) {
+    writeFileSync(file, "{}\n");
+    return;
+  }
+  writeJson(file, value);
+}
+
+function emptyList(value: unknown): boolean {
+  return !Array.isArray(value) || value.length === 0;
 }
 
 function clone<T>(value: T): T {

@@ -10,7 +10,7 @@ export async function hookMain(argv: string[]): Promise<number> {
     return main(argv);
   }
   if (!args.file && process.stdin.isTTY) {
-    process.stderr.write("uninvent hook reads a Claude Code or Cursor tool event on stdin.\n");
+    process.stderr.write("uninvent hook reads a tool event on stdin.\n");
     return 0;
   }
   const stdin = args.file ? "" : await readStdin();

@@ -6,7 +6,7 @@ import { formatReport } from "./check/format.js";
 import { checkProject } from "./check/run.js";
 import { findProjectRoot, loadConfig } from "./config.js";
 import { renderExists } from "./exists.js";
-import { installHooks, parseInstallTarget, type InstallTarget } from "./install.js";
+import { installAgents, resolveAgents, uninstallAgents } from "./agent-install.js";
 import { renderCoverage } from "./stories/coverage.js";
 
 const HELP = `uninvent — check that agents reuse the design system
@@ -17,7 +17,8 @@ Usage
   uninvent exists <Component | "intent">
   uninvent check [path...] [--base <ref>] [--format text|json|markdown]
   uninvent coverage [Component] [--format text|json|markdown]
-  uninvent install [claude-code|cursor] [--pre]
+  uninvent install [--agent <name>] [--pre]
+  uninvent uninstall [--agent <name>]
   uninvent hook [--file <path>]
 
 check prints one line per reinvented element, recipe, or documented state and nothing when the file is clean.
@@ -34,6 +35,7 @@ PreToolUse is off unless you pass --pre.
   --base <ref>    Check the git diff against this ref
   --format        text (default), json, or markdown
   --pre           Also install a non-blocking PreToolUse hook
+  --agent <name>  claude-code, cursor, codex, copilot, windsurf, cline, or agents. Repeatable
   --file <path>   Run the hook logic on one file and print plain lines
 `;
 
@@ -98,10 +100,16 @@ export async function main(argv: string[]): Promise<number> {
       return result.findings.length > 0 ? 1 : 0;
     }
     case "install": {
-      const targets: InstallTarget[] = args.positionals.length === 0
-        ? ["claude-code", "cursor"]
-        : args.positionals.map(parseInstallTarget);
-      for (const line of installHooks(cwd, targets, args.pre)) process.stdout.write(`${line}\n`);
+      const agents = resolveAgents([...args.agents, ...args.positionals], cwd);
+      for (const line of installAgents(cwd, agents, args.pre)) process.stdout.write(`${line}\n`);
+      return 0;
+    }
+    case "uninstall": {
+      const names = [...args.agents, ...args.positionals];
+      const agents = names.length === 0
+        ? resolveAgents(["claude-code", "cursor", "codex", "copilot", "windsurf", "cline", "agents"], cwd)
+        : resolveAgents(names, cwd);
+      for (const line of uninstallAgents(cwd, agents)) process.stdout.write(`${line}\n`);
       return 0;
     }
     case "hook": {

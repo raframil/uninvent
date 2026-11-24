@@ -9,6 +9,7 @@ export interface Args {
   file?: string;
   ui: string[];
   packages: string[];
+  agents: string[];
   commit: boolean;
   pre: boolean;
   force: boolean;
@@ -16,7 +17,7 @@ export interface Args {
   version: boolean;
 }
 
-const VALUE_FLAGS = new Set(["cwd", "format", "base", "file", "ui", "package"]);
+const VALUE_FLAGS = new Set(["cwd", "format", "base", "file", "ui", "package", "agent"]);
 
 export function parseArgs(argv: string[]): Args {
   const args: Args = {
@@ -24,6 +25,7 @@ export function parseArgs(argv: string[]): Args {
     format: "text",
     ui: [],
     packages: [],
+    agents: [],
     commit: false,
     pre: false,
     force: false,
@@ -80,6 +82,7 @@ function assign(args: Args, flag: string, value: string): void {
   else if (flag === "file") args.file = value;
   else if (flag === "ui") args.ui.push(value);
   else if (flag === "package") args.packages.push(value);
+  else if (flag === "agent") args.agents.push(value);
   else if (flag === "format") args.format = value as Args["format"];
 }
 
