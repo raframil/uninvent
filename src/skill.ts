@@ -12,8 +12,8 @@ export const SKILL_FILES = [
 ];
 
 export const GENERATED_MARK = "<!-- uninvent:generated -->";
-const AGENTS_START = "<!-- uninvent:start -->";
-const AGENTS_END = "<!-- uninvent:end -->";
+export const BLOCK_START = "<!-- uninvent:start -->";
+export const BLOCK_END = "<!-- uninvent:end -->";
 
 export function renderSkill(catalog: Catalog): string {
   const names = catalog.components.map((component) => component.name);
@@ -81,7 +81,7 @@ export function renderAgentsBlock(catalog: Catalog): string {
   const list = names.length > 0 ? names.join(", ") : "(empty — run uninvent scan)";
   const recipes = declaredRecipes(catalog);
   const lines = [
-    AGENTS_START,
+    BLOCK_START,
     "## Design system",
     "",
     "Reuse the local design system. Before adding UI, run `uninvent exists <Component>`. Do not leave a raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` in place when the catalog has a component for it.",
@@ -96,53 +96,74 @@ export function renderAgentsBlock(catalog: Catalog): string {
   }
   const states = statesSummary(catalog);
   if (states) lines.push("", states);
-  lines.push(AGENTS_END);
+  lines.push(BLOCK_END);
   return lines.join("\n");
 }
 
 export function writeSkills(root: string, catalog: Catalog, force = false): string[] {
-  const skill = renderSkill(catalog);
   const written: string[] = [];
   for (const relative of SKILL_FILES) {
-    const file = path.join(root, relative);
-    if (existsSync(file) && !force) {
-      const current = readFileSync(file, "utf8");
-      if (!current.includes(GENERATED_MARK)) continue;
-    }
-    mkdirSync(path.dirname(file), { recursive: true });
-    writeFileSync(file, skill);
-    written.push(relative);
+    if (writeGeneratedSkill(root, relative, catalog, force)) written.push(relative);
   }
-  const agents = upsertAgents(root, renderAgentsBlock(catalog));
-  if (agents) written.push(agents);
+  if (writeAgentsBlock(root, catalog)) written.push("AGENTS.md");
   return written;
+}
+
+export function writeGeneratedSkill(root: string, relative: string, catalog: Catalog, force = false): boolean {
+  const file = path.join(root, relative);
+  if (existsSync(file) && !force) {
+    const current = readFileSync(file, "utf8");
+    if (!current.includes(GENERATED_MARK)) return false;
+  }
+  const skill = renderSkill(catalog);
+  if (existsSync(file) && readFileSync(file, "utf8") === skill) return true;
+  mkdirSync(path.dirname(file), { recursive: true });
+  writeFileSync(file, skill);
+  return true;
+}
+
+export function writeAgentsBlock(root: string, catalog: Catalog): boolean {
+  const file = path.join(root, "AGENTS.md");
+  const block = renderAgentsBlock(catalog);
+  if (!existsSync(file)) {
+    writeFileSync(file, `${block}\n`);
+    return true;
+  }
+  const current = readFileSync(file, "utf8");
+  const next = upsertMarked(current, block);
+  if (next === current) return false;
+  writeFileSync(file, next);
+  return true;
+}
+
+/** Replace the marked block, or append it once. */
+export function upsertMarked(current: string, block: string): string {
+  const start = current.indexOf(BLOCK_START);
+  const end = current.indexOf(BLOCK_END);
+  if (start !== -1 && end !== -1 && end > start) {
+    return `${current.slice(0, start)}${block}${current.slice(end + BLOCK_END.length)}`;
+  }
+  if (current.length === 0) return `${block}\n`;
+  const separator = current.endsWith("\n") ? "\n" : "\n\n";
+  return `${current}${separator}${block}\n`;
+}
+
+/** Drop the marked block. Empty when that was the whole file. */
+export function stripMarked(current: string): string {
+  const start = current.indexOf(BLOCK_START);
+  const end = current.indexOf(BLOCK_END);
+  if (start === -1 || end === -1 || end < start) return current;
+  let before = current.slice(0, start);
+  let after = current.slice(end + BLOCK_END.length);
+  if (before.endsWith("\n\n")) before = before.slice(0, -1);
+  if (before.endsWith("\n") && after.startsWith("\n")) after = after.slice(1);
+  const next = `${before}${after}`;
+  if (next.trim() === "") return "";
+  return next.endsWith("\n") ? next : `${next}\n`;
 }
 
 export function skillsInstalled(root: string): boolean {
   return SKILL_FILES.some((relative) => existsSync(path.join(root, relative)));
-}
-
-function upsertAgents(root: string, block: string): string | null {
-  const file = path.join(root, "AGENTS.md");
-  if (!existsSync(file)) {
-    writeFileSync(file, `${block}\n`);
-    return "AGENTS.md";
-  }
-  const current = readFileSync(file, "utf8");
-  const start = current.indexOf(AGENTS_START);
-  const end = current.indexOf(AGENTS_END);
-  let next: string;
-  if (start !== -1 && end !== -1 && end > start) {
-    next = `${current.slice(0, start)}${block}${current.slice(end + AGENTS_END.length)}`;
-  } else {
-    const separator = current.endsWith("\n") ? "\n" : "\n\n";
-    next = `${current}${separator}${block}\n`;
-  }
-  if (next !== current) {
-    writeFileSync(file, next);
-    return "AGENTS.md";
-  }
-  return null;
 }
 
 function hasDocumentedStates(catalog: Catalog): boolean {

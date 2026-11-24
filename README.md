@@ -84,7 +84,7 @@ npx uninvent install
 
 The skill names the components that were actually scanned, the declared recipes, and the states stories document. It tells the agent to run `uninvent exists <Component>` before creating UI. `scan` refreshes that skill when it is already there.
 
-`install` adds a **PostToolUse** hook for Claude Code (`.claude/settings.json`) and Cursor (`.cursor/hooks.json`). It merges into the files you already have. The hook runs after an edit, reads the catalog, and parses that file with a small scanner (Babel is only the fallback). It:
+`install` with no `--agent` adds a **PostToolUse** hook for Claude Code (`.claude/settings.json`) and Cursor (`.cursor/hooks.json`). It merges into the files you already have. If the project already has a Codex, Copilot, Windsurf, or Cline marker, that agent is installed too. `uninvent install --agent <name>` installs one agent. The hook runs after an edit, reads the catalog, and parses that file with a small scanner (Babel is only the fallback). It:
 
 - prints nothing when the edit is clean
 - on a miss, adds one line per finding and nothing else, for example `raw <button> in src/Form.tsx:42, use ui/Button`
@@ -92,6 +92,34 @@ The skill names the components that were actually scanned, the declared recipes,
 That line is the whole message the agent sees. The hook does not block the write. PreToolUse is off unless you pass `--pre`, and even then it only warns.
 
 Inside this repo the demo hook points at `../../node_modules/.bin/uninvent`, which `npm run build` creates. In an app that depends on uninvent, `install` points at `node_modules/.bin/uninvent` instead.
+
+## Agents
+
+`uninvent install --agent <name>` writes that agent's instructions and, where the tool has a post-edit hook, wires one. Marked blocks (`<!-- uninvent:start -->` … `<!-- uninvent:end -->`) and the `uninvent hook` command are replaced on the next install, not duplicated. `uninvent uninstall --agent <name>` removes them and leaves the rest of the file. With no `--agent`, uninstall removes every agent below. `--pre` also installs a non-blocking pre-edit hook where that event exists. Copilot's `preToolUse` can deny a tool and has no `additionalContext` field, so `--pre` installs it with `permissionDecision: "allow"` and puts the finding in `permissionDecisionReason`.
+
+| Agent | Instructions | Hook | Notes |
+|---|---|---|---|
+| Claude Code | `.claude/skills/uninvent/SKILL.md` from `init` | PostToolUse in `.claude/settings.json` | Unchanged. Matcher `Edit\|Write\|MultiEdit\|NotebookEdit`. |
+| Cursor | `.cursor/skills/uninvent/SKILL.md` from `init` | postToolUse in `.cursor/hooks.json` | Unchanged. Matcher `Write\|StrReplace\|EditNotebook\|ApplyPatch`. |
+| Codex | `AGENTS.md`, `.agents/skills/uninvent/SKILL.md` | PostToolUse in `.codex/hooks.json` | Matcher `apply_patch\|Edit\|Write`. `notify` is not installed: project `.codex/config.toml` cannot set it, and it runs on `agent-turn-complete`. Trust the new hook with `/hooks`. |
+| GitHub Copilot | `.github/copilot-instructions.md`, `AGENTS.md` | postToolUse in `.github/hooks/uninvent.json` | Matcher `create\|edit\|apply_patch\|str_replace_editor`. Cloud agent and Copilot CLI. The coding agent reads both instruction files, so the short block can appear twice. |
+| Windsurf | `.windsurf/rules/uninvent.md` (`trigger: model_decision`) | `post_write_code` in `.windsurf/hooks.json`, and PostToolUse in `.devin/hooks.v1.json` | Cascade's localized docs still use `.windsurf/hooks.json`. The English hooks page now documents Devin Local, which Windsurf ships, and that file is the hooks object itself. Cascade shows stdout when `show_output` is true and does not document `additionalContext`. Devin Local does. Both read `.windsurf/rules`. |
+| Cline | `.clinerules/uninvent.md` (or the block inside a single-file `.clinerules`) | `.clinerules/hooks/PostToolUse` | The CLI also scans that directory, so a second copy under `.cline/hooks/` is not written. A clean edit prints `{}`. Turn hooks on in Cline settings. The script is a Unix shebang; the extension docs say Windows hooks are not supported. |
+| AGENTS.md | `AGENTS.md` | none | Standard Markdown. The format has no hook. |
+
+A bare `uninvent install` does not look at `AGENTS.md`. Codex is detected from `.codex/`, Copilot from `.github/copilot-instructions.md`, `.github/hooks/`, or `.github/instructions/`, Windsurf from `.windsurf/`, `.windsurfrules`, or `.devin/`, and Cline from `.clinerules` or `.cline/`.
+
+Sources, read for this installer:
+
+- Codex instructions: [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md), [skills](https://learn.chatgpt.com/docs/build-skills), [customization](https://learn.chatgpt.com/docs/customization/overview)
+- Codex hooks: [Hooks](https://learn.chatgpt.com/docs/hooks). `notify`: [Advanced configuration](https://learn.chatgpt.com/docs/config-file/config-advanced)
+- Copilot instructions: [repository instructions](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions), [which features read which files](https://docs.github.com/en/copilot/reference/custom-instructions-support), [coding agent and AGENTS.md](https://github.blog/changelog/2025-08-28-copilot-coding-agent-now-supports-agents-md-custom-instructions/)
+- Copilot hooks: [concepts](https://docs.github.com/en/copilot/concepts/customizations/hooks), [reference](https://docs.github.com/en/copilot/reference/hooks-reference)
+- Windsurf rules and the current English hooks page (Devin Local): [Memories and rules](https://docs.windsurf.com/windsurf/cascade/memories), [Cascade hooks](https://docs.windsurf.com/windsurf/cascade/hooks), [Devin hook format](https://docs.devin.ai/cli/extensibility/hooks/overview), [Devin events](https://docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks)
+- Windsurf Cascade hook and rule frontmatter, still published on the localized docs: [hooks](https://docs.windsurf.com/fr/windsurf/cascade/hooks), [rules](https://docs.windsurf.com/zh/windsurf/cascade/memories)
+- Cline rules: [Rules](https://docs.cline.bot/customization/cline-rules), [config layout](https://docs.cline.bot/getting-started/config)
+- Cline hooks: [extension contract](https://github.com/cline/cline/blob/main/.clinerules/hooks/README.md), [CLI and SDK file hooks](https://github.com/cline/cline/blob/main/sdk/examples/hooks/README.md)
+- Generic instructions: [AGENTS.md](https://agents.md/)
 
 ## Commands
 
@@ -102,7 +130,8 @@ Inside this repo the demo hook points at `../../node_modules/.bin/uninvent`, whi
 | `uninvent exists <name>` | A component, a recipe (`confirm dialog`), or a documented state (`loading button`). Exit 1 when nothing matches. |
 | `uninvent check [path...]` | Report reinvented UI. Exit 1 when there is a miss. |
 | `uninvent coverage [name]` | Which variants and states have stories. Exit 0. Not a failing gate. |
-| `uninvent install` | Hook for Claude Code, Cursor, or both. `--pre` also installs PreToolUse. |
+| `uninvent install [--agent <name>]` | Hooks and instructions. No `--agent` is Claude Code and Cursor, plus any detected Codex, Copilot, Windsurf, or Cline project. `--pre` adds a non-blocking pre-edit hook where that event exists. |
+| `uninvent uninstall [--agent <name>]` | Remove the uninvent hook and the marked instruction block. Other settings stay. |
 | `uninvent hook` | The hook entrypoint. Reads a tool event on stdin. |
 
 `check` accepts `--base <ref>` and reads `git diff <ref>...HEAD`, so a pull request can be checked without scanning the whole tree. `--format` is `text` (default), `json`, or `markdown`.

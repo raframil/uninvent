@@ -21,7 +21,7 @@ export function runHook(options: {
     const lines = evaluate(event, options.cwd);
     return { stdout: hookStdout(event, lines), exitCode: 0 };
   } catch {
-    return { stdout: "", exitCode: 0 };
+    return { stdout: event.host === "cline" ? "{}\n" : "", exitCode: 0 };
   }
 }
 
@@ -40,6 +40,18 @@ function runFile(file: string, cwd: string): { stdout: string; exitCode: number 
 }
 
 function evaluate(event: HookEvent, cwd: string): string[] {
+  const paths = event.filePaths.length > 0 ? event.filePaths : [event.filePath];
+  if (paths.length <= 1) {
+    return evaluateOne({ ...event, filePath: paths[0] }, cwd);
+  }
+  const lines: string[] = [];
+  for (const filePath of paths) {
+    lines.push(...evaluateOne({ ...event, filePath, content: undefined, snippet: false }, cwd));
+  }
+  return lines;
+}
+
+function evaluateOne(event: HookEvent, cwd: string): string[] {
   const absolute = event.filePath ? path.resolve(event.cwd ?? cwd, event.filePath) : undefined;
   if (absolute && !/\.(tsx|jsx)$/.test(absolute)) return [];
   const root = findProjectRoot(absolute ?? event.cwd ?? cwd);
