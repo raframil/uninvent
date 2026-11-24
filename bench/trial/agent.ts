@@ -4,6 +4,8 @@ import path from "node:path";
 import { prepareChatRequest } from "./headers.js";
 import type { TrialArm, TrialTask } from "./types.js";
 
+const MAX_OUTPUT_TOKENS = 4096;
+
 const TOOLS = [
   {
     type: "function",
@@ -103,6 +105,7 @@ export async function runAgent(options: {
       payload = await complete({
         model: options.model,
         temperature: 0,
+        max_tokens: MAX_OUTPUT_TOKENS,
         messages,
         tools: TOOLS,
         tool_choice: "auto",
@@ -135,8 +138,15 @@ export async function runAgent(options: {
     }
     messages.push(message);
     const calls = message.tool_calls ?? [];
+    const fenced = extractCodeFile(message.content ?? "", options.task.file);
+    if (parsed.truncated && !fenced) {
+      messages.push({
+        role: "user",
+        content: "The last reply was cut off at max_tokens. Send the complete task file again.",
+      });
+      continue;
+    }
     if (calls.length === 0) {
-      const fenced = extractTsx(message.content ?? "");
       if (fenced) {
         const relative = safeRelative(options.project, options.task.file);
         writeInside(options.project, relative, fenced);
@@ -150,15 +160,24 @@ export async function runAgent(options: {
         turns: turn,
         tokens: tokenTotal(sawTokens, missingTokens, tokens),
         cost: sawCost ? roundCost(cost) : null,
-        error: files.length === 0 ? "The model returned no tool call and no TSX block." : undefined,
+        error: files.length === 0 ? "The model returned no tool call and no fenced file." : undefined,
       };
     }
     let finished = false;
+    let wrote = false;
     for (const call of calls) {
-      const result = applyCall(options.project, options.arm, call);
-      if (result.wrote) files.push(result.wrote);
+      const result = applyCall(options.project, options.arm, call, parsed.truncated);
+      if (result.wrote) {
+        files.push(result.wrote);
+        wrote = true;
+      }
       if (result.finish) finished = true;
       messages.push({ role: "tool", tool_call_id: call.id, content: result.text });
+    }
+    if (!wrote && fenced) {
+      const relative = safeRelative(options.project, options.task.file);
+      writeInside(options.project, relative, fenced);
+      files.push(relative);
     }
     if (finished) {
       return {
@@ -225,8 +244,9 @@ export function readHookCommand(project: string): string | null {
 function systemPrompt(arm: TrialArm, skill: string): string {
   const base = [
     "You are a coding agent in an existing React repository.",
-    "Complete the task by writing files with the write_file tool.",
-    "Use read_file when you need to match local style.",
+    "Write the complete task file now. Do not ask questions and do not reply with a plan.",
+    "Call write_file with the full file contents for the path named in the task.",
+    "If you do not call a tool, reply with exactly one fenced code block tagged tsx, jsx, typescript, or ts. That block is the entire file.",
     "Do not add dependencies and do not edit unrelated files.",
     "Call finish when the requested file is written.",
   ];
@@ -242,11 +262,17 @@ function systemPrompt(arm: TrialArm, skill: string): string {
   ].join("\n");
 }
 
-function applyCall(project: string, arm: TrialArm, call: ToolCall): { text: string; wrote?: string; finish?: boolean } {
+function applyCall(
+  project: string,
+  arm: TrialArm,
+  call: ToolCall,
+  truncated: boolean,
+): { text: string; wrote?: string; finish?: boolean } {
   let args: Record<string, unknown> = {};
   try {
     args = JSON.parse(call.function.arguments || "{}") as Record<string, unknown>;
   } catch {
+    if (truncated) return { text: "Tool arguments were cut off at max_tokens. Send the complete file again." };
     return { text: "Could not parse tool arguments." };
   }
   if (call.function.name === "finish") return { text: "Finished.", finish: true };
@@ -297,9 +323,33 @@ function stripFence(content: string): string {
   return match?.[1] ?? content;
 }
 
+const CODE_LANG = /^(tsx|jsx|ts|typescript|javascript|js|react)$/;
+
+/** Pull one complete source file out of a reply. An unclosed fence is not a file. */
+export function extractCodeFile(text: string, taskFile?: string): string | null {
+  const blocks: Array<{ lang: string; body: string; at: number }> = [];
+  const pattern = /```([^\n`]*)\n([\s\S]*?)```/g;
+  for (let match = pattern.exec(text); match; match = pattern.exec(text)) {
+    const lang = (match[1] ?? "").trim().toLowerCase().split(/\s+/)[0] ?? "";
+    if (lang !== "" && !CODE_LANG.test(lang)) continue;
+    const body = (match[2] ?? "").replace(/\s+$/, "");
+    if (!body.trim()) continue;
+    blocks.push({ lang, body, at: match.index });
+  }
+  if (blocks.length === 0) return null;
+  if (taskFile) {
+    const base = taskFile.split("/").pop() ?? taskFile;
+    const named = blocks.find((block) => {
+      const before = text.slice(Math.max(0, block.at - 240), block.at);
+      return before.includes(taskFile) || before.includes(base);
+    });
+    if (named) return named.body;
+  }
+  return blocks.reduce((best, block) => (block.body.length > best.body.length ? block : best)).body;
+}
+
 export function extractTsx(text: string): string | null {
-  const match = /```(?:tsx|jsx|typescript|ts)?\s*\n([\s\S]*?)```/.exec(text);
-  return match?.[1]?.trim() ? match[1] : null;
+  return extractCodeFile(text);
 }
 
 function hookText(stdout: string): string {
@@ -320,6 +370,7 @@ interface ParsedCompletion {
   message: ChatMessage | null;
   tokens: number | null;
   cost: number | null;
+  truncated: boolean;
   error?: string;
 }
 
@@ -327,17 +378,20 @@ function readCompletion(payload: unknown): ParsedCompletion {
   const body = payload as {
     error?: { message?: string };
     usage?: { total_tokens?: number; cost?: number; total_cost?: number };
-    choices?: Array<{ message?: ChatMessage }>;
+    choices?: Array<{ message?: ChatMessage; finish_reason?: string }>;
   };
-  if (body?.error?.message) return { message: null, tokens: null, cost: null, error: body.error.message };
-  const message = body?.choices?.[0]?.message ?? null;
+  if (body?.error?.message) {
+    return { message: null, tokens: null, cost: null, truncated: false, error: body.error.message };
+  }
+  const choice = body?.choices?.[0];
+  const message = choice?.message ?? null;
   const tokens = typeof body?.usage?.total_tokens === "number" ? body.usage.total_tokens : null;
   const cost = typeof body?.usage?.cost === "number"
     ? body.usage.cost
     : typeof body?.usage?.total_cost === "number"
       ? body.usage.total_cost
       : null;
-  return { message, tokens, cost };
+  return { message, tokens, cost, truncated: choice?.finish_reason === "length" };
 }
 
 async function openAiComplete(baseUrl: string, apiKey: string, body: unknown, signal: AbortSignal): Promise<unknown> {

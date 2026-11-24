@@ -1,0 +1,45 @@
+diff --git a/components/trial/post-filter.tsx b/components/trial/post-filter.tsx
+new file mode 100644
+index 0000000..772c1c0
+--- /dev/null
++++ b/components/trial/post-filter.tsx
+@@ -0,0 +1,39 @@
++"use client"
++
++import * as React from "react"
++import { Label } from "@/components/ui/label"
++import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
++
++export type PostStatus = "published" | "draft"
++
++export interface PostFilterProps {
++  value?: PostStatus
++  onValueChange?: (value: PostStatus) => void
++  className?: string
++}
++
++const PostFilter = React.forwardRef<HTMLDivElement, PostFilterProps>(
++  ({ value, onValueChange, className }, ref) => {
++    return (
++      <div ref={ref} className={className}>
++        <RadioGroup value={value} onValueChange={onValueChange as (value: string) => void}>
++          <div className="flex items-center space-x-2">
++            <RadioGroupItem value="published" id="published" />
++            <Label htmlFor="published" className="cursor-pointer">
++              Published
++            </Label>
++          </div>
++          <div className="flex items-center space-x-2">
++            <RadioGroupItem value="draft" id="draft" />
++            <Label htmlFor="draft" className="cursor-pointer">
++              Draft
++            </Label>
++          </div>
++        </RadioGroup>
++      </div>
++    )
++  }
++)
++PostFilter.displayName = "PostFilter"
++
++export { PostFilter }

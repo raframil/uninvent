@@ -1,0 +1,29 @@
+diff --git a/components/trial/post-filter.tsx b/components/trial/post-filter.tsx
+new file mode 100644
+index 0000000..74d2e26
+--- /dev/null
++++ b/components/trial/post-filter.tsx
+@@ -0,0 +1,23 @@
++import React from 'react';
++import { Select, SelectTrigger, SelectContent, SelectItem, SelectLabel } from '@/components/ui/select';
++
++type PostFilterProps = {
++  status: 'published' | 'draft';
++  onStatusChange: (status: 'published' | 'draft') => void;
++};
++
++const PostFilter: React.FC<PostFilterProps> = ({ status, onStatusChange }) => {
++  return (
++    <Select value={status} onValueChange={onStatusChange}>
++      <SelectTrigger>
++        <SelectLabel>Status: {status.charAt(0).toUpperCase() + status.slice(1)}</SelectLabel>
++      </SelectTrigger>
++      <SelectContent>
++        <SelectItem value="published">Published</SelectItem>
++        <SelectItem value="draft">Draft</SelectItem>
++      </SelectContent>
++    </Select>
++  );
++};
++
++export default PostFilter;

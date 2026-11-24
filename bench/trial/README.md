@@ -13,6 +13,14 @@ export UNINVENT_BENCH_MODEL=openai/gpt-4o-mini
 npm run trial -- --write-case-study
 ```
 
+A dispatch `models` value of one id runs only that model. To rerun Claude after the harness fix:
+
+```text
+models: anthropic/claude-sonnet-4.5
+runs: 2
+dry_run: false
+```
+
 Compare two models in one run. The value is a comma-separated list, and each model gets the full task list:
 
 ```bash

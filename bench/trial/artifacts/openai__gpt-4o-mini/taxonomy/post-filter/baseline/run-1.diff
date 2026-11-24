@@ -1,0 +1,30 @@
+diff --git a/components/trial/post-filter.tsx b/components/trial/post-filter.tsx
+new file mode 100644
+index 0000000..3e381f8
+--- /dev/null
++++ b/components/trial/post-filter.tsx
+@@ -0,0 +1,24 @@
++import React from 'react';
++
++interface PostFilterProps {
++    selectedStatus: 'Published' | 'Draft';
++    onStatusChange: (status: 'Published' | 'Draft') => void;
++}
++
++const PostFilter: React.FC<PostFilterProps> = ({ selectedStatus, onStatusChange }) => {
++    return (
++        <div>
++            <label htmlFor="post-status">Filter by status:</label>
++            <select
++                id="post-status"
++                value={selectedStatus}
++                onChange={(e) => onStatusChange(e.target.value as 'Published' | 'Draft')}
++            >
++                <option value="Published">Published</option>
++                <option value="Draft">Draft</option>
++            </select>
++        </div>
++    );
++};
++
++export default PostFilter;

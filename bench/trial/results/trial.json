@@ -1,0 +1,2587 @@
+{
+  "schema": 1,
+  "status": "ran",
+  "generatedAt": "2026-11-22T23:38:51.598Z",
+  "uninventVersion": "0.4.1",
+  "model": "anthropic/claude-sonnet-4.5, openai/gpt-4o-mini",
+  "models": [
+    "anthropic/claude-sonnet-4.5",
+    "openai/gpt-4o-mini"
+  ],
+  "baseUrl": "https://openrouter.ai/api/v1",
+  "provider": "openai-compatible",
+  "runs": 2,
+  "maxTurns": 6,
+  "judge": "uninvent check --base <pinned sha> --format json. reuse and invent are that JSON. raw is findings of kind raw-element. Tokens are usage.total_tokens when every response included them. Cost is set only when the provider returned it. OpenRouter returns cost when the request asks for usage.",
+  "byModel": [
+    {
+      "model": "anthropic/claude-sonnet-4.5",
+      "repos": [
+        {
+          "id": "shadcn-admin",
+          "url": "https://github.com/satnaing/shadcn-admin.git",
+          "sha": "e16c87f213a5ba5e45964e9b67c792105ec74d26",
+          "license": "MIT",
+          "tasks": [
+            {
+              "id": "settings-dialog",
+              "file": "src/features/trial/settings-dialog.tsx",
+              "prompt": "Add a settings dialog for the signed-in user. A Settings button opens it. Inside: the title \"Settings\", one sentence of description, a display-name field, and a way to close it. Create only src/features/trial/settings-dialog.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 14719,
+                  "cost": 0.049053,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/settings-dialog/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 14715,
+                  "cost": 0.049041,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/settings-dialog/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 34317,
+                  "cost": 0.107763,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/settings-dialog/uninvent/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 34317,
+                  "cost": 0.107763,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/settings-dialog/uninvent/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 14717,
+                  "sd": 2.83
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.05,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 34317,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.11,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "confirm-delete",
+              "file": "src/features/trial/confirm-delete.tsx",
+              "prompt": "Add a confirmation dialog before deleting a user. It shows the title \"Delete user?\", a one-sentence warning that the action cannot be undone, and Cancel and Delete actions. Create only src/features/trial/confirm-delete.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 16016,
+                  "cost": 0.053112,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/confirm-delete/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 16016,
+                  "cost": 0.053112,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/confirm-delete/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 24902,
+                  "cost": 0.082794,
+                  "turns": 5,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/confirm-delete/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 27615,
+                  "cost": 0.090945,
+                  "turns": 5,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/confirm-delete/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 16016,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.05,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 8,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 26258.5,
+                  "sd": 1918.38
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.09,
+                  "sd": 0.01
+                }
+              }
+            },
+            {
+              "id": "role-filter",
+              "file": "src/features/trial/role-filter.tsx",
+              "prompt": "Add a filter control for a users table. The person picks one role: Admin, Member, or Guest. Create only src/features/trial/role-filter.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 13032,
+                  "cost": 0.043872,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/role-filter/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 13032,
+                  "cost": 0.043872,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/role-filter/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 35110,
+                  "cost": 0.114906,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/role-filter/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 35110,
+                  "cost": 0.114906,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/role-filter/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 13032,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.04,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 8,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 35110,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.11,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "invite-form",
+              "file": "src/features/trial/invite-form.tsx",
+              "prompt": "Add an invite form with an email field, a role field (Admin, Member, or Guest), a checkbox labeled \"Send invite email\", and a submit button labeled \"Send invite\". Create only src/features/trial/invite-form.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 14008,
+                  "cost": 0.046632,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/invite-form/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 14008,
+                  "cost": 0.046632,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/invite-form/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 36200,
+                  "cost": 0.113148,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/invite-form/uninvent/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 36200,
+                  "cost": 0.113148,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/invite-form/uninvent/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 14008,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.05,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 36200,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.11,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "users-empty",
+              "file": "src/features/trial/users-empty.tsx",
+              "prompt": "Add an empty and loading view for the users table. While loading, show a placeholder block. When there are no users, show the sentence \"No users yet.\" and a button labeled \"Invite user\". Props: loading?: boolean. Create only src/features/trial/users-empty.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 13655,
+                  "cost": 0.046005,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/users-empty/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 13659,
+                  "cost": 0.046005,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/users-empty/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 29864,
+                  "cost": 0.096792,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/users-empty/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 29896,
+                  "cost": 0.09708,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/shadcn-admin/users-empty/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 13657,
+                  "sd": 2.83
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.05,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 2,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 29880,
+                  "sd": 22.63
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.1,
+                  "sd": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "taxonomy",
+          "url": "https://github.com/shadcn-ui/taxonomy.git",
+          "sha": "298a8857c7128a0d121e7f699dfd729f23b3966d",
+          "license": "MIT",
+          "tasks": [
+            {
+              "id": "settings-dialog",
+              "file": "components/trial/settings-dialog.tsx",
+              "prompt": "Add a settings dialog for the signed-in user. A Settings button opens it. Inside: the title \"Settings\", one sentence of description, a display-name field, and a way to close it. Create only components/trial/settings-dialog.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 17657,
+                  "cost": 0.057555,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/settings-dialog/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 21509,
+                  "cost": 0.069147,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/settings-dialog/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 34322,
+                  "cost": 0.107586,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/settings-dialog/uninvent/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 34322,
+                  "cost": 0.107586,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/settings-dialog/uninvent/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 19583,
+                  "sd": 2723.78
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.06,
+                  "sd": 0.01
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 34322,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.11,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "confirm-delete",
+              "file": "components/trial/confirm-delete.tsx",
+              "prompt": "Add a confirmation dialog before deleting a post. It shows the title \"Delete post?\", a one-sentence warning that the action cannot be undone, and Cancel and Delete actions. Create only components/trial/confirm-delete.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 21485,
+                  "cost": 0.069723,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/confirm-delete/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 21862,
+                  "cost": 0.07533,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/confirm-delete/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 28530,
+                  "cost": 0.094002,
+                  "turns": 5,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/confirm-delete/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 8,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 28530,
+                  "cost": 0.094002,
+                  "turns": 5,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/confirm-delete/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 1,
+                "invent": {
+                  "n": 1,
+                  "mean": 0,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 1,
+                  "mean": 8,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 1,
+                  "mean": 0,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 21673.5,
+                  "sd": 266.58
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.07,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 8,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 28530,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.09,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "post-filter",
+              "file": "components/trial/post-filter.tsx",
+              "prompt": "Add a filter control for a list of posts. The person picks one status: Published or Draft. Create only components/trial/post-filter.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 18802,
+                  "cost": 0.061218,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/post-filter/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 18588,
+                  "cost": 0.060576,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/post-filter/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 5,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 31309,
+                  "cost": 0.102411,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/post-filter/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 5,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 31309,
+                  "cost": 0.102411,
+                  "turns": 6,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/post-filter/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 18695,
+                  "sd": 151.32
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.06,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 5,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 31309,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.1,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "newsletter-form",
+              "file": "components/trial/newsletter-form.tsx",
+              "prompt": "Add a newsletter form with an email field, a frequency field (Daily or Weekly), a checkbox labeled \"Product updates\", and a submit button labeled \"Subscribe\". Create only components/trial/newsletter-form.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 18640,
+                  "cost": 0.060612,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/newsletter-form/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 18564,
+                  "cost": 0.060348,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/newsletter-form/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 12,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 26016,
+                  "cost": 0.08976,
+                  "turns": 4,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/newsletter-form/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 12,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 26016,
+                  "cost": 0.08976,
+                  "turns": 4,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/newsletter-form/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 18602,
+                  "sd": 53.74
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.06,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 12,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 26016,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.09,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "posts-empty",
+              "file": "components/trial/posts-empty.tsx",
+              "prompt": "Add an empty and loading view for the posts list. While loading, show a placeholder block. When there are no posts, show the sentence \"No posts yet.\" and a button labeled \"New post\". Props: loading?: boolean. Create only components/trial/posts-empty.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 14595,
+                  "cost": 0.048669,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/posts-empty/baseline/run-1.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": 14595,
+                  "cost": 0.048657,
+                  "turns": 6,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/posts-empty/baseline/run-2.diff",
+                  "error": "No file was written in 6 turns."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": null,
+                  "cost": null,
+                  "turns": 5,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/posts-empty/uninvent/run-1.diff",
+                  "error": "This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits."
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": null,
+                  "reuse": null,
+                  "raw": null,
+                  "recipe": null,
+                  "state": null,
+                  "nameCollision": null,
+                  "tokens": null,
+                  "cost": null,
+                  "turns": 2,
+                  "emptyDiff": true,
+                  "diff": "bench/trial/artifacts/anthropic__claude-sonnet-4.5/taxonomy/posts-empty/uninvent/run-2.diff",
+                  "error": "This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits."
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 0,
+                "invent": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 14595,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0.05,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 1,
+                "invent": {
+                  "n": 1,
+                  "mean": 0,
+                  "sd": null
+                },
+                "reuse": {
+                  "n": 1,
+                  "mean": 2,
+                  "sd": null
+                },
+                "raw": {
+                  "n": 1,
+                  "mean": 0,
+                  "sd": null
+                },
+                "tokens": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                },
+                "cost": {
+                  "n": 0,
+                  "mean": null,
+                  "sd": null
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-4o-mini",
+      "repos": [
+        {
+          "id": "shadcn-admin",
+          "url": "https://github.com/satnaing/shadcn-admin.git",
+          "sha": "e16c87f213a5ba5e45964e9b67c792105ec74d26",
+          "license": "MIT",
+          "tasks": [
+            {
+              "id": "settings-dialog",
+              "file": "src/features/trial/settings-dialog.tsx",
+              "prompt": "Add a settings dialog for the signed-in user. A Settings button opens it. Inside: the title \"Settings\", one sentence of description, a display-name field, and a way to close it. Create only src/features/trial/settings-dialog.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1136,
+                  "cost": 0.000313,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/settings-dialog/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 994,
+                  "cost": 0.00026,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/settings-dialog/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 11,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6027,
+                  "cost": 0.000801,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/settings-dialog/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 11,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6027,
+                  "cost": 0.000657,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/settings-dialog/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 1065,
+                  "sd": 100.41
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 11,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 6027,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "confirm-delete",
+              "file": "src/features/trial/confirm-delete.tsx",
+              "prompt": "Add a confirmation dialog before deleting a user. It shows the title \"Delete user?\", a one-sentence warning that the action cannot be undone, and Cancel and Delete actions. Create only src/features/trial/confirm-delete.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 991,
+                  "cost": 0.00026,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/confirm-delete/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1003,
+                  "cost": 0.000265,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/confirm-delete/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 12,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 10039,
+                  "cost": 0.001201,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/confirm-delete/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 12,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 10039,
+                  "cost": 0.001201,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/confirm-delete/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 997,
+                  "sd": 8.49
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 12,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 10039,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "role-filter",
+              "file": "src/features/trial/role-filter.tsx",
+              "prompt": "Add a filter control for a users table. The person picks one role: Admin, Member, or Guest. Create only src/features/trial/role-filter.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 1,
+                  "reuse": 0,
+                  "raw": 1,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 962,
+                  "cost": 0.000255,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/role-filter/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 1,
+                  "reuse": 0,
+                  "raw": 1,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 982,
+                  "cost": 0.000263,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/role-filter/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 7,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 5949,
+                  "cost": 0.000654,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/role-filter/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 7,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 5949,
+                  "cost": 0.000635,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/role-filter/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 1,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 1,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 972,
+                  "sd": 14.14
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 7,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 5949,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "invite-form",
+              "file": "src/features/trial/invite-form.tsx",
+              "prompt": "Add an invite form with an email field, a role field (Admin, Member, or Guest), a checkbox labeled \"Send invite email\", and a submit button labeled \"Send invite\". Create only src/features/trial/invite-form.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 4,
+                  "reuse": 0,
+                  "raw": 4,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1357,
+                  "cost": 0.000397,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/invite-form/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 4,
+                  "reuse": 0,
+                  "raw": 4,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1357,
+                  "cost": 0.000397,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/invite-form/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 24,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 11201,
+                  "cost": 0.001482,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/invite-form/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 24,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 11171,
+                  "cost": 0.00152,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/invite-form/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 4,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 4,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 1357,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 24,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 11186,
+                  "sd": 21.21
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "users-empty",
+              "file": "src/features/trial/users-empty.tsx",
+              "prompt": "Add an empty and loading view for the users table. While loading, show a placeholder block. When there are no users, show the sentence \"No users yet.\" and a button labeled \"Invite user\". Props: loading?: boolean. Create only src/features/trial/users-empty.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 894,
+                  "cost": 0.000219,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/users-empty/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 896,
+                  "cost": 0.00022,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/users-empty/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 5903,
+                  "cost": 0.000617,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/users-empty/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 5903,
+                  "cost": 0.000617,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/shadcn-admin/users-empty/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 895,
+                  "sd": 1.41
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 2,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 5903,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "taxonomy",
+          "url": "https://github.com/shadcn-ui/taxonomy.git",
+          "sha": "298a8857c7128a0d121e7f699dfd729f23b3966d",
+          "license": "MIT",
+          "tasks": [
+            {
+              "id": "settings-dialog",
+              "file": "components/trial/settings-dialog.tsx",
+              "prompt": "Add a settings dialog for the signed-in user. A Settings button opens it. Inside: the title \"Settings\", one sentence of description, a display-name field, and a way to close it. Create only components/trial/settings-dialog.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 2,
+                  "reuse": 0,
+                  "raw": 2,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 947,
+                  "cost": 0.000243,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/settings-dialog/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 3,
+                  "reuse": 0,
+                  "raw": 3,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1263,
+                  "cost": 0.000361,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/settings-dialog/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 10,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6282,
+                  "cost": 0.000823,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/settings-dialog/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 10,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6278,
+                  "cost": 0.00061,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/settings-dialog/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 2.5,
+                  "sd": 0.71
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 2.5,
+                  "sd": 0.71
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 1105,
+                  "sd": 223.45
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 10,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 6280,
+                  "sd": 2.83
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "confirm-delete",
+              "file": "components/trial/confirm-delete.tsx",
+              "prompt": "Add a confirmation dialog before deleting a post. It shows the title \"Delete post?\", a one-sentence warning that the action cannot be undone, and Cancel and Delete actions. Create only components/trial/confirm-delete.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1024,
+                  "cost": 0.000273,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/confirm-delete/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1024,
+                  "cost": 0.000273,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/confirm-delete/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 10,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 10288,
+                  "cost": 0.001188,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/confirm-delete/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 10,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 10308,
+                  "cost": 0.001128,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/confirm-delete/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 1024,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 10,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 10298,
+                  "sd": 14.14
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "post-filter",
+              "file": "components/trial/post-filter.tsx",
+              "prompt": "Add a filter control for a list of posts. The person picks one status: Published or Draft. Create only components/trial/post-filter.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 1,
+                  "reuse": 0,
+                  "raw": 1,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 901,
+                  "cost": 0.000235,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/post-filter/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 1,
+                  "reuse": 0,
+                  "raw": 1,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 904,
+                  "cost": 0.000235,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/post-filter/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 6,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6243,
+                  "cost": 0.000692,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/post-filter/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 6,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6209,
+                  "cost": 0.000603,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/post-filter/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 1,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 1,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 902.5,
+                  "sd": 2.12
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 6,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 6226,
+                  "sd": 24.04
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "newsletter-form",
+              "file": "components/trial/newsletter-form.tsx",
+              "prompt": "Add a newsletter form with an email field, a frequency field (Daily or Weekly), a checkbox labeled \"Product updates\", and a submit button labeled \"Subscribe\". Create only components/trial/newsletter-form.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 4,
+                  "reuse": 0,
+                  "raw": 4,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1314,
+                  "cost": 0.000383,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/newsletter-form/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 4,
+                  "reuse": 0,
+                  "raw": 4,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 1314,
+                  "cost": 0.000383,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/newsletter-form/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 5,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 11034,
+                  "cost": 0.001392,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/newsletter-form/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 5,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 11034,
+                  "cost": 0.001315,
+                  "turns": 3,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/newsletter-form/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 4,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 4,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 1314,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 5,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 11034,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            },
+            {
+              "id": "posts-empty",
+              "file": "components/trial/posts-empty.tsx",
+              "prompt": "Add an empty and loading view for the posts list. While loading, show a placeholder block. When there are no posts, show the sentence \"No posts yet.\" and a button labeled \"New post\". Props: loading?: boolean. Create only components/trial/posts-empty.tsx. Match the React and TypeScript style of this repository. Do not add dependencies.",
+              "runs": [
+                {
+                  "arm": "baseline",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 859,
+                  "cost": 0.000207,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/posts-empty/baseline/run-1.diff"
+                },
+                {
+                  "arm": "baseline",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 0,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 859,
+                  "cost": 0.000207,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/posts-empty/baseline/run-2.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 1,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6186,
+                  "cost": 0.00065,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/posts-empty/uninvent/run-1.diff"
+                },
+                {
+                  "arm": "uninvent",
+                  "run": 2,
+                  "invent": 0,
+                  "reuse": 2,
+                  "raw": 0,
+                  "recipe": 0,
+                  "state": 0,
+                  "nameCollision": 0,
+                  "tokens": 6186,
+                  "cost": 0.000582,
+                  "turns": 2,
+                  "emptyDiff": false,
+                  "diff": "bench/trial/artifacts/openai__gpt-4o-mini/taxonomy/posts-empty/uninvent/run-2.diff"
+                }
+              ],
+              "baseline": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 859,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              },
+              "uninvent": {
+                "attempted": 2,
+                "scored": 2,
+                "invent": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "reuse": {
+                  "n": 2,
+                  "mean": 2,
+                  "sd": 0
+                },
+                "raw": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                },
+                "tokens": {
+                  "n": 2,
+                  "mean": 6186,
+                  "sd": 0
+                },
+                "cost": {
+                  "n": 2,
+                  "mean": 0,
+                  "sd": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

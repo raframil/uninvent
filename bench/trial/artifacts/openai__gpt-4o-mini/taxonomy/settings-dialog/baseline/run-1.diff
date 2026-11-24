@@ -1,0 +1,30 @@
+diff --git a/components/trial/settings-dialog.tsx b/components/trial/settings-dialog.tsx
+new file mode 100644
+index 0000000..c29dad9
+--- /dev/null
++++ b/components/trial/settings-dialog.tsx
+@@ -0,0 +1,24 @@
++import React, { useState } from 'react';
++
++const SettingsDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
++    const [displayName, setDisplayName] = useState('');
++
++    return (
++        <div className="settings-dialog">
++            <h2>Settings</h2>
++            <p>Update your settings below:</p>
++            <div>
++                <label htmlFor="display-name">Display Name:</label>
++                <input
++                    type="text"
++                    id="display-name"
++                    value={displayName}
++                    onChange={(e) => setDisplayName(e.target.value)}
++                />
++            </div>
++            <button onClick={onClose}>Close</button>
++        </div>
++    );
++};
++
++export default SettingsDialog;

@@ -1,0 +1,50 @@
+diff --git a/components/trial/settings-dialog.tsx b/components/trial/settings-dialog.tsx
+new file mode 100644
+index 0000000..d7747d8
+--- /dev/null
++++ b/components/trial/settings-dialog.tsx
+@@ -0,0 +1,44 @@
++import React, { useState } from 'react';
++import './SettingsDialog.css'; // Assuming you have a CSS file for styling
++
++interface SettingsDialogProps {
++  isOpen: boolean;
++  onClose: () => void;
++  displayName: string;
++  onDisplayNameChange: (name: string) => void;
++}
++
++const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose, displayName, onDisplayNameChange }) => {
++  const [name, setName] = useState(displayName);
++
++  const handleSave = () => {
++    onDisplayNameChange(name);
++    onClose();
++  };
++
++  if (!isOpen) return null;
++
++  return (
++    <div className="settings-dialog">
++      <div className="settings-dialog-content">
++        <h2>Settings</h2>
++        <p>Update your settings below:</p>
++        <div className="settings-dialog-field">
++          <label htmlFor="display-name">Display Name:</label>
++          <input
++            id="display-name"
++            type="text"
++            value={name}
++            onChange={(e) => setName(e.target.value)}
++          />
++        </div>
++        <div className="settings-dialog-actions">
++          <button onClick={handleSave}>Save</button>
++          <button onClick={onClose}>Close</button>
++        </div>
++      </div>
++    </div>
++  );
++};
++
++export default SettingsDialog;

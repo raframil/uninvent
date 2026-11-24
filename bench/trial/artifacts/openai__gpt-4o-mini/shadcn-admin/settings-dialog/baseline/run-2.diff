@@ -1,0 +1,33 @@
+diff --git a/src/features/trial/settings-dialog.tsx b/src/features/trial/settings-dialog.tsx
+new file mode 100644
+index 0000000..cfb0edc
+--- /dev/null
++++ b/src/features/trial/settings-dialog.tsx
+@@ -0,0 +1,27 @@
++import React, { useState } from 'react';
++import { Modal, Button, Input } from 'antd';
++
++const SettingsDialog: React.FC<{ visible: boolean; onClose: () => void }> = ({ visible, onClose }) => {
++    const [displayName, setDisplayName] = useState('');
++
++    return (
++        <Modal
++            title="Settings"
++            visible={visible}
++            onCancel={onClose}
++            footer={null}
++        >
++            <p>Update your settings below:</p>
++            <Input
++                placeholder="Display Name"
++                value={displayName}
++                onChange={(e) => setDisplayName(e.target.value)}
++            />
++            <Button type="primary" onClick={onClose} style={{ marginTop: '16px' }}>
++                Close
++            </Button>
++        </Modal>
++    );
++};
++
++export default SettingsDialog;

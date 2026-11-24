@@ -1,6 +1,6 @@
 # Case study
 
-uninvent checks whether a coding agent reused the design system that is already in the repository. This note is the public record of that check: what shipped since 0.3.0, how the real-repository trial is run, and the fixed-corpus benchmark. The agent trial has not been run. Its table stays empty until `bench/trial/results/trial.json` has `"status": "ran"`.
+uninvent checks whether a coding agent reused the design system that is already in the repository. This note is the public record of that check: what shipped since 0.3.0, how the real-repository trial is run, and the fixed-corpus benchmark. The trial ran on 2026-11-22: [GitHub Actions run 45083175529](https://github.com/raframil/uninvent/actions/runs/45083175529).
 
 ## What uninvent is
 
@@ -48,38 +48,290 @@ These repositories do not ship an `uninvent.recipes.md`, and their UI folders ar
 ## Results
 
 <!-- trial-results:start -->
-**Results are pending.** There is no `bench/trial/results/trial.json` with `"status": "ran"`. A dry-run replays canned files and is not this table. Every cell is a placeholder. None of these rows is a measurement.
+Recorded 2026-11-22T23:38:51.598Z. Models `anthropic/claude-sonnet-4.5, openai/gpt-4o-mini` at `https://openrouter.ai/api/v1`. uninvent 0.4.1. 2 runs per arm. uninvent check --base <pinned sha> --format json. reuse and invent are that JSON. raw is findings of kind raw-element. Tokens are usage.total_tokens when every response included them. Cost is set only when the provider returned it. OpenRouter returns cost when the request asks for usage.
+
+Pending rerun, not a result: anthropic/claude-sonnet-4.5.
 
 | Model | Repo | Task | Arm | Scored | Reuse | Invent | Raw controls | Tokens | Cost |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| — | shadcn-admin | settings-dialog | baseline | — | — | — | — | — | — |
-| — | shadcn-admin | settings-dialog | uninvent | — | — | — | — | — | — |
-| — | shadcn-admin | confirm-delete | baseline | — | — | — | — | — | — |
-| — | shadcn-admin | confirm-delete | uninvent | — | — | — | — | — | — |
-| — | shadcn-admin | role-filter | baseline | — | — | — | — | — | — |
-| — | shadcn-admin | role-filter | uninvent | — | — | — | — | — | — |
-| — | shadcn-admin | invite-form | baseline | — | — | — | — | — | — |
-| — | shadcn-admin | invite-form | uninvent | — | — | — | — | — | — |
-| — | shadcn-admin | users-empty | baseline | — | — | — | — | — | — |
-| — | shadcn-admin | users-empty | uninvent | — | — | — | — | — | — |
-| — | taxonomy | settings-dialog | baseline | — | — | — | — | — | — |
-| — | taxonomy | settings-dialog | uninvent | — | — | — | — | — | — |
-| — | taxonomy | confirm-delete | baseline | — | — | — | — | — | — |
-| — | taxonomy | confirm-delete | uninvent | — | — | — | — | — | — |
-| — | taxonomy | post-filter | baseline | — | — | — | — | — | — |
-| — | taxonomy | post-filter | uninvent | — | — | — | — | — | — |
-| — | taxonomy | newsletter-form | baseline | — | — | — | — | — | — |
-| — | taxonomy | newsletter-form | uninvent | — | — | — | — | — | — |
-| — | taxonomy | posts-empty | baseline | — | — | — | — | — | — |
-| — | taxonomy | posts-empty | uninvent | — | — | — | — | — | — |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | settings-dialog | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | settings-dialog | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | confirm-delete | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | confirm-delete | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | role-filter | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | role-filter | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | invite-form | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | invite-form | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | users-empty | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | users-empty | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | settings-dialog | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | settings-dialog | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | confirm-delete | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | confirm-delete | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | post-filter | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | post-filter | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | newsletter-form | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | newsletter-form | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | posts-empty | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | posts-empty | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| openai/gpt-4o-mini | shadcn-admin | settings-dialog | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 1065 (sd 100.41) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | settings-dialog | uninvent | 2/2 | 11 (sd 0) | 0 (sd 0) | 0 (sd 0) | 6027 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | confirm-delete | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 997 (sd 8.49) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | confirm-delete | uninvent | 2/2 | 12 (sd 0) | 0 (sd 0) | 0 (sd 0) | 10039 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | role-filter | baseline | 2/2 | 0 (sd 0) | 1 (sd 0) | 1 (sd 0) | 972 (sd 14.14) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | role-filter | uninvent | 2/2 | 7 (sd 0) | 0 (sd 0) | 0 (sd 0) | 5949 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | invite-form | baseline | 2/2 | 0 (sd 0) | 4 (sd 0) | 4 (sd 0) | 1357 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | invite-form | uninvent | 2/2 | 24 (sd 0) | 0 (sd 0) | 0 (sd 0) | 11186 (sd 21.21) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | users-empty | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 895 (sd 1.41) | 0 (sd 0) |
+| openai/gpt-4o-mini | shadcn-admin | users-empty | uninvent | 2/2 | 2 (sd 0) | 0 (sd 0) | 0 (sd 0) | 5903 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | settings-dialog | baseline | 2/2 | 0 (sd 0) | 2.5 (sd 0.71) | 2.5 (sd 0.71) | 1105 (sd 223.45) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | settings-dialog | uninvent | 2/2 | 10 (sd 0) | 0 (sd 0) | 0 (sd 0) | 6280 (sd 2.83) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | confirm-delete | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 1024 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | confirm-delete | uninvent | 2/2 | 10 (sd 0) | 0 (sd 0) | 0 (sd 0) | 10298 (sd 14.14) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | post-filter | baseline | 2/2 | 0 (sd 0) | 1 (sd 0) | 1 (sd 0) | 902.5 (sd 2.12) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | post-filter | uninvent | 2/2 | 6 (sd 0) | 0 (sd 0) | 0 (sd 0) | 6226 (sd 24.04) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | newsletter-form | baseline | 2/2 | 0 (sd 0) | 4 (sd 0) | 4 (sd 0) | 1314 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | newsletter-form | uninvent | 2/2 | 5 (sd 0) | 0 (sd 0) | 0 (sd 0) | 11034 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | posts-empty | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 859 (sd 0) | 0 (sd 0) |
+| openai/gpt-4o-mini | taxonomy | posts-empty | uninvent | 2/2 | 2 (sd 0) | 0 (sd 0) | 0 (sd 0) | 6186 (sd 0) | 0 (sd 0) |
 
-A live run repeats these rows once per model. Variance is the sample standard deviation across scored runs of that arm. It stays blank until at least two scored runs exist. Cost stays blank unless the provider returned a cost field. A run that errors is not counted as zero.
+Mean and sample standard deviation use scored runs only. A run with an error is not a zero. Cost is the provider's field when it sent one.
 <!-- trial-results:end -->
+
+The table is generated from `bench/trial/results/trial.json` by `npm run trial:report`. `invent` is the wrong-component count (`uninvent check` findings). `reuse` is catalog components used in the diff. A cell that says `not scored` is an error, not a zero.
+
+That run is [45083175529](https://github.com/raframil/uninvent/actions/runs/45083175529) (`workflow_dispatch`, status `ran`). Models `anthropic/claude-sonnet-4.5` and `openai/gpt-4o-mini`, base URL `https://openrouter.ai/api/v1`, two runs per arm. 80 runs in total. OpenRouter returned `usage.cost` on 78 of them. The sum is **$2.939951**: $2.915934 for Claude Sonnet 4.5 (38 runs) and $0.024017 for GPT-4o mini (40 runs). Means in the table are rounded to two decimals, so the mini model's per-run cost displays as 0.
+
+`anthropic/claude-sonnet-4.5` is **pending rerun**. The 2026-11-22 rows are withheld. On that run the model spent all 6 turns on tool calls and wrote no file on 19 of 20 baseline runs (`No file was written in 6 turns`). The replies themselves were not stored, so those runs cannot be re-scored offline. Dispatch the agent-trial workflow with `models` set to `anthropic/claude-sonnet-4.5` and `runs` set to `2` after this harness fix.
+
+`openai/gpt-4o-mini` scored all 40 runs. Those numbers are unchanged by the harness fix: the replies were not kept, and the files that were written were already scored. Baseline invent sums to 25, all raw controls, and reuse sums to 0. With uninvent, invent sums to 0 and reuse sums to 178. Invent fell on 5 of 10 tasks: shadcn-admin role-filter (1 to 0) and invite-form (4 to 0); taxonomy settings-dialog (2.5 to 0), post-filter (1 to 0), and newsletter-form (4 to 0). On the other 5, baseline invent was already 0, so uninvent did not remove findings. Reuse still rose on those tasks (both settings dialogs that were already unflagged, both confirm dialogs, and both empty states). Invent did not rise on any scored gpt-4o-mini task. The mini model's share of `usage.cost` is $0.024017 of the $2.939951 total.
 
 ## Diff excerpts
 
 <!-- trial-excerpts:start -->
-**Diff excerpts are pending.** After a real run, this section quotes up to two tasks whose saved diffs are in `bench/trial/artifacts`. Canned dry-run diffs are not shown here.
+### openai/gpt-4o-mini / shadcn-admin / role-filter
+
+Baseline, without uninvent:
+
+```diff
+diff --git a/src/features/trial/role-filter.tsx b/src/features/trial/role-filter.tsx
+new file mode 100644
+index 0000000..0a419ba
+--- /dev/null
++++ b/src/features/trial/role-filter.tsx
+@@ -0,0 +1,30 @@
++import React from 'react';
++
++type RoleFilterProps = {
++  selectedRole: string;
++  onRoleChange: (role: string) => void;
++};
++
++const roles = ['Admin', 'Member', 'Guest'];
++
++const RoleFilter: React.FC<RoleFilterProps> = ({ selectedRole, onRoleChange }) => {
++  return (
++    <div>
++      <label htmlFor="role-filter">Filter by Role:</label>
++      <select
++        id="role-filter"
++        value={selectedRole}
++        onChange={(e) => onRoleChange(e.target.value)}
++      >
++        <option value="">All</option>
++        {roles.map((role) => (
++          <option key={role} value={role}>
++            {role}
++          </option>
++        ))}
++      </select>
++    </div>
++  );
++};
++
++export default RoleFilter;
+```
+
+With uninvent (init, skill, PostToolUse hook):
+
+```diff
+diff --git a/src/features/trial/role-filter.tsx b/src/features/trial/role-filter.tsx
+new file mode 100644
+index 0000000..5a48f34
+--- /dev/null
++++ b/src/features/trial/role-filter.tsx
+@@ -0,0 +1,24 @@
++import React from 'react';
++import { Select, SelectTrigger, SelectContent, SelectItem, SelectLabel } from '@/components/ui/select';
++
++type RoleFilterProps = {
++  selectedRole: string;
++  onRoleChange: (role: string) => void;
++};
++
++const RoleFilter: React.FC<RoleFilterProps> = ({ selectedRole, onRoleChange }) => {
++  return (
++    <Select value={selectedRole} onValueChange={onRoleChange}>
++      <SelectTrigger>
++        <SelectLabel>Select Role</SelectLabel>
++      </SelectTrigger>
++      <SelectContent>
++        <SelectItem value="Admin">Admin</SelectItem>
++        <SelectItem value="Member">Member</SelectItem>
++        <SelectItem value="Guest">Guest</SelectItem>
++      </SelectContent>
++    </Select>
++  );
++};
++
++export default RoleFilter;
+```
+
+### openai/gpt-4o-mini / shadcn-admin / invite-form
+
+Baseline, without uninvent:
+
+```diff
+diff --git a/src/features/trial/invite-form.tsx b/src/features/trial/invite-form.tsx
+new file mode 100644
+index 0000000..e167867
+--- /dev/null
++++ b/src/features/trial/invite-form.tsx
+@@ -0,0 +1,53 @@
++import React, { useState } from 'react';
++
++const InviteForm: React.FC = () => {
++    const [email, setEmail] = useState('');
++    const [role, setRole] = useState('Member');
++    const [sendEmail, setSendEmail] = useState(false);
++
++    const handleSubmit = (event: React.FormEvent) => {
++        event.preventDefault();
++        // Handle form submission logic here
++        console.log({ email, role, sendEmail });
++    };
++
++    return (
++        <form onSubmit={handleSubmit}>
++            <div>
++                <label htmlFor="email">Email:</label>
++                <input
++                    type="email"
++                    id="email"
++                    value={email}
++                    onChange={(e) => setEmail(e.target.value)}
++                    required
++                />
++            </div>
++            <div>
++                <label htmlFor="role">Role:</label>
++                <select
++                    id="role"
++                    value={role}
++                    onChange={(e) => setRole(e.target.value)}
++                >
++                    <option value="Admin">Admin</option>
++                    <option value="Member">Member</option>
++                    <option value="Guest">Guest</option>
++                </select>
++            </div>
++            <div>
++                <label>
++                    <input
++                        type="checkbox"
++                        checked={sendEmail}
++                        onChange={(e) => setSendEmail(e.target.checked)}
++                    />
++                    Send invite email
++                </label>
++            </div>
++            <button type="submit">Send invite</button>
++        </form>
++    );
++};
++
++export default InviteForm;
+```
+
+With uninvent (init, skill, PostToolUse hook):
+
+```diff
+diff --git a/src/features/trial/invite-form.tsx b/src/features/trial/invite-form.tsx
+new file mode 100644
+index 0000000..40b0467
+--- /dev/null
++++ b/src/features/trial/invite-form.tsx
+@@ -0,0 +1,69 @@
++import React, { useState } from 'react';
++import { Button } from '@/components/ui/button';
++import { Checkbox } from '@/components/ui/checkbox';
++import { Input } from '@/components/ui/input';
++import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
++import { Select, SelectTrigger, SelectContent, SelectItem, SelectLabel } from '@/components/ui/select';
++
++const InviteForm: React.FC = () => {
++  const [email, setEmail] = useState('');
++  const [role, setRole] = useState('Member');
++  const [sendEmail, setSendEmail] = useState(false);
++
++  const handleSubmit = (e: React.FormEvent) => {
++    e.preventDefault();
++    // Handle form submission logic here
++    console.log({ email, role, sendEmail });
++  };
++
++  return (
++    <Form onSubmit={handleSubmit}>
++      <FormField>
++        <FormItem>
++          <FormLabel>Email</FormLabel>
++          <FormControl>
++            <Input
++              type="email"
++              value={email}
++              onChange={(e) => setEmail(e.target.value)}
++              required
++            />
++          </FormControl>
++          <FormMessage />
++        </FormItem>
++      </FormField>
++      <FormField>
++        <FormItem>
++          <FormLabel>Role</FormLabel>
++          <FormControl>
++            <Select value={role} onValueChange={setRole}>
++              <SelectTrigger>
++                <SelectLabel>{role}</SelectLabel>
++              </SelectTrigger>
++              <SelectContent>
++                <SelectItem value="Admin">Admin</SelectItem>
++                <SelectItem value="Member">Member</SelectItem>
++                <SelectItem value="Guest">Guest</SelectItem>
++              </SelectContent>
++            </Select>
++          </FormControl>
++          <FormMessage />
++        </FormItem>
++      </FormField>
++      <FormField>
++        <FormItem>
++          <FormControl>
++            <Checkbox
++              checked={sendEmail}
++              onChange={(e) => setSendEmail(e.target.checked)}
++            />
++            <span>Send invite email</span>
++          </FormControl>
++        </FormItem>
++      </FormField>
++      <Button type="submit">Send invite</Button>
++    </Form>
++  );
++};
++
++export default InviteForm;
+```
 <!-- trial-excerpts:end -->
 
 What a miss looks like on the demo app, which is the checker and not this trial:

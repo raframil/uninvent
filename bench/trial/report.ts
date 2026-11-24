@@ -42,9 +42,10 @@ export function syncCaseStudy(options?: { caseStudyPath?: string; trialFile?: st
   const markdown = readFileSync(caseStudyPath, "utf8");
   const trial = readTrial(trialFile);
   const config = loadTrialConfig(configFile);
+  const pending = loadPendingModels(path.join(path.dirname(configFile), "pending.json"));
   const withBench = replaceMarker(markdown, "bench-highlights", benchmarkSection(benchDir));
-  const withResults = replaceMarker(withBench, "trial-results", resultsSection(config, trial));
-  const withExcerpts = replaceMarker(withResults, "trial-excerpts", excerptSection(trial));
+  const withResults = replaceMarker(withBench, "trial-results", resultsSection(config, trial, pending));
+  const withExcerpts = replaceMarker(withResults, "trial-excerpts", excerptSection(trial, pending));
   if (withExcerpts !== markdown) writeFileSync(caseStudyPath, withExcerpts);
 }
 
@@ -58,32 +59,33 @@ function readTrial(file: string): TrialResult | null {
   }
 }
 
-export function resultsSection(config: TrialConfig, trial: TrialResult | null): string {
+export function resultsSection(config: TrialConfig, trial: TrialResult | null, pending: Set<string> = new Set()): string {
   if (!trial) {
     return [
       "**Results are pending.** There is no `bench/trial/results/trial.json` with `\"status\": \"ran\"`. A dry-run replays canned files and is not this table. Every cell is a placeholder. None of these rows is a measurement.",
       "",
-      resultsTable(config, null),
+      resultsTable(config, null, pending),
       "",
       "A live run repeats these rows once per model. Variance is the sample standard deviation across scored runs of that arm. It stays blank until at least two scored runs exist. Cost stays blank unless the provider returned a cost field. A run that errors is not counted as zero.",
     ].join("\n");
   }
   return [
     `Recorded ${trial.generatedAt}. Model${trial.models.length === 1 ? "" : "s"} \`${trial.model}\` at \`${trial.baseUrl}\`. uninvent ${trial.uninventVersion}. ${trial.runs} run${trial.runs === 1 ? "" : "s"} per arm. ${trial.judge}`,
+    ...(pending.size > 0 ? ["", `Pending rerun, not a result: ${[...pending].join(", ")}.`] : []),
     "",
-    resultsTable(config, trial),
+    resultsTable(config, trial, pending),
     "",
     "Mean and sample standard deviation use scored runs only. A run with an error is not a zero. Cost is the provider's field when it sent one.",
   ].join("\n");
 }
 
-export function excerptSection(trial: TrialResult | null): string {
+export function excerptSection(trial: TrialResult | null, pending: Set<string> = new Set()): string {
   if (!trial) {
     return [
       "**Diff excerpts are pending.** After a real run, this section quotes up to two tasks whose saved diffs are in `bench/trial/artifacts`. Canned dry-run diffs are not shown here.",
     ].join("\n");
   }
-  const picks = pickExcerpts(trial);
+  const picks = pickExcerpts(trial, pending);
   if (picks.length === 0) {
     return "The trial ran. No task had a saved baseline diff and a saved uninvent diff to quote. Nothing is filled in from a canned file.";
   }
@@ -103,7 +105,17 @@ export function excerptSection(trial: TrialResult | null): string {
   return blocks.join("\n\n");
 }
 
-function resultsTable(config: TrialConfig, trial: TrialResult | null): string {
+export function loadPendingModels(file: string): Set<string> {
+  try {
+    const parsed = JSON.parse(readFileSync(file, "utf8")) as { models?: unknown };
+    const models = Array.isArray(parsed.models) ? parsed.models.filter((item): item is string => typeof item === "string") : [];
+    return new Set(models);
+  } catch {
+    return new Set();
+  }
+}
+
+function resultsTable(config: TrialConfig, trial: TrialResult | null, pending: Set<string>): string {
   const headers = ["Model", "Repo", "Task", "Arm", "Scored", "Reuse", "Invent", "Raw controls", "Tokens", "Cost"];
   const rows: string[][] = [];
   if (!trial) {
@@ -120,6 +132,10 @@ function resultsTable(config: TrialConfig, trial: TrialResult | null): string {
     for (const repo of block.repos) {
       for (const task of repo.tasks) {
         for (const arm of ["baseline", "uninvent"] as const) {
+          if (pending.has(block.model)) {
+            rows.push([block.model, repo.id, task.id, arm, "pending rerun", "pending rerun", "pending rerun", "pending rerun", "pending rerun", "pending rerun"]);
+            continue;
+          }
           const summary = task[arm];
           rows.push([
             block.model,
@@ -170,9 +186,13 @@ function benchmarkSection(benchDir: string): string {
   ].join("\n");
 }
 
-function pickExcerpts(trial: TrialResult): Array<{ model: string; repo: string; task: string; baseline: string; uninvent: string }> {
+function pickExcerpts(
+  trial: TrialResult,
+  pending: Set<string>,
+): Array<{ model: string; repo: string; task: string; baseline: string; uninvent: string }> {
   const picks = [];
   for (const block of trial.byModel) {
+    if (pending.has(block.model)) continue;
     for (const repo of block.repos) {
       for (const task of repo.tasks) {
         const baseline = task.runs.find((run) => run.arm === "baseline" && run.diff);
@@ -224,11 +244,18 @@ function readBench(file: string): BenchFile | null {
 }
 
 function readFileSafe(file: string): string {
-  try {
-    return readFileSync(file, "utf8");
-  } catch {
-    return "";
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+  const marker = "bench/trial/";
+  const at = file.indexOf(marker);
+  const relative = at === -1 ? file : file.slice(at);
+  for (const candidate of [file, path.resolve(root, relative)]) {
+    try {
+      return readFileSync(candidate, "utf8");
+    } catch {
+      // The stored path may be from the GitHub runner. Try the checkout copy.
+    }
   }
+  return "";
 }
 
 function clip(text: string): string {

@@ -1,0 +1,42 @@
+diff --git a/src/features/trial/settings-dialog.tsx b/src/features/trial/settings-dialog.tsx
+new file mode 100644
+index 0000000..88770d0
+--- /dev/null
++++ b/src/features/trial/settings-dialog.tsx
+@@ -0,0 +1,36 @@
++import React, { useState } from 'react';
++import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
++
++const SettingsDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
++    const [displayName, setDisplayName] = useState('');
++
++    const handleSave = () => {
++        // Save display name logic here
++        onClose();
++    };
++
++    return (
++        <Dialog open={open} onClose={onClose}>
++            <DialogTitle>Settings</DialogTitle>
++            <DialogContent>
++                <p>Update your settings below:</p>
++                <TextField
++                    label="Display Name"
++                    value={displayName}
++                    onChange={(e) => setDisplayName(e.target.value)}
++                    fullWidth
++                />
++            </DialogContent>
++            <DialogActions>
++                <Button onClick={onClose} color="primary">
++                    Cancel
++                </Button>
++                <Button onClick={handleSave} color="primary">
++                    Save
++                </Button>
++            </DialogActions>
++        </Dialog>
++    );
++};
++
++export default SettingsDialog;

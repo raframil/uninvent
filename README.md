@@ -17,7 +17,7 @@ raw <button> in src/pages/Login.tsx:10, use ui/Button
 
 A clean file prints nothing.
 
-The fixed-corpus numbers are in [BENCHMARK.md](BENCHMARK.md). The real-repository trial, which has not been run, is [CASE_STUDY.md](CASE_STUDY.md).
+On [openai/gpt-4o-mini](CASE_STUDY.md), 20 scored runs with no uninvent produced **25** raw-control findings and reused nothing. The same 20 runs with the skill and the PostToolUse hook produced **0** findings and **178** reuses. Five of the ten tasks were already clean without it. Claude Sonnet 4.5 is pending a rerun. The full table is [CASE_STUDY.md](CASE_STUDY.md). Hook latency on the fixed corpus is [BENCHMARK.md](BENCHMARK.md).
 
 ## Demo
 
@@ -54,7 +54,9 @@ $ uninvent check src/pages/Customers.tsx
 # no output, exit 0
 ```
 
-There is no GIF in the repo yet. [`scripts/record-demo.sh`](scripts/record-demo.sh) plays that demo in the terminal. With [vhs](https://github.com/charmbracelet/vhs) installed, `vhs scripts/demo.tape` records it to `docs/demo.gif` (dark theme, a short GIF). Crop to the terminal. The interesting frame is the `check` line that names the confirm-dialog recipe, then the loading line, then the clean file that prints nothing.
+![uninvent demo](docs/demo.gif)
+
+[`scripts/record-demo.sh`](scripts/record-demo.sh) plays that demo in the terminal. With [vhs](https://github.com/charmbracelet/vhs) installed, `vhs scripts/demo.tape` records it to `docs/demo.gif`. The interesting frame is the `check` line that names the confirm-dialog recipe, then the loading line, then the clean file that prints nothing.
 
 The demo does not need its own `npm install`. From this repo, after `npm install` and `npm run build`:
 

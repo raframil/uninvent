@@ -1,0 +1,34 @@
+diff --git a/components/trial/settings-dialog.tsx b/components/trial/settings-dialog.tsx
+new file mode 100644
+index 0000000..866601a
+--- /dev/null
++++ b/components/trial/settings-dialog.tsx
+@@ -0,0 +1,28 @@
++import React from 'react';
++import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
++import { Button } from '@/components/ui/button';
++import { Input } from '@/components/ui/input';
++
++const SettingsDialog: React.FC = () => {
++    return (
++        <Dialog>
++            <DialogTrigger asChild>
++                <Button>Settings</Button>
++            </DialogTrigger>
++            <DialogContent>
++                <DialogHeader>
++                    <DialogTitle>Settings</DialogTitle>
++                    <DialogDescription>
++                        Update your preferences and settings below.
++                    </DialogDescription>
++                </DialogHeader>
++                <Input placeholder="Display Name" />
++                <DialogFooter>
++                    <Button variant="outline">Close</Button>
++                </DialogFooter>
++            </DialogContent>
++        </Dialog>
++    );
++};
++
++export default SettingsDialog;
