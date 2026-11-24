@@ -17,7 +17,7 @@ raw <button> in src/pages/Login.tsx:10, use ui/Button
 
 A clean file prints nothing.
 
-On [openai/gpt-4o-mini](CASE_STUDY.md), 20 scored runs with no uninvent produced **25** raw-control findings and reused nothing. The same 20 runs with the skill and the PostToolUse hook produced **0** findings and **178** reuses. Five of the ten tasks were already clean without it, and Claude Sonnet 4.5 usually wrote no file, so that model has no paired drop. The full table is [CASE_STUDY.md](CASE_STUDY.md). Hook latency on the fixed corpus is [BENCHMARK.md](BENCHMARK.md).
+On [openai/gpt-4o-mini](CASE_STUDY.md), 20 scored runs with no uninvent produced **25** raw-control findings and reused nothing. The same 20 runs with the skill and the PostToolUse hook produced **0** findings and **178** reuses. Five of the ten tasks were already clean without it. Claude Sonnet 4.5 is pending a rerun. The full table is [CASE_STUDY.md](CASE_STUDY.md). Hook latency on the fixed corpus is [BENCHMARK.md](BENCHMARK.md).
 
 ## Demo
 

@@ -14,7 +14,8 @@ on:
       models:
         description: >-
           Comma-separated model ids. Overrides UNINVENT_BENCH_MODEL for this run.
-          Example: anthropic/claude-sonnet-4.5, openai/gpt-4o-mini
+          One id runs only that model. Rerun Claude with anthropic/claude-sonnet-4.5.
+          Compare both with anthropic/claude-sonnet-4.5, openai/gpt-4o-mini.
         type: string
         default: ""
   release:

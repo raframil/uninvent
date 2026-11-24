@@ -4,15 +4,87 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { runAgent } from "../bench/trial/agent.js";
+import { extractCodeFile, runAgent } from "../bench/trial/agent.js";
 import { isOpenRouter, parseModelList, prepareChatRequest } from "../bench/trial/headers.js";
 import { installUninvent } from "../bench/trial/prepare.js";
-import { resultsSection, syncCaseStudy } from "../bench/trial/report.js";
+import { loadPendingModels, resultsSection, syncCaseStudy } from "../bench/trial/report.js";
 import { hookNote } from "../bench/trial/agent.js";
 import { runTrial } from "../bench/trial/run.js";
 import { loadTrialConfig } from "../bench/trial/load.js";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
+
+test("fenced replies accept jsx, ts, and typescript and pick the named task file", () => {
+  const jsx = extractCodeFile("```jsx\nexport function A() { return <button>Go</button>; }\n```", "src/A.tsx");
+  assert.match(jsx ?? "", /<button>Go<\/button>/);
+  const typescript = extractCodeFile("```typescript\nexport const value = 1;\n```");
+  assert.match(typescript ?? "", /export const value/);
+  const ts = extractCodeFile("```ts\nexport const other = 2;\n```");
+  assert.match(ts ?? "", /export const other/);
+  const several = [
+    "```tsx",
+    "export function Helper() { return null; }",
+    "```",
+    "src/features/trial/role-filter.tsx",
+    "```jsx",
+    "export function RoleFilter() { return <select />; }",
+    "```",
+  ].join("\n");
+  assert.match(extractCodeFile(several, "src/features/trial/role-filter.tsx") ?? "", /function RoleFilter/);
+  assert.equal(extractCodeFile("Which page should this dialog live on?"), null);
+  assert.equal(extractCodeFile("```tsx\nexport function Cut() { return <button />; }\n"), null);
+});
+
+test("a jsx fence with no tool call writes the task file for either arm", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "uninvent-fence-"));
+  const bodies: Array<{ max_tokens?: number; messages: Array<{ role: string; content: string | null }> }> = [];
+  try {
+    const result = await runAgent({
+      project: dir,
+      task: { id: "settings", file: "src/pages/Settings.tsx", prompt: "Add settings." },
+      arm: "baseline",
+      skill: "SKILL TEXT",
+      model: "anthropic/claude-sonnet-4.5",
+      baseUrl: "https://openrouter.ai/api/v1",
+      apiKey: "test-key",
+      maxTurns: 2,
+      complete: async (body) => {
+        bodies.push(body as typeof bodies[number]);
+        if (bodies.length === 1) {
+          return {
+            usage: { total_tokens: 20 },
+            choices: [{
+              finish_reason: "stop",
+              message: {
+                role: "assistant",
+                content: "```jsx\nexport function Settings() { return <button>Settings</button>; }\n```",
+                tool_calls: undefined,
+              },
+            }],
+          };
+        }
+        return {
+          usage: { total_tokens: 5 },
+          choices: [{
+            finish_reason: "stop",
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: [{ id: "done", type: "function", function: { name: "finish", arguments: "{}" } }],
+            },
+          }],
+        };
+      },
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(bodies[0]?.max_tokens, 4096);
+    assert.match(bodies[0]?.messages[0]?.content ?? "", /Do not ask questions/);
+    assert.equal((bodies[0]?.messages[0]?.content ?? "").includes("SKILL TEXT"), false);
+    assert.match(readFileSync(path.join(dir, "src/pages/Settings.tsx"), "utf8"), /<button>Settings<\/button>/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 test("OpenRouter requests carry attribution headers and ask for usage", () => {
   assert.equal(isOpenRouter("https://openrouter.ai/api/v1"), true);
@@ -200,6 +272,40 @@ test("dry-run scores canned files, installs PostToolUse only, and leaves the cas
 test("the case study report stays pending without a ran trial", () => {
   const config = loadTrialConfig(path.join(repoRoot, "bench/trial/config.json"));
   const pending = resultsSection(config, null);
+  const held = loadPendingModels(path.join(repoRoot, "bench/trial/pending.json"));
+  assert.equal(held.has("anthropic/claude-sonnet-4.5"), true);
+  const masked = resultsSection(config, {
+    schema: 1,
+    status: "ran",
+    generatedAt: "2026-11-22T23:38:51.598Z",
+    uninventVersion: "0.4.1",
+    model: "anthropic/claude-sonnet-4.5, openai/gpt-4o-mini",
+    models: ["anthropic/claude-sonnet-4.5", "openai/gpt-4o-mini"],
+    baseUrl: "https://openrouter.ai/api/v1",
+    provider: "openai-compatible",
+    runs: 2,
+    maxTurns: 6,
+    judge: "check",
+    byModel: [{
+      model: "anthropic/claude-sonnet-4.5",
+      repos: [{
+        id: "shadcn-admin",
+        url: "https://example.invalid",
+        sha: "abc",
+        license: "MIT",
+        tasks: [{
+          id: "settings-dialog",
+          file: "src/features/trial/settings-dialog.tsx",
+          prompt: "Add settings.",
+          runs: [],
+          baseline: { attempted: 2, scored: 0, invent: { n: 0, mean: null, sd: null }, reuse: { n: 0, mean: null, sd: null }, raw: { n: 0, mean: null, sd: null }, tokens: { n: 2, mean: 14717, sd: 2.83 }, cost: { n: 2, mean: 0.05, sd: 0 } },
+          uninvent: { attempted: 2, scored: 2, invent: { n: 2, mean: 0, sd: 0 }, reuse: { n: 2, mean: 8, sd: 0 }, raw: { n: 2, mean: 0, sd: 0 }, tokens: { n: 2, mean: 1, sd: 0 }, cost: { n: 2, mean: 0.09, sd: 0 } },
+        }],
+      }],
+    }],
+  }, held);
+  assert.match(masked, /pending rerun/);
+  assert.equal(masked.includes("14717"), false);
   assert.match(pending, /Results are pending/);
   assert.equal(pending.includes("(sd "), false);
   assert.match(pending, /shadcn-admin/);

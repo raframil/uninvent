@@ -1,0 +1,4 @@
+{
+  "models": ["anthropic/claude-sonnet-4.5"],
+  "reason": "The 2026-11-22 run did not produce a file on 19 of 20 baseline runs because the model spent the 6-turn cap on tool calls. Those rows stay out of the case study until the maintainer reruns this model with the harness fix."
+}

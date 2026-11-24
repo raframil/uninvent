@@ -50,28 +50,30 @@ These repositories do not ship an `uninvent.recipes.md`, and their UI folders ar
 <!-- trial-results:start -->
 Recorded 2026-11-22T23:38:51.598Z. Models `anthropic/claude-sonnet-4.5, openai/gpt-4o-mini` at `https://openrouter.ai/api/v1`. uninvent 0.4.1. 2 runs per arm. uninvent check --base <pinned sha> --format json. reuse and invent are that JSON. raw is findings of kind raw-element. Tokens are usage.total_tokens when every response included them. Cost is set only when the provider returned it. OpenRouter returns cost when the request asks for usage.
 
+Pending rerun, not a result: anthropic/claude-sonnet-4.5.
+
 | Model | Repo | Task | Arm | Scored | Reuse | Invent | Raw controls | Tokens | Cost |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | settings-dialog | baseline | 0/2 | not scored | not scored | not scored | 14717 (sd 2.83) | 0.05 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | settings-dialog | uninvent | 0/2 | not scored | not scored | not scored | 34317 (sd 0) | 0.11 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | confirm-delete | baseline | 0/2 | not scored | not scored | not scored | 16016 (sd 0) | 0.05 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | confirm-delete | uninvent | 2/2 | 8 (sd 0) | 0 (sd 0) | 0 (sd 0) | 26258.5 (sd 1918.38) | 0.09 (sd 0.01) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | role-filter | baseline | 0/2 | not scored | not scored | not scored | 13032 (sd 0) | 0.04 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | role-filter | uninvent | 2/2 | 8 (sd 0) | 0 (sd 0) | 0 (sd 0) | 35110 (sd 0) | 0.11 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | invite-form | baseline | 0/2 | not scored | not scored | not scored | 14008 (sd 0) | 0.05 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | invite-form | uninvent | 0/2 | not scored | not scored | not scored | 36200 (sd 0) | 0.11 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | users-empty | baseline | 0/2 | not scored | not scored | not scored | 13657 (sd 2.83) | 0.05 (sd 0) |
-| anthropic/claude-sonnet-4.5 | shadcn-admin | users-empty | uninvent | 2/2 | 2 (sd 0) | 0 (sd 0) | 0 (sd 0) | 29880 (sd 22.63) | 0.1 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | settings-dialog | baseline | 0/2 | not scored | not scored | not scored | 19583 (sd 2723.78) | 0.06 (sd 0.01) |
-| anthropic/claude-sonnet-4.5 | taxonomy | settings-dialog | uninvent | 0/2 | not scored | not scored | not scored | 34322 (sd 0) | 0.11 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | confirm-delete | baseline | 1/2 | 8 | 0 | 0 | 21673.5 (sd 266.58) | 0.07 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | confirm-delete | uninvent | 2/2 | 8 (sd 0) | 0 (sd 0) | 0 (sd 0) | 28530 (sd 0) | 0.09 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | post-filter | baseline | 0/2 | not scored | not scored | not scored | 18695 (sd 151.32) | 0.06 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | post-filter | uninvent | 2/2 | 5 (sd 0) | 0 (sd 0) | 0 (sd 0) | 31309 (sd 0) | 0.1 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | newsletter-form | baseline | 0/2 | not scored | not scored | not scored | 18602 (sd 53.74) | 0.06 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | newsletter-form | uninvent | 2/2 | 12 (sd 0) | 0 (sd 0) | 0 (sd 0) | 26016 (sd 0) | 0.09 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | posts-empty | baseline | 0/2 | not scored | not scored | not scored | 14595 (sd 0) | 0.05 (sd 0) |
-| anthropic/claude-sonnet-4.5 | taxonomy | posts-empty | uninvent | 1/2 | 2 | 0 | 0 | — | — |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | settings-dialog | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | settings-dialog | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | confirm-delete | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | confirm-delete | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | role-filter | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | role-filter | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | invite-form | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | invite-form | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | users-empty | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | shadcn-admin | users-empty | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | settings-dialog | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | settings-dialog | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | confirm-delete | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | confirm-delete | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | post-filter | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | post-filter | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | newsletter-form | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | newsletter-form | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | posts-empty | baseline | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
+| anthropic/claude-sonnet-4.5 | taxonomy | posts-empty | uninvent | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun | pending rerun |
 | openai/gpt-4o-mini | shadcn-admin | settings-dialog | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 1065 (sd 100.41) | 0 (sd 0) |
 | openai/gpt-4o-mini | shadcn-admin | settings-dialog | uninvent | 2/2 | 11 (sd 0) | 0 (sd 0) | 0 (sd 0) | 6027 (sd 0) | 0 (sd 0) |
 | openai/gpt-4o-mini | shadcn-admin | confirm-delete | baseline | 2/2 | 0 (sd 0) | 0 (sd 0) | 0 (sd 0) | 997 (sd 8.49) | 0 (sd 0) |
@@ -100,11 +102,9 @@ The table is generated from `bench/trial/results/trial.json` by `npm run trial:r
 
 That run is [45083175529](https://github.com/raframil/uninvent/actions/runs/45083175529) (`workflow_dispatch`, status `ran`). Models `anthropic/claude-sonnet-4.5` and `openai/gpt-4o-mini`, base URL `https://openrouter.ai/api/v1`, two runs per arm. 80 runs in total. OpenRouter returned `usage.cost` on 78 of them. The sum is **$2.939951**: $2.915934 for Claude Sonnet 4.5 (38 runs) and $0.024017 for GPT-4o mini (40 runs). Means in the table are rounded to two decimals, so the mini model's per-run cost displays as 0.
 
-26 runs were not scored. 25 of them stopped with `No file was written in 6 turns`: 19 Claude baselines and 6 Claude uninvent runs. Two Claude `taxonomy` / `posts-empty` uninvent runs hit `This request would exceed your available credits given your current in-flight requests`. One of those still wrote a file (invent 0). The other did not.
+`anthropic/claude-sonnet-4.5` is **pending rerun**. The 2026-11-22 rows are withheld. On that run the model spent all 6 turns on tool calls and wrote no file on 19 of 20 baseline runs (`No file was written in 6 turns`). The replies themselves were not stored, so those runs cannot be re-scored offline. Dispatch the agent-trial workflow with `models` set to `anthropic/claude-sonnet-4.5` and `runs` set to `2` after this harness fix.
 
-`openai/gpt-4o-mini` scored all 40 runs. Baseline invent sums to 25, all raw controls, and reuse sums to 0. With uninvent, invent sums to 0 and reuse sums to 178. Invent fell on 5 of 10 tasks: shadcn-admin role-filter (1 to 0) and invite-form (4 to 0); taxonomy settings-dialog (2.5 to 0), post-filter (1 to 0), and newsletter-form (4 to 0). On the other 5, baseline invent was already 0, so uninvent did not remove findings. Reuse still rose on those tasks (both settings dialogs that were already unflagged, both confirm dialogs, and both empty states). Invent did not rise on any scored task.
-
-`anthropic/claude-sonnet-4.5` does not show that drop. Only one baseline run was scored: taxonomy confirm-delete, invent 0 and reuse 8, the same invent as the uninvent arm. The other 19 baselines wrote no file. The 13 scored uninvent runs have invent 0 and reuse 88. That is reuse without a paired baseline.
+`openai/gpt-4o-mini` scored all 40 runs. Those numbers are unchanged by the harness fix: the replies were not kept, and the files that were written were already scored. Baseline invent sums to 25, all raw controls, and reuse sums to 0. With uninvent, invent sums to 0 and reuse sums to 178. Invent fell on 5 of 10 tasks: shadcn-admin role-filter (1 to 0) and invite-form (4 to 0); taxonomy settings-dialog (2.5 to 0), post-filter (1 to 0), and newsletter-form (4 to 0). On the other 5, baseline invent was already 0, so uninvent did not remove findings. Reuse still rose on those tasks (both settings dialogs that were already unflagged, both confirm dialogs, and both empty states). Invent did not rise on any scored gpt-4o-mini task. The mini model's share of `usage.cost` is $0.024017 of the $2.939951 total.
 
 ## Diff excerpts
 
