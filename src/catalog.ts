@@ -3,7 +3,7 @@ import path from "node:path";
 import { UserError } from "./errors.js";
 import { resolveSpecifier, stripExt, type PathMapping } from "./paths.js";
 import type { PrimitiveUse } from "./primitives.js";
-import type { Catalog, CatalogComponent, CatalogPackage, ComponentState, Recipe, StoryArg, StoryDoc } from "./types.js";
+import type { Catalog, CatalogComponent, CatalogPackage, ComponentState, Recipe, StatesSourceInfo, StoryArg, StoryDoc } from "./types.js";
 
 export function catalogPath(root: string, relative: string): string {
   return path.join(root, relative);
@@ -29,6 +29,8 @@ export function readCatalog(root: string, relative: string): Catalog {
   parsed.tokens ??= [];
   parsed.recipes = normalizeRecipes(parsed.recipes);
   if ("packages" in parsed) parsed.packages = normalizePackages(parsed.packages);
+  if ("statesSources" in parsed) parsed.statesSources = normalizeStatesSources(parsed.statesSources);
+  if (typeof parsed.statesNote !== "string" || parsed.statesNote.length === 0) delete parsed.statesNote;
   for (const component of parsed.components) normalizeComponent(component);
   return parsed;
 }
@@ -192,8 +194,29 @@ function normalizePackages(value: unknown): CatalogPackage[] {
 
 function isPrimitiveUse(value: unknown): value is PrimitiveUse {
   if (!value || typeof value !== "object") return false;
-  const entry = value as { library?: unknown; package?: unknown };
-  return typeof entry.library === "string" && typeof entry.package === "string";
+  const entry = value as { library?: unknown; package?: unknown; parts?: unknown };
+  if (typeof entry.library !== "string" || typeof entry.package !== "string") return false;
+  if (entry.parts === undefined) return true;
+  if (!Array.isArray(entry.parts) || entry.parts.some((part) => typeof part !== "string" || part.length === 0)) return false;
+  const parts = entry.parts.filter((part) => part.length > 0);
+  if (parts.length > 0) entry.parts = parts;
+  else delete entry.parts;
+  return true;
+}
+
+function normalizeStatesSources(value: unknown): StatesSourceInfo[] {
+  if (!Array.isArray(value)) return [];
+  const sources: StatesSourceInfo[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object") continue;
+    const record = entry as { id?: unknown; files?: unknown };
+    if (typeof record.id !== "string" || record.id.length === 0) continue;
+    const files = Array.isArray(record.files)
+      ? record.files.filter((file): file is string => typeof file === "string" && file.length > 0)
+      : [];
+    sources.push({ id: record.id, files });
+  }
+  return sources;
 }
 
 export function writeCatalog(root: string, relative: string, catalog: Catalog): void {

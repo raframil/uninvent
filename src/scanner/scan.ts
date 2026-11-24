@@ -1,15 +1,13 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { specifierExports } from "../catalog.js";
 import { UserError } from "../errors.js";
-import { walkSourceFiles, walkStoryFiles } from "../fs-walk.js";
-import { projectRelative, resolveSpecifier, stripExt, toImportPath, toPosix, type PathMapping } from "../paths.js";
+import { walkSourceFiles } from "../fs-walk.js";
+import { projectRelative, toImportPath, toPosix } from "../paths.js";
+import { resolveLibraries } from "../primitives.js";
 import { detectRecipes } from "../recipes/detect.js";
 import { RECIPES_FILE, finalizeRecipes, loadDeclaredRecipes } from "../recipes/parse.js";
-import { assignStoryDocs } from "../stories/assign.js";
-import { parseStorySource } from "../stories/parse.js";
-import { deriveStates } from "../stories/states.js";
-import type { Catalog, CatalogComponent, CatalogPackage, Config, StoryDoc } from "../types.js";
+import { collectStates } from "../stories/collect.js";
+import type { Catalog, CatalogComponent, CatalogPackage, Config } from "../types.js";
 import { resolvePackage, type ResolvedPackage } from "../workspace.js";
 import {
   discoverStylesheet,
@@ -58,13 +56,14 @@ export function scanProject(root: string, config: Config): ScanResult {
   const uiDirs = discoverUiDirs(root, config.ui, mappings);
   const packages = resolveConfiguredPackages(root, config.packages);
   if (uiDirs.length === 0 && packages.length === 0) throw new UserError(NO_SOURCE);
+  const libraries = resolveLibraries(config.primitives);
 
   const components: CatalogComponent[] = [];
   for (const dir of uiDirs) {
     for (const file of walkSourceFiles(root, dir)) {
       if (isGeneratedUiNoise(file)) continue;
       const source = readFileSync(path.join(root, file), "utf8");
-      for (const extracted of extractFile(file, source)) {
+      for (const extracted of extractFile(file, source, libraries)) {
         components.push({
           ...extracted,
           file,
@@ -78,11 +77,11 @@ export function scanProject(root: string, config: Config): ScanResult {
   const catalogPackages: CatalogPackage[] = [];
   for (const pkg of packages) {
     catalogPackages.push({ name: pkg.name, dir: projectRelative(root, pkg.dir) });
-    for (const component of scanPackage(root, pkg)) mergeComponent(components, component);
+    for (const component of scanPackage(root, pkg, libraries)) mergeComponent(components, component);
   }
 
   components.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.name.localeCompare(b.name));
-  attachStories(root, components, mappings, packages.map((pkg) => pkg.dir));
+  const states = collectStates(root, components, mappings, packages.map((pkg) => pkg.dir), config);
 
   const stylesheet = discoverStylesheet(root);
   const tokens = stylesheet ? readTokens(readFileSync(path.join(root, stylesheet), "utf8")) : [];
@@ -104,6 +103,8 @@ export function scanProject(root: string, config: Config): ScanResult {
     tokens,
     recipes: [...finalized.recipes, ...detected],
     ...(catalogPackages.length > 0 ? { packages: catalogPackages } : {}),
+    statesSources: states.sources,
+    ...(states.note ? { statesNote: states.note } : {}),
   };
   const storyCount = new Set(components.flatMap((component) => component.stories)).size;
   const stateCount = components.reduce((sum, component) => sum + (component.states?.length ?? 0), 0);
@@ -115,7 +116,7 @@ export function scanProject(root: string, config: Config): ScanResult {
   if (declaredCount > 0) summary += `, ${declaredCount} ${recipeLabel}`;
   if (catalogPackages.length > 0) summary += `, packages ${catalogPackages.map((pkg) => pkg.name).join(", ")}`;
   summary += `, catalog written to ${toPosix(config.catalog)}`;
-  const notes = [...loaded.warnings, ...finalized.warnings];
+  const notes = [...loaded.warnings, ...finalized.warnings, ...states.warnings];
   if (detected.length > 0) {
     const hint = detected
       .map((recipe) => `${recipe.title} (${(recipe.seenIn ?? []).join(", ")})`)
@@ -141,82 +142,5 @@ function mergeComponent(components: CatalogComponent[], component: CatalogCompon
   specifiers.delete(existing.importPath);
   const extra = [...specifiers].sort();
   if (extra.length > 0) existing.specifiers = extra;
-}
-
-function attachStories(root: string, components: CatalogComponent[], mappings: PathMapping[], packageDirs: string[]): void {
-  const byFile = new Map<string, CatalogComponent[]>();
-  for (const component of components) {
-    const list = byFile.get(component.file) ?? [];
-    list.push(component);
-    byFile.set(component.file, list);
-  }
-  for (const story of storyFiles(root, packageDirs)) {
-    let source = "";
-    try {
-      source = readFileSync(path.join(root, story), "utf8");
-    } catch {
-      continue;
-    }
-    for (const file of storyTargets(story, source, byFile, mappings)) {
-      for (const component of byFile.get(file) ?? []) {
-        if (!component.stories.includes(story)) component.stories.push(story);
-      }
-    }
-    const parsed = parseStorySource(story, source);
-    for (const [component, docs] of assignStoryDocs(story, parsed, components, mappings)) {
-      const list: StoryDoc[] = component.storyDocs ?? [];
-      component.storyDocs = [...list, ...docs];
-    }
-  }
-  for (const component of components) {
-    component.storyDocs ??= [];
-    component.states = deriveStates(component, component.storyDocs);
-  }
-}
-
-function storyFiles(root: string, packageDirs: string[]): string[] {
-  const files = new Set(walkStoryFiles(root));
-  for (const dir of packageDirs) {
-    for (const relative of walkStoryFiles(dir)) {
-      files.add(projectRelative(root, path.join(dir, relative)));
-    }
-  }
-  return [...files].sort();
-}
-
-function storyTargets(
-  story: string,
-  source: string,
-  byFile: Map<string, CatalogComponent[]>,
-  mappings: PathMapping[],
-): Set<string> {
-  const targets = new Set<string>();
-  for (const specifier of importSpecifiers(source)) {
-    const resolved = resolveSpecifier(story, specifier, mappings);
-    if (resolved) {
-      for (const file of byFile.keys()) {
-        if (stripExt(file) === resolved) targets.add(file);
-      }
-    }
-    for (const file of byFile.keys()) {
-      const components = byFile.get(file) ?? [];
-      if (components.some((component) => specifierExports(component, specifier))) targets.add(file);
-    }
-  }
-  const base = story.replace(/\.stories\.(tsx|ts|jsx|js|mdx)$/, "").replace(/\.mdx$/, "");
-  for (const file of byFile.keys()) {
-    if (stripExt(file) === base) targets.add(file);
-  }
-  return targets;
-}
-
-function importSpecifiers(source: string): string[] {
-  const specs: string[] = [];
-  const pattern = /from\s+["']([^"']+)["']/g;
-  for (const match of source.matchAll(pattern)) {
-    const specifier = match[1];
-    if (specifier) specs.push(specifier);
-  }
-  return specs;
 }
 

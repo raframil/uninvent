@@ -101,5 +101,5 @@ export function readTokens(css: string): string[] {
 
 export function isGeneratedUiNoise(file: string): boolean {
   const base = file.split("/").pop() ?? file;
-  return /\.(stories|test|spec)\.(tsx|ts|jsx|js|mdx)$/.test(base);
+  return /\.(stories|story|test|spec)\.(tsx|ts|jsx|js|mdx)$/.test(base);
 }

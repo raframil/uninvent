@@ -1,0 +1,15 @@
+{
+  "ui": ["src/components/ui"],
+  "primitives": [
+    {
+      "library": "acme",
+      "packages": ["@acme/headless"],
+      "parts": {
+        "Button": ["button"],
+        "Modal.Popup": ["dialog"]
+      }
+    }
+  ],
+  "catalog": ".uninvent/catalog.json",
+  "commitCatalog": false
+}

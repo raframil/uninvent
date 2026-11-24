@@ -43,7 +43,7 @@ export function renderSkill(catalog: Catalog): string {
     ...(stateExample(catalog) ? [`uninvent exists "${stateExample(catalog)}"`] : []),
     "```",
     "",
-    "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
+    "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper's library comes from the primitive map, including any library declared in uninvent.json. The miss is the raw element. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
     "",
   ];
   if (recipes.length > 0) {

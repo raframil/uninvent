@@ -1,0 +1,7 @@
+{
+  "name": "ladle-fixture",
+  "private": true,
+  "dependencies": {
+    "@ladle/react": "5.1.0"
+  }
+}

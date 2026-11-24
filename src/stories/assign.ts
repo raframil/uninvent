@@ -71,7 +71,12 @@ function fallbackComponent(components: CatalogComponent[], base: string): Catalo
 }
 
 function storyBase(file: string): string {
-  return stripExt(file.replace(/\.stories\.(tsx|ts|jsx|js|mdx)$/, "").replace(/\.mdx$/, ""));
+  return stripExt(
+    file
+      .replace(/\.stories\.(tsx|ts|jsx|js|mdx)$/, "")
+      .replace(/\.story\.(tsx|ts|jsx|js)$/, "")
+      .replace(/\.mdx$/, ""),
+  );
 }
 
 function mergeArgs(base: StoryArg[], over: StoryArg[]): StoryArg[] {

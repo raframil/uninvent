@@ -1,0 +1,6 @@
+{
+  "Button": [
+    { "name": "Loading", "args": { "loading": true } },
+    "variant=destructive Destructive"
+  ]
+}

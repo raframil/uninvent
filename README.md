@@ -205,16 +205,7 @@ That leaves `.uninvent/catalog.json` un-ignored. Remove the `.uninvent/` line fr
 
 `scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, the class string of a variant option when it was a string literal, headless primitives, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, the states those stories document, and CSS variables declared in the stylesheet from `components.json`.
 
-Primitives come from a small adapter map in `src/primitives.ts`. Each hit is `{ library, package }`. Built in today:
-
-| Library id | Import specifiers |
-|---|---|
-| `radix` | `@radix-ui/*` |
-| `base-ui` | `@base-ui/react` and `@base-ui/react/*`, plus the older `@base-ui-components/react` |
-| `react-aria` | `react-aria`, `react-aria-components`, `@react-aria/*` |
-| `ark` | `@ark-ui/react` |
-
-Another headless library is one entry on that list. `check` does not read it. The raw-element rule only cares that the catalog has a component with the matching name.
+Primitives come from the map in `src/primitives.ts`. Each hit is `{ library, package, parts? }`. The map is data. A project extends it from `uninvent.json` (see [Works with your stack](#works-with-your-stack)). `check` does not branch on the library id. The raw-element rule cares that the catalog has a component with the matching name.
 
 Recipes live on the same catalog, under `recipes`. A v0.1 catalog has no such field and still loads. `scan` fills it from [`uninvent.recipes.md`](examples/demo-app/uninvent.recipes.md) and from repeated compositions it is willing to name. See [Recipes](#recipes).
 
@@ -286,7 +277,7 @@ The generated skill and the `AGENTS.md` block list each declared recipe in one l
 
 ## States
 
-Storybook is where a design system shows which states a component supports. `scan` reads that statically. It does not start Storybook, and it does not need Storybook installed. A project with no story files scans, checks, and writes the skill the same way it did before.
+Storybook is one place a design system shows which states a component supports. `scan` reads it statically. It does not start Storybook, and it does not need Storybook installed. Ladle, Histoire React stories, `uninvent.states.json`, and `@state` tags are read the same way. See [Works with your stack](#works-with-your-stack). A project with no states source scans, checks, and writes the skill the same way it did before. `coverage` then prints one line.
 
 Story files it reads:
 
@@ -323,11 +314,125 @@ A copied variant class uses the same shape: `reinvented variant=destructive on B
 
 A spinner in another branch of the tree, a partial class (`bg-destructive` without the rest of the option), a variant prop that is already set, or a `<Spinner>` that is itself in the catalog: no line. The hook prints the same line, or nothing.
 
-## Supported stack
+## Works with your stack
 
-uninvent understands React + TypeScript files in a shadcn-style folder: Radix or Base UI primitives (React Aria and Ark are on the same adapter map), Tailwind (v3 `theme.extend` or v4 `@theme`), and variants from `class-variance-authority` or `tailwind-variants`. Story files are parsed for the states they document, not generated. The demo app wraps Radix. `tests/fixtures/base-ui` is the same check against shadcn's Base UI wrappers. `tests/fixtures/stories` covers CSF, a `.stories.ts` file, and MDX.
+uninvent reads React + TypeScript. It does not pick a component library for you. Tailwind (v3 `theme.extend` or v4 `@theme`) and variants from `class-variance-authority` or `tailwind-variants` are read as they are written. New [shadcn/ui](https://ui.shadcn.com/docs/changelog/2026-07-base-ui-default) projects default to Base UI (`npx shadcn init`, or `--base base`). Radix is still supported (`--base radix`). The docs open on the Base UI tab. uninvent follows the import in the file, so a `base-nova` project and a `radix-nova` project are both catalogs. The demo app wraps Radix. [`tests/fixtures/base-ui`](tests/fixtures/base-ui) is a shadcn-shaped Base UI project (`components.json` `"style": "base-nova"`).
 
-Not in this version: Vue, CSS-in-JS, an MCP server, autofix, and token linting. A recipe with no example, or an example that is not a small concrete shape, is listed by `exists` and the skill and is not flagged. Coverage does not fail a build.
+### Primitive libraries
+
+A package entry matches that specifier and its subpaths. `@base-ui/react` matches `@base-ui/react/button`. The current Base UI package is [`@base-ui/react`](https://base-ui.com/react/overview/quick-start); [`@base-ui-components/react`](https://base-ui.com/react/overview/quick-start) is the previous name and still matches. Radix includes `@radix-ui/*` and the `radix-ui` bundle.
+
+Part names are how a wrapper is recognized. `<ButtonPrimitive>` imported as `Button`, and `<DialogPrimitive.Popup>` imported as `Dialog`, are parts. When the exported component has the raw-control name (`Button`, `Input`, `Textarea`, `Select`, `Dialog`), that part records the intrinsic element. A `DialogContent` that renders `Dialog.Popup` keeps the part and does not become a second dialog.
+
+| | Radix | Base UI |
+|---|---|---|
+| Packages | `@radix-ui/*`, `radix-ui` | `@base-ui/react`, `@base-ui-components/react` |
+| Button | `Slot`, or the `"button"` in `asChild ? Slot : "button"` | `Button` |
+| Input | a native `<input>` in the wrapper | `Input` |
+| Textarea | a native `<textarea>` | no Textarea part; the shadcn wrapper renders `<textarea>` |
+| Select | `Select.Root` | `Select.Root` (`Select.Trigger` is not the raw `<select>`) |
+| Dialog | `Dialog.Root`, `Dialog.Content` | `Dialog.Root`, `Dialog.Popup` |
+
+The same map covers the other libraries, with the parts that correspond to a raw control:
+
+| Library id | Packages | Parts that map to a raw control |
+|---|---|---|
+| `react-aria` | `react-aria`, `react-aria-components`, `@react-aria/*` | `Button`, `Input`, `TextArea`, `TextField`, `Dialog`, `Select` |
+| `ark` | `@ark-ui/react` | `Dialog.Root`, `Dialog.Content`, `Select.Root` |
+| `headless-ui` | `@headlessui/react` | `Button`, `Dialog`, `DialogPanel` |
+| `mantine` | `@mantine/core` | `Button`, `Input`, `TextInput`, `Textarea`, `Select`, `NativeSelect`, `Modal`, `Dialog` |
+| `chakra` | `@chakra-ui/react` | `Button`, `Input`, `Textarea`, `Select`, `Modal`, `Dialog` |
+
+`Modal` records a dialog element only when the exported component is named `Dialog`. A component named `Modal` stays `Modal`. The raw `<dialog>` rule looks for `Dialog`.
+
+Add a library, or add packages and parts to a built-in id, in `uninvent.json`:
+
+```json
+{
+  "primitives": [
+    {
+      "library": "acme",
+      "packages": ["@acme/headless"],
+      "parts": {
+        "Button": ["button"],
+        "Modal.Popup": ["dialog"]
+      }
+    }
+  ]
+}
+```
+
+`packages` is the import specifier (`@acme/headless` also matches `@acme/headless/button`). `parts` maps a part name to intrinsic elements: `button`, `input`, `textarea`, `select`, `dialog`. [`tests/fixtures/sources/primitive`](tests/fixtures/sources/primitive) is that file.
+
+### States sources
+
+`coverage` reads whichever of these `scan` found. It exits 0. It is not a failing gate. With none of them, the command prints one line: `No states source found.`
+
+| Source | When it is used | What it reads |
+|---|---|---|
+| Storybook | `*.stories.*` or `*.mdx`, or a `.storybook` directory, or a `storybook` / `@storybook/*` dependency | CSF and MDX, statically |
+| Ladle | `@ladle/react` or a `.ladle` directory, when Storybook is not what owns those files | The same CSF files |
+| Histoire | `*.story.tsx`, `*.story.ts`, `*.story.jsx`, `*.story.js`, a `histoire` dependency, or `histoire.config.*` | React stories in the CSF shape |
+| Manifest | `uninvent.states.json`, or `states.manifest` | The JSON below |
+| `@state` tags | Component files, unless `states.jsdoc` is `false` | Tags and a short front-matter block |
+| Globs | `states.globs` | Extra files. `*.stories.*`, `*.story.*`, and `*.mdx` use the CSF reader. JSON uses the manifest reader. Anything else is scanned for `@state` |
+
+When Storybook and Ladle are both installed, Storybook owns `*.stories.*`. Set `"storybook": false` to let Ladle own them. A different folder is a glob.
+
+Histoire's Vue single-file stories (`.story.vue`) are not parsed. uninvent does not read Vue SFCs. Use a React `.story.tsx` file, or the manifest. `coverage` says so in that one line when the Vue file is the only source.
+
+`uninvent.states.json`, next to `uninvent.json`:
+
+```json
+{
+  "Button": [
+    { "name": "Loading", "args": { "loading": true } },
+    "variant=destructive Destructive"
+  ]
+}
+```
+
+A string is shorthand for a prop or a `name=value` pair. The optional word after it is the story name. The same tags work in the component file:
+
+```tsx
+/**
+ * @state loading
+ * @state variant=destructive Destructive
+ */
+export function Button() {
+  return <button />;
+}
+```
+
+A leading comment can name the component:
+
+```tsx
+/**
+ * ---
+ * Input:
+ *   - invalid
+ * ---
+ */
+export function Input({ invalid }: { invalid?: boolean }) {
+  return <input />;
+}
+```
+
+Narrow or add files from `uninvent.json`:
+
+```json
+{
+  "states": {
+    "storybook": false,
+    "globs": ["src/docs/*.docs.tsx"],
+    "manifest": "design/states.json"
+  }
+}
+```
+
+`states.manifest` set to `false` skips `uninvent.states.json`. `states.histoire`, `states.ladle`, and `states.jsdoc` accept `false` or `{ "globs": ["..."] }`.
+
+Not in this version: Vue SFCs, CSS-in-JS, an MCP server, autofix, and token linting. A recipe with no example, or an example that is not a small concrete shape, is listed by `exists` and the skill and is not flagged. Coverage does not fail a build.
 
 ## Related tools
 
@@ -355,7 +460,7 @@ npm run build
 npm run trial -- --dry-run
 ```
 
-`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check. `tests/fixtures/workspace` is a pnpm-style workspace with `packages/ui` and an app. `tests/fixtures/installed` is a package that exists only as `.d.ts` and compiled JavaScript under `node_modules`. `tests/action.test.ts` covers the sticky pull request comment: create, update, a clean report, and a fork pull request where the token cannot write.
+`npm test` is the TypeScript compiler plus the Node test runner. The tests scan the demo, assert that `Customers.tsx` is silent, and assert that the login page, `Modal.tsx`, `Confirm.tsx`, and `SaveButton.tsx` are not. `tests/fixtures/recipes` covers recipes. `tests/fixtures/stories` covers story parsing, `exists`, `coverage`, and the state check. `tests/fixtures/base-ui` is the Base UI shadcn fixture. `tests/fixtures/sources` covers Ladle, Histoire React, a Vue story that is skipped, the manifest, `@state` tags, a glob, and a primitive library declared in `uninvent.json`. `tests/fixtures/workspace` is a pnpm-style workspace with `packages/ui` and an app. `tests/fixtures/installed` is a package that exists only as `.d.ts` and compiled JavaScript under `node_modules`. `tests/action.test.ts` covers the sticky pull request comment: create, update, a clean report, and a fork pull request where the token cannot write.
 
 Publishing: `package.json` is set up for a public npm package (`prepublishOnly` builds `dist/`). v0.4 has not been published.
 
