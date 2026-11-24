@@ -66,7 +66,9 @@ export function extractFile(fileName: string, source: string): ExtractedComponen
     if (variants.has(name) && !decl.propsType && !decl.body) continue;
     const resolved = decl.propsType ? resolveType(decl.propsType, types, new Set()) : emptyType();
     const groups = variantGroupsFor(resolved.variantRefs, variants, decl.body, [...variants.keys()]);
-    if (declarationFile && decl.propsType) {
+    // `cva()` / `tv()` already carry defaults and class strings. A string-literal
+    // union fills only the groups they did not (`variant?: "a" | "b"` in source or `.d.ts`).
+    if (decl.propsType) {
       for (const group of variantsFromType(decl.propsType, typeNodes)) {
         if (groups.some((entry) => entry.name === group.name)) continue;
         groups.push(group);
@@ -530,8 +532,9 @@ function classPropsType(node: ts.ClassDeclaration): ts.TypeNode | undefined {
 }
 
 /**
- * A published `.d.ts` usually drops `cva()` and keeps `variant?: "a" | "b"`.
- * Those unions are the variant list. Source files still use `cva()` / `tv()` only.
+ * String-literal unions on the props type (`variant?: "a" | "b"`, or a type
+ * alias of that union). A `.d.ts` usually has only the union. Source files
+ * use the same list when `cva()` / `tv()` did not already name the group.
  */
 function variantsFromType(
   node: ts.TypeNode | undefined,
@@ -543,7 +546,7 @@ function variantsFromType(
   if (ts.isIntersectionTypeNode(node) || ts.isUnionTypeNode(node)) {
     return dedupeGroups(node.types.flatMap((part) => variantsFromType(part, typeNodes, seen)));
   }
-  if (ts.isTypeLiteralNode(node)) return variantsFromMembers(node.members);
+  if (ts.isTypeLiteralNode(node)) return variantsFromMembers(node.members, typeNodes);
   const argument = componentPropsArgument(node, 0);
   if (argument && argument !== node) return variantsFromType(argument, typeNodes, seen);
   if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
@@ -552,28 +555,43 @@ function variantsFromType(
     const declared = typeNodes.get(name);
     if (!declared) return [];
     seen.add(name);
-    if (ts.isInterfaceDeclaration(declared)) return variantsFromMembers(declared.members);
+    if (ts.isInterfaceDeclaration(declared)) return variantsFromMembers(declared.members, typeNodes);
     return variantsFromType(declared, typeNodes, seen);
   }
   return [];
 }
 
-function variantsFromMembers(members: ts.NodeArray<ts.TypeElement>): VariantGroup[] {
+function variantsFromMembers(
+  members: ts.NodeArray<ts.TypeElement>,
+  typeNodes: Map<string, ts.TypeNode | ts.InterfaceDeclaration>,
+): VariantGroup[] {
   const groups: VariantGroup[] = [];
   for (const member of members) {
     if (!ts.isPropertySignature(member) || !member.name) continue;
     const name = propertyName(member.name);
-    const options = stringLiteralUnion(member.type);
+    const options = stringLiteralUnion(member.type, typeNodes);
     if (!name || !options) continue;
     groups.push({ name, options });
   }
   return groups;
 }
 
-function stringLiteralUnion(type: ts.TypeNode | undefined): string[] | null {
+function stringLiteralUnion(
+  type: ts.TypeNode | undefined,
+  typeNodes: Map<string, ts.TypeNode | ts.InterfaceDeclaration>,
+  seen: Set<string> = new Set(),
+): string[] | null {
   if (!type) return null;
   let node = type;
   while (ts.isParenthesizedTypeNode(node)) node = node.type;
+  if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+    const name = node.typeName.text;
+    if (seen.has(name)) return null;
+    const declared = typeNodes.get(name);
+    if (!declared || ts.isInterfaceDeclaration(declared)) return null;
+    seen.add(name);
+    return stringLiteralUnion(declared, typeNodes, seen);
+  }
   if (!ts.isUnionTypeNode(node)) return null;
   const options: string[] = [];
   for (const part of node.types) {

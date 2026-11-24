@@ -45,6 +45,8 @@ export function renderSkill(catalog: Catalog): string {
     "",
     "After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role=\"button\">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.",
     "",
+    "When the classes point at one catalog variant, that same line names it: `<Button variant=\"destructive\" size=\"sm\">`. An unknown value such as `variant=\"danger\"` is a miss. A looser class on a listed value is not.",
+    "",
   ];
   if (recipes.length > 0) {
     lines.push(
@@ -220,7 +222,7 @@ function renderGroup(group: CatalogComponent[], catalog: Catalog): string {
     }
     if (component.variants.length > 0) {
       const variants = component.variants
-        .map((variant) => `${variant.name} (${variant.options.join(" | ")})`)
+        .map((variant) => `${variant.name}=${variant.options.join("|")}`)
         .join(", ");
       details.push(`variants: ${variants}`);
     }

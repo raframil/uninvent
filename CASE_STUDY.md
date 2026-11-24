@@ -345,7 +345,7 @@ reinvented loading on Button in src/components/SaveButton.tsx:11, use ui/Button 
 
 ## Benchmark
 
-The fixed corpus in `bench/corpus` is a separate measurement from the agent trial. 0.3.0 is the Storybook-state release. 0.4.1 is the current unpublished line: package and monorepo sources (landed as 0.4.0) and the faster hook. Counts below are generated from the result files.
+The fixed corpus in `bench/corpus` is a separate measurement from the agent trial. 0.3.0 is the Storybook-state release. 0.4.1 is the current unpublished line: package and monorepo sources (landed as 0.4.0), the faster hook, and variant lines on a raw control. Counts below are generated from the result files.
 
 <!-- bench-highlights:start -->
 Taken from `bench/results/0.3.0.json` and `bench/results/0.4.1.json`. This is the fixed corpus, not the agent trial. `npm run bench` rewrites the 0.4.1 file and this section.
@@ -357,16 +357,17 @@ Taken from `bench/results/0.3.0.json` and `bench/results/0.4.1.json`. This is th
 | Documented states | 6 / 6 | 6 / 6 |
 | Name collisions | 2 / 2 | 2 / 2 |
 | Package sources | 0 / 3 | 3 / 3 |
-| Clean false positives | 0 fp / 13 | 0 fp / 13 |
-| Skill tokens | 630 | 728 |
+| Variants | — | 4 / 4 |
+| Clean false positives | 0 fp / 13 | 0 fp / 15 |
+| Skill tokens | 630 | 779 |
 | exists tokens | 30 | 30 |
-| Hook line (mean tokens) | 19.9 | 19.9 |
-| Scan (ms) | 357.4 | 330.5 |
-| Clean-file check (ms) | 85.2 | 37.8 |
-| Hook cold p50 (ms) | 84.5 | 36.2 |
-| Hook cold p95 (ms) | 86.9 | 38.8 |
-| Hook warm p50 (ms) | 77.4 | 33.3 |
-| Hook warm p95 (ms) | 87.2 | 34.9 |
+| Hook line (mean tokens) | 19.9 | 20.8 |
+| Scan (ms) | 357.4 | 378.8 |
+| Clean-file check (ms) | 85.2 | 42.6 |
+| Hook cold p50 (ms) | 84.5 | 39.6 |
+| Hook cold p95 (ms) | 86.9 | 44.6 |
+| Hook warm p50 (ms) | 77.4 | 36.2 |
+| Hook warm p95 (ms) | 87.2 | 41.1 |
 <!-- bench-highlights:end -->
 
 Full tables, including 0.1.0 through 0.4.0, are in [BENCHMARK.md](BENCHMARK.md).

@@ -2,11 +2,11 @@
   "schema": 1,
   "version": "0.4.1",
   "source": "local",
-  "git": "5684a4772b70c2fa263c29ebb3b6bb0119dd5d58",
-  "generatedAt": "2026-11-22T23:04:06.863Z",
+  "git": "f351ddcd7ee11869bedacc0d6a433e54c805d2f6",
+  "generatedAt": "2026-11-24T01:13:38.906Z",
   "tokenizer": "cl100k_base via gpt-tokenizer (OpenAI GPT-4 proxy, not the Claude or Cursor tokenizer)",
   "detection": {
-    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,package:3/3,clean-fp:0/13",
+    "fingerprint": "raw-control:4/4,recipe:2/2,documented-state:6/6,name-collision:2/2,package:3/3,variant:4/4,clean-fp:0/15",
     "categories": {
       "raw-control": {
         "caught": 4,
@@ -83,18 +83,33 @@
           "falsePositives": 0
         }
       },
+      "variant": {
+        "caught": 4,
+        "total": 4,
+        "falsePositives": 0,
+        "withRule": {
+          "caught": 2,
+          "total": 2,
+          "falsePositives": 0
+        },
+        "heldOut": {
+          "caught": 2,
+          "total": 2,
+          "falsePositives": 0
+        }
+      },
       "clean": {
         "caught": 0,
-        "total": 13,
+        "total": 15,
         "falsePositives": 0,
         "withRule": {
           "caught": 0,
-          "total": 8,
+          "total": 9,
           "falsePositives": 0
         },
         "heldOut": {
           "caught": 0,
-          "total": 5,
+          "total": 6,
           "falsePositives": 0
         }
       }
@@ -464,11 +479,85 @@
         "passed": true,
         "caught": false,
         "lines": []
+      },
+      {
+        "id": "variant-delete",
+        "file": "src/pages/DeleteButton.tsx",
+        "category": "variant",
+        "origin": "with-rule",
+        "catch": "suggested",
+        "note": "A raw button with a red fill and small padding. The line should name destructive and sm.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "raw <button> in src/pages/DeleteButton.tsx:3, use <Button variant=\"destructive\" size=\"sm\">"
+        ]
+      },
+      {
+        "id": "variant-outline",
+        "file": "src/pages/OutlineButton.tsx",
+        "category": "variant",
+        "origin": "held-out",
+        "catch": "suggested",
+        "note": "An outline border, not the red button the suggestion rule was written against.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "raw <button> in src/pages/OutlineButton.tsx:2, use <Button variant=\"outline\">"
+        ]
+      },
+      {
+        "id": "variant-danger",
+        "file": "src/pages/WrongVariant.tsx",
+        "category": "variant",
+        "origin": "with-rule",
+        "catch": "invalid",
+        "note": "Button is reused with variant=danger. The catalog option is destructive.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "invalid variant=\"danger\" on Button in src/pages/WrongVariant.tsx:4, use <Button variant=\"destructive\">"
+        ]
+      },
+      {
+        "id": "variant-small",
+        "file": "src/pages/WrongSize.tsx",
+        "category": "variant",
+        "origin": "held-out",
+        "catch": "invalid",
+        "note": "size=small is not a listed option. The catalog size is sm.",
+        "passed": true,
+        "caught": true,
+        "lines": [
+          "invalid size=\"small\" on Button in src/pages/WrongSize.tsx:4, use <Button size=\"sm\">"
+        ]
+      },
+      {
+        "id": "clean-uses-small",
+        "file": "src/pages/UsesSmall.tsx",
+        "category": "clean",
+        "origin": "with-rule",
+        "catch": "silent",
+        "note": "size=sm and variant=outline are both listed. A real value is reuse.",
+        "passed": true,
+        "caught": false,
+        "lines": []
+      },
+      {
+        "id": "clean-red-card",
+        "file": "src/pages/RedCard.tsx",
+        "category": "clean",
+        "origin": "held-out",
+        "catch": "silent",
+        "note": "Red and small classes sit on a section, and the Button uses no variant prop. Not a control.",
+        "passed": true,
+        "caught": false,
+        "lines": []
       }
     ]
   },
   "tokens": {
-    "skill": 728,
+    "skill": 779,
     "agents": 150,
     "exists": {
       "query": "loading button",
@@ -575,47 +664,67 @@
           "file": "src/pages/SecondBanner.tsx",
           "line": "export Banner in src/pages/SecondBanner.tsx:1, use @vendor/ui Banner",
           "tokens": 18
+        },
+        {
+          "file": "src/pages/DeleteButton.tsx",
+          "line": "raw <button> in src/pages/DeleteButton.tsx:3, use <Button variant=\"destructive\" size=\"sm\">",
+          "tokens": 26
+        },
+        {
+          "file": "src/pages/OutlineButton.tsx",
+          "line": "raw <button> in src/pages/OutlineButton.tsx:2, use <Button variant=\"outline\">",
+          "tokens": 22
+        },
+        {
+          "file": "src/pages/WrongVariant.tsx",
+          "line": "invalid variant=\"danger\" on Button in src/pages/WrongVariant.tsx:4, use <Button variant=\"destructive\">",
+          "tokens": 26
+        },
+        {
+          "file": "src/pages/WrongSize.tsx",
+          "line": "invalid size=\"small\" on Button in src/pages/WrongSize.tsx:4, use <Button size=\"sm\">",
+          "tokens": 25
         }
       ],
-      "meanPerFinding": 19.9
+      "meanPerFinding": 20.8
     }
   },
   "latencyMs": {
     "samples": 5,
     "scan": {
-      "median": 330.5,
-      "min": 315.3,
-      "max": 335.5
+      "median": 378.8,
+      "min": 361.6,
+      "max": 401.8
     },
     "hookClean": {
-      "median": 37.8,
-      "min": 37.5,
-      "max": 41.1
+      "median": 42.6,
+      "min": 39.5,
+      "max": 45.2
     },
     "hookDirty": {
-      "median": 38.5,
-      "min": 36.8,
-      "max": 41
+      "median": 48.6,
+      "min": 45.9,
+      "max": 49.4
     },
     "hookRun": {
       "samples": 21,
       "cold": {
-        "p50": 36.2,
-        "p95": 38.8,
-        "min": 34,
-        "max": 44.2
+        "p50": 39.6,
+        "p95": 44.6,
+        "min": 36.4,
+        "max": 46.2
       },
       "warm": {
-        "p50": 33.3,
-        "p95": 34.9,
-        "min": 32.1,
-        "max": 36.6
+        "p50": 36.2,
+        "p95": 41.1,
+        "min": 33.3,
+        "max": 43
       },
       "warmDirty": {
-        "p50": 34.1,
-        "p95": 35.8,
-        "min": 32,
-        "max": 36.1
+        "p50": 36.1,
+        "p95": 39.5,
+        "min": 33.1,
+        "max": 40.3
       },
       "note": "uninvent hook with a PostToolUse event, wall time in milliseconds. Cold sets NODE_DISABLE_COMPILE_CACHE. Warm shares one V8 compile cache after a single warmup. p50 and p95 are within that set."
     },

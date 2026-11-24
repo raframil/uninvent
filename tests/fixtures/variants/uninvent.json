@@ -1,0 +1,5 @@
+{
+  "ui": ["src/components/ui"],
+  "packages": ["vendor/ui"],
+  "catalog": ".uninvent/catalog.json"
+}

@@ -125,11 +125,11 @@ function renderComponent(component: CatalogComponent, catalog: Catalog): string 
   }
   if (component.extends.length > 0) lines.push(`  extends: ${component.extends.join(", ")}`);
   if (component.variants.length > 0) {
-    lines.push("  variants:");
-    for (const variant of component.variants) {
+    const parts = component.variants.map((variant) => {
       const fallback = variant.defaultValue ? ` (default ${variant.defaultValue})` : "";
-      lines.push(`    ${variant.name}: ${variant.options.join(" | ")}${fallback}`);
-    }
+      return `${variant.name}=${variant.options.join("|")}${fallback}`;
+    });
+    lines.push(`  variants: ${parts.join(", ")}`);
   }
   if (component.elements.length > 0) {
     lines.push(`  renders: ${component.elements.map((element) => `<${element}>`).join(", ")}`);

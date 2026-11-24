@@ -149,18 +149,21 @@ export interface Config {
 }
 
 export interface Finding {
-  kind: "raw-element" | "name-collision" | "recipe" | "state";
+  kind: "raw-element" | "name-collision" | "recipe" | "state" | "invalid-variant";
   file: string;
   line: number;
   message: string;
-  /** Short label, `ui/Button`, `@acme/ui Button`, or `ui/Button loading`. */
+  /**
+   * Short label. `ui/Button`, `@acme/ui Button`, `ui/Button loading`,
+   * or `<Button variant="destructive" size="sm">` when a variant is known.
+   */
   suggestion: string;
   import: string;
   element?: string;
   name?: string;
   /** Recipe title, when `kind` is `recipe`. */
   recipe?: string;
-  /** `loading` or `variant=destructive`, when `kind` is `state`. */
+  /** `loading`, `variant=destructive`, or `variant="danger"` when that value is not in the catalog. */
   state?: string;
 }
 

@@ -39,6 +39,10 @@ test("scan, exists, and check on the demo app", () => {
 
   const buttonExists = renderExists(catalog, "Button");
   assert.match(buttonExists.text, /states: disabled \(Disabled\), loading \(Loading\), variant=default \(Primary\), variant=destructive \(Destructive\)/);
+  assert.match(
+    buttonExists.text,
+    /variants: variant=default\|destructive\|outline\|secondary\|ghost\|link \(default default\), size=default\|sm\|lg\|icon \(default default\)/,
+  );
 
   const loading = renderExists(catalog, "loading button");
   assert.equal(loading.found, true);
@@ -168,7 +172,8 @@ test("init writes a gitignored catalog and a skill that names real components", 
   const skill = readFileSync(path.join(root, ".claude/skills/uninvent/SKILL.md"), "utf8");
   assert.match(skill, /uninvent exists <Component>/);
   assert.match(skill, /Button/);
-  assert.match(skill, /variant \(default \| destructive \| outline \| secondary \| ghost \| link\)/);
+  assert.match(skill, /variant=default\|destructive\|outline\|secondary\|ghost\|link/);
+  assert.match(skill, /<Button variant="destructive" size="sm">/);
   assert.equal(readFileSync(path.join(root, ".cursor/skills/uninvent/SKILL.md"), "utf8"), skill);
   assert.match(readFileSync(path.join(root, "AGENTS.md"), "utf8"), /<!-- uninvent:start -->/);
 });
