@@ -344,7 +344,7 @@ Not in this version: Vue, CSS-in-JS, an MCP server, autofix, and token linting. 
 
 ## Benchmark
 
-[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus, including a side-by-side of 0.3.0 and 0.4.1. 0.3.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, and 2/2 name collisions, and 0/3 package sources, with 0 false positives on 13 clean files. 0.4.1 catches the same controls, recipes, states, and name collisions, and 3/3 package sources, still with 0 false positives. The skill grows from 630 tokens to 728. Hook latency (cold and warm, p50 and p95) and the clean-file check time are in that file. 0.4.1 is the faster hook. `npm run bench` reproduces the numbers.
+[BENCHMARK.md](BENCHMARK.md) compares versions on a fixed corpus, including a side-by-side of 0.3.0 and 0.4.1. 0.3.0 catches 4/4 raw controls, 2/2 recipes, 6/6 documented states, and 2/2 name collisions, and 0/3 package sources, with 0 false positives on 13 clean files. 0.4.1 catches the same controls, recipes, states, and name collisions, 3/3 package sources, and 4/4 variant lines, with 0 false positives on 15 clean files. The skill is 779 tokens, up from 728 in 0.4.0. `exists "loading button"` stays 30. Hook latency (cold and warm, p50 and p95) and the clean-file check time are in that file. 0.4.1 is the faster hook. `npm run bench` reproduces the numbers.
 
 [CASE_STUDY.md](CASE_STUDY.md) is the real-repository trial. It stays pending until that trial runs. The primary host is OpenRouter. See [bench/trial/README.md](bench/trial/README.md).
 
