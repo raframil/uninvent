@@ -4,10 +4,11 @@ export const CATEGORY_ORDER = [
   "documented-state",
   "name-collision",
   "package",
+  "variant",
   "clean",
 ] as const;
 
-export type CatchKind = "raw" | "rebuilt" | "reinvented" | "export" | "silent";
+export type CatchKind = "raw" | "rebuilt" | "reinvented" | "export" | "suggested" | "invalid" | "silent";
 export type Origin = "with-rule" | "held-out";
 
 export interface CaseDef {
@@ -60,6 +61,10 @@ export function matchesCatch(kind: CatchKind, lines: string[]): boolean {
   if (kind === "rebuilt") return lines.some((line) => line.startsWith("rebuilt "));
   if (kind === "reinvented") return lines.some((line) => line.startsWith("reinvented "));
   if (kind === "export") return lines.some((line) => line.startsWith("export "));
+  if (kind === "suggested") {
+    return lines.some((line) => line.startsWith("raw ") && /use (?:[^<\n]+ )?<[A-Z][A-Za-z0-9]* [^>\n]*="[^"]+">/.test(line));
+  }
+  if (kind === "invalid") return lines.some((line) => line.startsWith("invalid "));
   return false;
 }
 

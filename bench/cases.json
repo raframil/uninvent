@@ -244,6 +244,54 @@
       "origin": "held-out",
       "catch": "silent",
       "note": "A spinner lives in a chart card, not next to the page Button."
+    },
+    {
+      "id": "variant-delete",
+      "file": "src/pages/DeleteButton.tsx",
+      "category": "variant",
+      "origin": "with-rule",
+      "catch": "suggested",
+      "note": "A raw button with a red fill and small padding. The line should name destructive and sm."
+    },
+    {
+      "id": "variant-outline",
+      "file": "src/pages/OutlineButton.tsx",
+      "category": "variant",
+      "origin": "held-out",
+      "catch": "suggested",
+      "note": "An outline border, not the red button the suggestion rule was written against."
+    },
+    {
+      "id": "variant-danger",
+      "file": "src/pages/WrongVariant.tsx",
+      "category": "variant",
+      "origin": "with-rule",
+      "catch": "invalid",
+      "note": "Button is reused with variant=danger. The catalog option is destructive."
+    },
+    {
+      "id": "variant-small",
+      "file": "src/pages/WrongSize.tsx",
+      "category": "variant",
+      "origin": "held-out",
+      "catch": "invalid",
+      "note": "size=small is not a listed option. The catalog size is sm."
+    },
+    {
+      "id": "clean-uses-small",
+      "file": "src/pages/UsesSmall.tsx",
+      "category": "clean",
+      "origin": "with-rule",
+      "catch": "silent",
+      "note": "size=sm and variant=outline are both listed. A real value is reuse."
+    },
+    {
+      "id": "clean-red-card",
+      "file": "src/pages/RedCard.tsx",
+      "category": "clean",
+      "origin": "held-out",
+      "catch": "silent",
+      "note": "Red and small classes sit on a section, and the Button uses no variant prop. Not a control."
     }
   ]
 }

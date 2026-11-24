@@ -86,6 +86,40 @@ test("reads exports, props, and string-literal variants from a declaration file"
   assert.equal(button.elements.includes("button"), true);
 });
 
+test("reads a string-literal union from a source props alias", () => {
+  const source = `
+    type Tone = "neutral" | "info";
+    interface BadgeProps { tone?: Tone; children?: string }
+    export function Badge({ tone, children }: BadgeProps) {
+      return <span>{children}{tone}</span>;
+    }
+  `;
+  const [badge] = extractFile("badge.tsx", source);
+  assert.deepEqual(badge?.variants, [{ name: "tone", options: ["neutral", "info"] }]);
+  assert.equal(badge?.props.some((prop) => prop.name === "tone" && prop.optional), true);
+});
+
+test("keeps cva classes when the props type repeats the same union", () => {
+  const source = `
+    import { cva, type VariantProps } from "class-variance-authority";
+    const buttonVariants = cva("inline-flex", {
+      variants: { variant: { default: "bg-primary", destructive: "bg-destructive" } },
+      defaultVariants: { variant: "default" },
+    });
+    interface ButtonProps extends VariantProps<typeof buttonVariants> {
+      variant?: "default" | "destructive";
+    }
+    export function Button({ variant }: ButtonProps) {
+      return <button className={buttonVariants({ variant })} />;
+    }
+  `;
+  const [button] = extractFile("button.tsx", source);
+  const variant = button?.variants.find((entry) => entry.name === "variant");
+  assert.equal(variant?.defaultValue, "default");
+  assert.equal(variant?.classes?.destructive, "bg-destructive");
+  assert.equal(button?.variants.filter((entry) => entry.name === "variant").length, 1);
+});
+
 test("records Base UI, React Aria, and Ark through the adapter map", () => {
   const base = extractFile(
     "dialog.tsx",

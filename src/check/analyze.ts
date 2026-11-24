@@ -3,7 +3,7 @@ import { applyRecipeHits, findRecipeHits } from "../recipes/match.js";
 import { matchesIgnore } from "../ignore.js";
 import { isInsideDir } from "../config.js";
 import { parseUiSource } from "../parse/file.js";
-import type { ImportRef } from "../parse/types.js";
+import type { ImportRef, StateNode } from "../parse/types.js";
 import { posixDir } from "../paths.js";
 import {
   RAW_ELEMENTS,
@@ -15,6 +15,7 @@ import {
 } from "../types.js";
 import { describeFinding } from "./format.js";
 import { findStateFindings } from "./states.js";
+import { findInvalidVariants, suggestVariants, usageSuggestion } from "./variants.js";
 
 export interface AnalyzeResult {
   findings: Finding[];
@@ -65,13 +66,32 @@ export function analyzeSource(options: {
   for (const opening of parsed.openings) {
     if (!keepLine(opening.line, options.lines)) continue;
     if (opening.kind === "intrinsic") {
-      const finding = rawFinding(file, opening.line, opening.name, opening.role, options.catalog, !options.snippet);
+      const node = findStateNode(parsed.stateTree, opening.line, opening.name);
+      const finding = rawFinding(
+        file,
+        opening.line,
+        opening.name,
+        opening.role,
+        options.catalog,
+        !options.snippet,
+        node?.classTokens ?? [],
+      );
       if (finding) findings.push(finding);
       continue;
     }
     const component = imported.get(opening.name);
     if (!component || defined.has(opening.name)) continue;
     reuses.push({ name: component.name, file, line: opening.line });
+    if (opening.kind !== "component") continue;
+    const node = findStateNode(parsed.stateTree, opening.line, opening.name);
+    findings.push(...findInvalidVariants({
+      file,
+      line: opening.line,
+      component,
+      catalog: options.catalog,
+      attrs: node?.attrs ?? [],
+      withLine: !options.snippet,
+    }));
   }
 
   findings.push(...findStateFindings({
@@ -135,23 +155,34 @@ function rawFinding(
   role: string | null,
   catalog: Catalog,
   withLine: boolean,
+  classTokens: string[],
 ): Finding | null {
   const buttonLink = element === "a" && role === "button";
   const wanted = buttonLink ? "Button" : RAW_ELEMENTS[element];
   if (!wanted) return null;
   const component = componentByName(catalog, wanted);
   if (!component) return null;
+  const choices = suggestVariants(component, classTokens);
   const finding: Finding = {
     kind: "raw-element",
     file,
     line,
     element,
-    suggestion: suggestionLabel(component.name, catalog, component),
+    suggestion: usageSuggestion(component, catalog, choices),
     import: importStatement(component, catalog),
     message: "",
   };
   finding.message = describeFinding(finding, withLine);
   return finding;
+}
+
+function findStateNode(nodes: StateNode[], line: number, name: string): StateNode | undefined {
+  for (const node of nodes) {
+    if (node.line === line && node.name === name) return node;
+    const child = findStateNode(node.children, line, name);
+    if (child) return child;
+  }
+  return undefined;
 }
 
 function keepLine(line: number, lines: Set<number> | undefined): boolean {

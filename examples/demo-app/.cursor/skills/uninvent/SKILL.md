@@ -18,6 +18,8 @@ uninvent exists "loading button"
 
 After a screen is written, raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` is a miss when the catalog has that component. So is a new export whose name matches the catalog. The wrapper may be Radix, Base UI, or another library on the primitive adapter map; the miss is the raw element, not the library. The hook prints one short line per miss and nothing when the edit is clean. There is no autofix: change the code to the import it names.
 
+When the classes point at one catalog variant, that same line names it: `<Button variant="destructive" size="sm">`. An unknown value such as `variant="danger"` is a miss. A looser class on a listed value is not.
+
 A recipe is how this project assembles those components. Rebuilding it from raw elements is a miss. The hook names the recipe and the components it uses.
 
 A documented state is a miss when new code rebuilds it. Pass `loading`, `disabled`, or the variant the catalog names instead of adding a spinner or copying that variant's classes.
@@ -28,7 +30,7 @@ A documented state is a miss when new code rebuilds it. Pass `loading`, `disable
 
 `import { Button } from "@/components/ui/button";`
 primitives: radix (@radix-ui/react-slot)
-- Button — props: asChild, loading; variants: variant (default | destructive | outline | secondary | ghost | link), size (default | sm | lg | icon); renders <button>; states: disabled, loading, variant=destructive
+- Button — props: asChild, loading; variants: variant=default|destructive|outline|secondary|ghost|link, size=default|sm|lg|icon; renders <button>; states: disabled, loading, variant=destructive
 
 ### src/components/ui/dialog.tsx
 

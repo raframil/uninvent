@@ -30,6 +30,7 @@ const LABELS: Record<string, string> = {
   "documented-state": "Documented states",
   "name-collision": "Name collisions",
   package: "Package sources",
+  variant: "Variants",
   clean: "Clean false positives",
 };
 
@@ -146,7 +147,7 @@ function benchmarkSection(benchDir: string): string {
   if (!left || !right) {
     return "Benchmark highlights are missing `bench/results/0.3.0.json` or `bench/results/0.4.1.json`.";
   }
-  const names = ["raw-control", "recipe", "documented-state", "name-collision", "package", "clean"];
+  const names = ["raw-control", "recipe", "documented-state", "name-collision", "package", "variant", "clean"];
   const rows = names.map((name) => [
     LABELS[name] ?? name,
     formatCategory(left, name),

@@ -85,7 +85,7 @@ The skill names the components that were actually scanned, the declared recipes,
 `install` adds a **PostToolUse** hook for Claude Code (`.claude/settings.json`) and Cursor (`.cursor/hooks.json`). It merges into the files you already have. The hook runs after an edit, reads the catalog, and parses that file with a small scanner (Babel is only the fallback). It:
 
 - prints nothing when the edit is clean
-- on a miss, adds one line per finding and nothing else, for example `raw <button> in src/Form.tsx:42, use ui/Button`
+- on a miss, adds one line per finding and nothing else, for example `raw <button> in src/Form.tsx:42, use ui/Button` or, when the classes pick one variant, `raw <button> in src/Form.tsx:42, use <Button variant="destructive" size="sm">`
 
 That line is the whole message the agent sees. The hook does not block the write. PreToolUse is off unless you pass `--pre`, and even then it only warns.
 
@@ -125,12 +125,14 @@ Reused: Button, PageHeader, Table, TableBody, TableCell, TableHead, TableHeader,
 
 ### What counts as inventing
 
-Four rules. The last one only fires when a story already documented the state:
+Six rules. The state rule only fires when a story already documented the state. The variant rules do not read stories, and they do not judge a color that is already a listed value:
 
 1. A raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<dialog>`, or `<a role="button">` in app code, when the catalog has `Button`, `Input`, `Textarea`, `Select`, or `Dialog`. The match is the component name. A Base UI wrapper and a Radix wrapper are the same miss.
 2. A new export whose name matches a catalog component (`export function Button` outside `components/ui`).
 3. A small subtree that rebuilds a declared recipe from the raw elements in its example, without using the components that recipe names. One line names the recipe. The raw elements inside that subtree are not listed again.
 4. A documented state rebuilt around a catalog component. A spinner inside or directly beside `<Button>` when Button's stories set `loading` and the JSX does not pass it. A `className` that copies every class of one non-default variant option the stories show, when that prop is not set. `opacity-50` together with `pointer-events-none` when the stories set `disabled` and the JSX does not. Anything less specific is silence.
+5. A raw control whose classes match one non-default variant. The line is still the one raw-element line: `raw <button> in src/pages/Delete.tsx:3, use <Button variant="destructive" size="sm">`. A red or `destructive` class can select `destructive`, a small height or padding can select `sm`, and an outline border can select `outline`. `rounded-md` or `px-4` adds nothing, and the line stays `use ui/Button`. The default option is left off.
+6. A catalog component passed a variant value that is not in the catalog. `invalid variant="danger" on Button in src/pages/Wrong.tsx:4, use <Button variant="destructive">`. The suggestion is included when the value is a clear alias of one option. Otherwise the line names the component. This is the wrong prop value. A `className` that looks different, on a value the catalog does have, is silence.
 
 A `<div>` is not a miss. A file named `Modal.tsx` is not a miss by itself — the native `<dialog>` inside it is, and the suggestion is `ui/Dialog`. A `<dialog>` with one button is not a confirm dialog. Files inside the design-system folder or package, stories, and tests are skipped. uninvent does not guess that a custom card is "80% our Card".
 
@@ -203,7 +205,7 @@ That leaves `.uninvent/catalog.json` un-ignored. Remove the `.uninvent/` line fr
 
 ## Catalog
 
-`scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, the class string of a variant option when it was a string literal, headless primitives, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, the states those stories document, and CSS variables declared in the stylesheet from `components.json`.
+`scan` writes `.uninvent/catalog.json`. It is a normal JSON file, version 1. For each exported component it stores the file, the import specifier (from `tsconfig` paths and `components.json`), own props, `cva()` / `tv()` variants and defaults, the class string of a variant option when it was a string literal, string-literal unions on the component's own props (`variant?: "a" | "b"`, in source and in a package `.d.ts`), headless primitives, the intrinsic element when the source says so (`<button>`, or `asChild ? Slot : "button"`), sibling story files, the states those stories document, and CSS variables declared in the stylesheet from `components.json`. `cva()` / `tv()` keep a group when the props type names it too, because they also have the default and the class string. A catalog from before a field still loads: missing `variants` is read as none, and `classes` may be absent.
 
 Primitives come from a small adapter map in `src/primitives.ts`. Each hit is `{ library, package }`. Built in today:
 

@@ -122,7 +122,7 @@ test("scan reads a node_modules package from its type declarations", () => {
   const input = catalog.components.find((component) => component.name === "Input");
   assert.equal(input?.elements.includes("input"), true);
   assert.match(renderExists(catalog, "Button").text, /import \{ Button \} from "@vendor\/ui";/);
-  assert.match(renderExists(catalog, "Button").text, /variant: default \| destructive \| outline/);
+  assert.match(renderExists(catalog, "Button").text, /variants: variant=default\|destructive\|outline, size=default\|sm/);
 
   assert.deepEqual(messages(installed, "src/pages/Login.tsx"), [
     "raw <input> in src/pages/Login.tsx:N, use @vendor/ui Input",

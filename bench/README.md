@@ -27,8 +27,8 @@ npm run bench -- --rounds 5
 
 1. Add a file under `bench/corpus`. Keep it out of `tests/fixtures`.
 2. Add an entry to [cases.json](cases.json):
-   - `category`: `raw-control`, `recipe`, `documented-state`, `name-collision`, `package`, `clean`, or a new name. A new name shows up in the report on its own. `package` is a component that lives in a workspace package or an installed package, not in `components/ui`.
-   - `catch`: `raw`, `rebuilt`, `reinvented`, `export`, or `silent`.
+   - `category`: `raw-control`, `recipe`, `documented-state`, `name-collision`, `package`, `variant`, `clean`, or a new name. A new name shows up in the report on its own. `package` is a component that lives in a workspace package or an installed package, not in `components/ui`. `variant` is a suggested variant on a raw control, or a variant value the catalog does not list.
+   - `catch`: `raw`, `rebuilt`, `reinvented`, `export`, `suggested`, `invalid`, or `silent`. `suggested` requires the raw line to name a variant prop. `invalid` requires a line that starts with `invalid`.
    - `origin`: `with-rule` if you wrote it to define the rule, `held-out` if it is a different file that should still pass.
    - `note`: one sentence on why it is here.
 3. `npm test` checks that the file exists and that the current CLI catches every non-clean case and stays quiet on every clean one.
